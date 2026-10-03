@@ -1,0 +1,21 @@
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Node
+node_modules/
+dist/
+.vite/
+.env
+.env.local
+
+# Logs
+*.log
+logs/

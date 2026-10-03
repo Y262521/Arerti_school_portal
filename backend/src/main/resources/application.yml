@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: arerti-portal-backend
+
+  # ---------- MySQL (structured data) ----------
+  datasource:
+    url: jdbc:mysql://localhost:3306/arerti_portal?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  # ---------- MongoDB (unstructured data) ----------
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/arerti_portal}
+
+  # ---------- File upload limits ----------
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+# ---------- App ----------
+app:
+  storage:
+    # Anchored to the user's home directory (not the process working directory) so
+    # uploaded files keep resolving to the same place no matter where/how the
+    # backend is launched (IDE, mvnw, packaged jar, different terminal cwd, etc).
+    # Override with the RESOURCES_DIR env var if you want a different location.
+    resources-dir: ${RESOURCES_DIR:${user.home}/arerti-portal/uploads/resources}
+  jwt:
+    secret: ${JWT_SECRET:CHANGE_ME_arerti_super_secret_key_must_be_at_least_256_bits_long_2026}
+    expiration-ms: 86400000   # 24h
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+logging:
+  level:
+    org.springframework.security: INFO
+    com.arerti.portal: DEBUG
