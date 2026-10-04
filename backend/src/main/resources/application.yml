@@ -2,12 +2,12 @@ spring:
   application:
     name: arerti-portal-backend
 
-  # ---------- MySQL (structured data) ----------
+  # ---------- Relational DB ----------
   datasource:
-    url: jdbc:mysql://localhost:3306/arerti_portal?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${DB_USER:root}
-    password: ${DB_PASS:root}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -15,13 +15,13 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
-  # ---------- MongoDB (unstructured data) ----------
+  # ---------- MongoDB ----------
   data:
     mongodb:
-      uri: ${MONGO_URI:mongodb://localhost:27017/arerti_portal}
+      uri: ${MONGO_URI}
 
   # ---------- File upload limits ----------
   servlet:
@@ -32,23 +32,19 @@ spring:
 # ---------- App ----------
 app:
   storage:
-    # Anchored to the user's home directory (not the process working directory) so
-    # uploaded files keep resolving to the same place no matter where/how the
-    # backend is launched (IDE, mvnw, packaged jar, different terminal cwd, etc).
-    # Override with the RESOURCES_DIR env var if you want a different location.
-    resources-dir: ${RESOURCES_DIR:${user.home}/arerti-portal/uploads/resources}
+    resources-dir: ${RESOURCES_DIR:/tmp/arerti-uploads}
   jwt:
     secret: ${JWT_SECRET:CHANGE_ME_arerti_super_secret_key_must_be_at_least_256_bits_long_2026}
-    expiration-ms: 86400000   # 24h
+    expiration-ms: 86400000
   cors:
-    allowed-origins: http://localhost:5173,http://localhost:3000
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   error:
     include-message: always
 
 logging:
   level:
     org.springframework.security: INFO
-    com.arerti.portal: DEBUG
+    com.arerti: DEBUG
