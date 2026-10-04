@@ -90,8 +90,9 @@ public class GradeBookService {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                             "Marks are locked. Request regrade permission from the administrator.");
                 }
-            }
-            if (isNewEntry && !isAssignedToSubject) {
+                // Has regrade permission — allowed to edit even if not assigned to this subject
+            } else if (isNewEntry && !isAssignedToSubject) {
+                // New entry — teacher must be assigned to this subject
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "You are not assigned to teach this subject in this class.");
             }

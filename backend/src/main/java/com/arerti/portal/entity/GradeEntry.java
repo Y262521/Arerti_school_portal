@@ -12,9 +12,9 @@ import java.time.Instant;
  * One grade record: student × subject × term × academicYear.
  *
  * Mark breakdown (total = 100):
- *   midExam    – out of 30
- *   finalExam  – out of 40
- *   assignment – out of 20  (Assignment / Group Work)
+ *   midExam    – out of 20
+ *   finalExam  – out of 60
+ *   assignment – out of 10  (Assignment / Group Work)
  *   testQuiz   – out of 10  (Test / Quiz)
  *   score      – computed sum, used by report card
  *
@@ -54,13 +54,13 @@ public class GradeEntry {
 
     // ── Mark components ──────────────────────────────────────────────────────
     @Column(name = "mid_exam")
-    private Double midExam;        // out of 30
+    private Double midExam;        // out of 20
 
     @Column(name = "final_exam")
-    private Double finalExam;      // out of 40
+    private Double finalExam;      // out of 60
 
     @Column(name = "assignment")
-    private Double assignment;     // out of 20
+    private Double assignment;     // out of 10
 
     @Column(name = "test_quiz")
     private Double testQuiz;       // out of 10
