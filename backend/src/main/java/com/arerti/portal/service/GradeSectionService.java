@@ -7,6 +7,7 @@ import com.arerti.portal.entity.Teacher;
 import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,8 @@ public class GradeSectionService {
 
     private final GradeSectionRepository gradeSectionRepository;
     private final TeacherRepository teacherRepository;
+    @Lazy
+    private final ClassSubjectAssignmentService assignmentService;
 
     public List<GradeSectionResponse> findAll() {
         return gradeSectionRepository.findAll().stream()
@@ -61,6 +64,10 @@ public class GradeSectionService {
                 .homeroomTeacher(resolveTeacher(req.homeroomTeacherId()))
                 .build();
         gradeSectionRepository.save(gs);
+
+        // Auto-apply the standardized curriculum for this grade level
+        assignmentService.applyGradeCurriculum(gs);
+
         return GradeSectionResponse.from(gs, 0L);
     }
 
