@@ -53,13 +53,13 @@ export default function Layout({ children }) {
       {/* Top bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="Arerti" className="h-10 w-10 rounded-full object-cover" />
-            <div className="leading-tight">
-              <div className="font-display font-bold text-brand text-sm">Arerti General and Secondary</div>
-              <div className="font-display font-bold text-brand text-sm">Preparatory School</div>
-              <div className="text-xs text-slate-500 hidden sm:block">Digital Portal</div>
+          <Link to="/" className="flex items-center gap-3 shrink-0">
+            <img src="/logo.png" alt="Arerti" className="h-10 w-10 rounded-full object-cover shrink-0" />
+            <div className="leading-tight hidden sm:block">
+              <div className="font-display font-bold text-brand text-sm whitespace-nowrap">Arerti General Secondary</div>
+              <div className="font-display font-bold text-brand text-sm whitespace-nowrap">& Preparatory School</div>
             </div>
+            <div className="font-display font-bold text-brand text-sm sm:hidden whitespace-nowrap">Arerti Portal</div>
           </Link>
 
           <nav className="ml-6 hidden md:flex items-center gap-1 flex-1">
@@ -116,7 +116,7 @@ export default function Layout({ children }) {
 
       <footer className="border-t border-slate-200 bg-white py-4">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} Arerti General and Secondary Preparatory School
+          © {new Date().getFullYear()} Arerti General Secondary & Preparatory School
         </div>
       </footer>
     </div>
