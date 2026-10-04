@@ -29,6 +29,16 @@ public class GradeSectionService {
                 .collect(Collectors.toList());
     }
 
+    /** Returns only classes where the given teacher is the homeroom teacher */
+    public List<GradeSectionResponse> findMyClasses(String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
+        if (teacher == null) return List.of();
+        return gradeSectionRepository.findByHomeroomTeacher(teacher).stream()
+                .map(gs -> GradeSectionResponse.from(gs,
+                        gradeSectionRepository.countStudentsBySectionId(gs.getId())))
+                .collect(Collectors.toList());
+    }
+
     public GradeSectionResponse findById(Long id) {
         GradeSection gs = gradeSectionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));

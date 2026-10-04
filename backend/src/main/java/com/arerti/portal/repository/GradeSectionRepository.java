@@ -1,6 +1,7 @@
 package com.arerti.portal.repository;
 
 import com.arerti.portal.entity.GradeSection;
+import com.arerti.portal.entity.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,4 +13,7 @@ public interface GradeSectionRepository extends JpaRepository<GradeSection, Long
 
     @Query("SELECT COUNT(s) FROM Student s WHERE s.sectionId = :sectionId")
     long countStudentsBySectionId(Long sectionId);
+
+    /** Returns only the classes where this teacher is the homeroom teacher */
+    List<GradeSection> findByHomeroomTeacher(Teacher teacher);
 }

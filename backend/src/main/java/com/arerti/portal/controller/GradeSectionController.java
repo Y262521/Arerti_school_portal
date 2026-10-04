@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,13 @@ public class GradeSectionController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<List<GradeSectionResponse>> list() {
         return ResponseEntity.ok(gradeSectionService.findAll());
+    }
+
+    /** Returns only the classes where the logged-in teacher is the homeroom teacher */
+    @GetMapping("/my-classes")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<List<GradeSectionResponse>> myClasses(Authentication auth) {
+        return ResponseEntity.ok(gradeSectionService.findMyClasses(auth.getName()));
     }
 
     @GetMapping("/{id}")

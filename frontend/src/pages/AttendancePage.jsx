@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { attendanceService } from '../services/attendanceService'
 import { classService } from '../services/classService'
 import { studentService } from '../services/studentService'
+import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 
 const STATUS_STYLES = {
@@ -14,6 +15,8 @@ const STATUS_STYLES = {
 const STATUSES = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED']
 
 export default function AttendancePage() {
+    const { user } = useAuth()
+    const isAdmin = user?.role === 'ADMIN'
     const [sections, setSections] = useState([])
     const [students, setStudents] = useState([])
     const [records, setRecords] = useState([])
@@ -23,8 +26,17 @@ export default function AttendancePage() {
     const [saving, setSaving] = useState({})
 
     useEffect(() => {
-        classService.getAll().then(setSections).catch(() => toast.error('Failed to load classes'))
-    }, [])
+        // Admin sees all classes; teacher sees only their homeroom classes
+        const loader = isAdmin ? classService.getAll() : classService.getMyClasses()
+        loader
+            .then(data => {
+                setSections(data)
+                if (!isAdmin && data.length === 0) {
+                    toast('You are not assigned as a homeroom teacher to any class.', { icon: 'ℹ️' })
+                }
+            })
+            .catch(() => toast.error('Failed to load classes'))
+    }, [isAdmin])
 
     useEffect(() => {
         if (!sectionId) return
@@ -68,7 +80,9 @@ export default function AttendancePage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">Attendance</h1>
-                    <p className="text-slate-500 mt-1">Mark daily attendance by class</p>
+                    <p className="text-slate-500 mt-1">
+                        {isAdmin ? 'Mark daily attendance by class' : 'Mark attendance for your homeroom class'}
+                    </p>
                 </div>
             </div>
 
@@ -111,7 +125,11 @@ export default function AttendancePage() {
             )}
 
             {!sectionId ? (
-                <div className="card p-8 text-center text-slate-500">Select a class to mark attendance.</div>
+                <div className="card p-8 text-center text-slate-500">
+                    {sections.length === 0 && !isAdmin
+                        ? '⚠️ You are not assigned as a homeroom teacher to any class. Contact the admin.'
+                        : 'Select a class to mark attendance.'}
+                </div>
             ) : loading ? (
                 <div className="card p-8 text-center text-slate-500">Loading…</div>
             ) : students.length === 0 ? (
