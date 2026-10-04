@@ -2,12 +2,18 @@ spring:
   application:
     name: arerti-portal-backend
 
-  # ---------- Relational DB ----------
+  # ---------- PostgreSQL ----------
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 50        # handle 1500+ concurrent users
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   jpa:
     hibernate:
@@ -17,13 +23,23 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          batch_size: 30           # batch inserts for bulk operations
+        order_inserts: true
+        order_updates: true
 
   # ---------- MongoDB ----------
   data:
     mongodb:
       uri: ${MONGO_URI}
 
-  # ---------- File upload limits ----------
+  # ---------- Cache (in-memory for subjects, classes, curriculum) ----------
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=300s   # 5 min cache
+
+  # ---------- File upload ----------
   servlet:
     multipart:
       max-file-size: 25MB
@@ -41,6 +57,13 @@ app:
 
 server:
   port: ${PORT:8080}
+  # Tomcat tuning for 1500+ concurrent users
+  tomcat:
+    threads:
+      max: 400
+      min-spare: 20
+    max-connections: 8192
+    accept-count: 200
   error:
     include-message: always
 

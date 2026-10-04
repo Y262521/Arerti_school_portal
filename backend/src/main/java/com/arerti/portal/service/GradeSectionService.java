@@ -7,6 +7,8 @@ import com.arerti.portal.entity.Teacher;
 import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class GradeSectionService {
     @Lazy
     private final ClassSubjectAssignmentService assignmentService;
 
+    @Cacheable("classes")
     public List<GradeSectionResponse> findAll() {
         return gradeSectionRepository.findAll().stream()
                 .map(gs -> GradeSectionResponse.from(gs,
@@ -49,6 +52,7 @@ public class GradeSectionService {
     }
 
     @Transactional
+    @CacheEvict(value = "classes", allEntries = true)
     public GradeSectionResponse create(GradeSectionRequest req) {
         if (gradeSectionRepository.existsByGradeAndSectionAndAcademicYear(
                 req.grade(), req.section(), req.academicYear())) {
@@ -72,6 +76,7 @@ public class GradeSectionService {
     }
 
     @Transactional
+    @CacheEvict(value = "classes", allEntries = true)
     public GradeSectionResponse update(Long id, GradeSectionRequest req) {
         GradeSection gs = gradeSectionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
@@ -87,6 +92,7 @@ public class GradeSectionService {
     }
 
     @Transactional
+    @CacheEvict(value = "classes", allEntries = true)
     public void delete(Long id) {
         GradeSection gs = gradeSectionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
