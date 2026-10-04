@@ -2,12 +2,11 @@ package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.GradeEntryRequest;
 import com.arerti.portal.dto.GradeEntryResponse;
-import com.arerti.portal.entity.GradeSection;
 import com.arerti.portal.entity.Teacher;
-import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.RegradePermissionRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import com.arerti.portal.service.GradeBookService;
+import com.arerti.portal.service.RegradeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +23,8 @@ public class GradeBookController {
 
     private final GradeBookService gradeBookService;
     private final TeacherRepository teacherRepository;
-    private final GradeSectionRepository sectionRepository;
     private final RegradePermissionRepository regradePermissionRepository;
+    private final RegradeService regradeService;
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
@@ -49,16 +48,11 @@ public class GradeBookController {
     public ResponseEntity<GradeEntryResponse> upsert(@Valid @RequestBody GradeEntryRequest req,
                                                       Authentication auth) {
         boolean isAdmin = hasRole(auth, "ADMIN");
-
-        // Check if there is an active regrade permission for this subject+section+term
         boolean isRegradeAllowed = false;
+
         if (!isAdmin) {
             Teacher teacher = teacherRepository.findByUser_Username(auth.getName()).orElse(null);
             if (teacher != null) {
-                // Find the section from the student
-                com.arerti.portal.entity.Student student =
-                        null; // resolved in service, just check by subject+term here
-                // Check regrade permission by teacher+subject+term+academicYear
                 isRegradeAllowed = regradePermissionRepository
                         .findActiveByTeacherAndSubjectAndTerm(
                                 teacher.getId(), req.subjectId(), req.term(), req.academicYear())
@@ -66,14 +60,23 @@ public class GradeBookController {
             }
         }
 
-        return ResponseEntity.ok(gradeBookService.upsert(req, auth.getName(), isAdmin, isRegradeAllowed));
+        GradeEntryResponse result = gradeBookService.upsert(req, auth.getName(), isAdmin, isRegradeAllowed);
+
+        // Auto-revoke regrade permission after use (one-time only)
+        if (!isAdmin && isRegradeAllowed) {
+            Teacher teacher = teacherRepository.findByUser_Username(auth.getName()).orElse(null);
+            if (teacher != null) {
+                regradeService.markUsed(teacher.getId(), req.subjectId(), req.term(), req.academicYear());
+            }
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
-        boolean isAdmin = hasRole(auth, "ADMIN");
-        gradeBookService.delete(id, isAdmin);
+        gradeBookService.delete(id, hasRole(auth, "ADMIN"));
         return ResponseEntity.noContent().build();
     }
 

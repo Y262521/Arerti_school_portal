@@ -5,7 +5,6 @@ import com.arerti.portal.dto.GradeEntryResponse;
 import com.arerti.portal.entity.*;
 import com.arerti.portal.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +23,6 @@ public class GradeBookService {
     private final TeacherRepository teacherRepository;
     private final ClassSubjectAssignmentRepository assignmentRepository;
     private final GradeSectionRepository sectionRepository;
-    @Lazy
-    private final RegradeService regradeService;
 
     // ── Queries ─────────────────────────────────────────────────────────────
 
@@ -124,13 +121,9 @@ public class GradeBookService {
             entry.setLocked(true);
         }
 
-        // If this was a regrade edit, re-lock after saving AND revoke the permission
+        // If this was a regrade edit, re-lock after saving
         if (!isAdmin && !isNewEntry && isRegradeAllowed) {
             entry.setLocked(true);
-            // Auto-revoke permission so it can only be used once
-            if (teacher != null) {
-                regradeService.markUsed(teacher.getId(), req.subjectId(), req.term(), req.academicYear());
-            }
         }
 
         return GradeEntryResponse.from(gradeEntryRepository.save(entry));
