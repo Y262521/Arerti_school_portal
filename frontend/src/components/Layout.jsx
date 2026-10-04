@@ -53,22 +53,22 @@ export default function Layout({ children }) {
       {/* Top bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-3 shrink-0">
-            <img src="/logo.png" alt="Arerti" className="h-10 w-10 rounded-full object-cover shrink-0" />
-            <div className="leading-tight hidden sm:block">
-              <div className="font-display font-bold text-brand text-sm whitespace-nowrap">Arerti General Secondary</div>
-              <div className="font-display font-bold text-brand text-sm whitespace-nowrap">& Preparatory School</div>
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src="/logo.png" alt="Arerti" className="h-9 w-9 rounded-full object-cover shrink-0" />
+            <div className="leading-tight hidden lg:block">
+              <div className="font-display font-bold text-brand text-xs whitespace-nowrap">Arerti General Secondary</div>
+              <div className="font-display font-bold text-brand text-xs whitespace-nowrap">& Preparatory School</div>
             </div>
-            <div className="font-display font-bold text-brand text-sm sm:hidden whitespace-nowrap">Arerti Portal</div>
+            <div className="font-display font-bold text-brand text-sm lg:hidden whitespace-nowrap">Arerti</div>
           </Link>
 
-          <nav className="ml-6 hidden md:flex items-center gap-1 flex-1">
+          <nav className="ml-4 hidden md:flex items-center gap-0.5 flex-1 flex-wrap">
             {links.map(l => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `px-3 py-1.5 rounded-md text-sm font-medium transition ${isActive ? 'bg-brand text-white' : 'text-slate-600 hover:text-brand hover:bg-brand/5'
+                  `px-2 py-1 rounded-md text-xs font-medium transition whitespace-nowrap ${isActive ? 'bg-brand text-white' : 'text-slate-600 hover:text-brand hover:bg-brand/5'
                   }`
                 }
               >
