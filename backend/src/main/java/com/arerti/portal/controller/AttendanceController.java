@@ -39,13 +39,17 @@ public class AttendanceController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
     public ResponseEntity<AttendanceResponse> mark(@Valid @RequestBody AttendanceRequest req,
                                                     Authentication auth) {
-        return ResponseEntity.ok(attendanceService.mark(req, auth.getName()));
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return ResponseEntity.ok(attendanceService.mark(req, auth.getName(), isAdmin));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        attendanceService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        attendanceService.delete(id, auth.getName(), isAdmin);
         return ResponseEntity.noContent().build();
     }
 }
