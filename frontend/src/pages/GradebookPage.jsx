@@ -19,9 +19,9 @@ const GRADE_COLOR = (g) => {
 
 // Mark component columns definition
 const COMPONENTS = [
-    { key: 'midExam',    label: 'Mid',        max: 30 },
-    { key: 'finalExam',  label: 'Final',      max: 40 },
-    { key: 'assignment', label: 'Assign',     max: 20 },
+    { key: 'midExam',    label: 'Mid',        max: 20 },
+    { key: 'finalExam',  label: 'Final',      max: 60 },
+    { key: 'assignment', label: 'Assign',     max: 10 },
     { key: 'testQuiz',   label: 'Test/Quiz',  max: 10 },
 ]
 
