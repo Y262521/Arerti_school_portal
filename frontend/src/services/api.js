@@ -1,7 +1,13 @@
 import axios from 'axios'
 
+// Always point to the Render backend in production.
+// Vite's proxy handles /api → localhost:8080 in local dev only.
+const baseURL = import.meta.env.DEV
+  ? '/api'
+  : 'https://arerti-school-backend.onrender.com/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' }
 })
 
