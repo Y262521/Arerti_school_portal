@@ -31,7 +31,7 @@ public class ResourceController {
         if ("ADMIN".equals(role)) {
             return ResponseEntity.ok(resourceService.findAll());
         }
-        return ResponseEntity.ok(resourceService.findForAudience(role));
+        return ResponseEntity.ok(resourceService.findForAudience(role, auth.getName()));
     }
 
     @GetMapping("/{id}")

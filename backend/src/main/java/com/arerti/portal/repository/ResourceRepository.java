@@ -8,4 +8,6 @@ import java.util.List;
 public interface ResourceRepository extends MongoRepository<Resource, String> {
     List<Resource> findAllByOrderByCreatedAtDesc();
     List<Resource> findByAudienceInOrderByCreatedAtDesc(List<String> audiences);
+    /** All resources uploaded by a specific user */
+    List<Resource> findByUploadedByOrderByCreatedAtDesc(String uploadedBy);
 }

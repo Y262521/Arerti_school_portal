@@ -27,10 +27,21 @@ public class ResourceService {
                 .stream().map(ResourceResponse::from).collect(Collectors.toList());
     }
 
-    /** ADMIN sees everything; others see GENERAL + resources targeted at their role. */
-    public List<ResourceResponse> findForAudience(String role) {
-        return resourceRepository.findByAudienceInOrderByCreatedAtDesc(List.of("GENERAL", role))
-                .stream().map(ResourceResponse::from).collect(Collectors.toList());
+    /** ADMIN sees everything; others see GENERAL + resources targeted at their role + their own uploads. */
+    public List<ResourceResponse> findForAudience(String role, String username) {
+        List<Resource> byAudience = resourceRepository.findByAudienceInOrderByCreatedAtDesc(List.of("GENERAL", role));
+        List<Resource> myUploads = resourceRepository.findByUploadedByOrderByCreatedAtDesc(username);
+
+        // Merge — own uploads first, then audience-matched, no duplicates
+        List<String> seen = myUploads.stream().map(Resource::getId).collect(Collectors.toList());
+        List<Resource> merged = new java.util.ArrayList<>(myUploads);
+        byAudience.stream()
+                .filter(r -> !seen.contains(r.getId()))
+                .forEach(merged::add);
+
+        // Sort by createdAt desc
+        merged.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+        return merged.stream().map(ResourceResponse::from).collect(Collectors.toList());
     }
 
     public ResourceResponse findById(String id) {
