@@ -60,7 +60,7 @@ public class RegradePermission {
      * PENDING → REJECTED
      */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
     private RegradeStatus status = RegradeStatus.PENDING;
 
     @Column(name = "granted_by")

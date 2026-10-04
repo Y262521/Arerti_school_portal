@@ -66,7 +66,7 @@ public class GradeEntry {
     private Double testQuiz;       // out of 10
 
     /** Computed total (sum of components, max 100). Updated by recalculateScore(). */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
     private Double score = 0.0;
 
     @Column(length = 500)
@@ -76,7 +76,7 @@ public class GradeEntry {
      * true = marks are locked (subject teacher entered them).
      * homeroom teacher can only edit if a RegradePermission exists.
      */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean locked = false;
 
     @ManyToOne(fetch = FetchType.LAZY)

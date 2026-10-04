@@ -45,7 +45,7 @@ public class ClassSubjectAssignment {
     private String academicYear;
 
     /** false = active; true = archived (end-of-year transition applied) */
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean archived = false;
 
     @CreatedDate
