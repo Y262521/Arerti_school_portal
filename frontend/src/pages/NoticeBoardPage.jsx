@@ -10,7 +10,7 @@ const PRIORITY_BADGE = {
     LOW: 'bg-slate-100 text-slate-600',
 }
 
-const AUDIENCE_OPTS = ['GENERAL', 'STUDENTS', 'TEACHERS', 'PARENTS']
+const AUDIENCE_OPTS = ['GENERAL', 'STUDENT', 'TEACHER', 'PARENT']
 const PRIORITY_OPTS = ['LOW', 'MEDIUM', 'HIGH']
 
 const EMPTY = { title: '', body: '', audience: 'GENERAL', priority: 'MEDIUM', pinned: false }
