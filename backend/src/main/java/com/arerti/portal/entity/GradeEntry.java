@@ -9,7 +9,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 
 /**
- * A single grade record: one student, one subject, one term, one academic year.
+ * One grade record: student × subject × term × academicYear.
+ *
+ * Mark breakdown (total = 100):
+ *   midExam    – out of 30
+ *   finalExam  – out of 40
+ *   assignment – out of 20  (Assignment / Group Work)
+ *   testQuiz   – out of 10  (Test / Quiz)
+ *   score      – computed sum, used by report card
+ *
+ * Edit rules:
+ *   - Subject teacher: can enter marks for their assigned subject (first save sets recordedBy).
+ *     After saving they CANNOT edit — read-only.
+ *   - Homeroom teacher: can enter marks for THEIR assigned subject like any subject teacher.
+ *     Can also view all other subjects (read-only).
+ *     Can edit ANY subject's marks ONLY when admin has granted a RegradePermission.
+ *   - Admin: can edit anything at any time.
  */
 @Entity
 @Table(name = "grade_entries",
@@ -31,20 +46,38 @@ public class GradeEntry {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
-    /** 1, 2, or 3 (semester/term number) */
     @Column(nullable = false)
     private Integer term;
 
     @Column(name = "academic_year", nullable = false, length = 20)
     private String academicYear;
 
-    /** Score out of 100 */
-    @Column(nullable = false)
-    private Double score;
+    // ── Mark components ──────────────────────────────────────────────────────
+    @Column(name = "mid_exam")
+    private Double midExam;        // out of 30
 
-    /** Optional comment from the teacher */
-    @Column(length = 255)
+    @Column(name = "final_exam")
+    private Double finalExam;      // out of 40
+
+    @Column(name = "assignment")
+    private Double assignment;     // out of 20
+
+    @Column(name = "test_quiz")
+    private Double testQuiz;       // out of 10
+
+    /** Computed total (sum of components, max 100). Updated by recalculateScore(). */
+    @Column(nullable = false)
+    private Double score = 0.0;
+
+    @Column(length = 500)
     private String comment;
+
+    /**
+     * true = marks are locked (subject teacher entered them).
+     * homeroom teacher can only edit if a RegradePermission exists.
+     */
+    @Column(nullable = false)
+    private boolean locked = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recorded_by")
@@ -57,4 +90,14 @@ public class GradeEntry {
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    /** Recomputes score from components. Call before every save. */
+    public void recalculateScore() {
+        double total = 0;
+        if (midExam    != null) total += midExam;
+        if (finalExam  != null) total += finalExam;
+        if (assignment != null) total += assignment;
+        if (testQuiz   != null) total += testQuiz;
+        this.score = Math.min(total, 100.0);
+    }
 }

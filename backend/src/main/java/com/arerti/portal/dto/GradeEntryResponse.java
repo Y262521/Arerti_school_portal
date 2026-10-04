@@ -13,9 +13,14 @@ public record GradeEntryResponse(
         String subjectName,
         Integer term,
         String academicYear,
+        Double midExam,
+        Double finalExam,
+        Double assignment,
+        Double testQuiz,
         Double score,
         String grade,
         String comment,
+        boolean locked,
         String recordedBy,
         Instant updatedAt
 ) {
@@ -29,15 +34,20 @@ public record GradeEntryResponse(
                 e.getSubject().getName(),
                 e.getTerm(),
                 e.getAcademicYear(),
+                e.getMidExam(),
+                e.getFinalExam(),
+                e.getAssignment(),
+                e.getTestQuiz(),
                 e.getScore(),
                 letterGrade(e.getScore()),
                 e.getComment(),
+                e.isLocked(),
                 e.getRecordedBy() != null ? e.getRecordedBy().getUser().getFullName() : null,
                 e.getUpdatedAt()
         );
     }
 
-    private static String letterGrade(Double score) {
+    public static String letterGrade(Double score) {
         if (score == null) return "—";
         if (score >= 90) return "A+";
         if (score >= 85) return "A";

@@ -1,0 +1,29 @@
+package com.arerti.portal.repository;
+
+import com.arerti.portal.entity.RegradePermission;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface RegradePermissionRepository extends JpaRepository<RegradePermission, Long> {
+
+    List<RegradePermission> findAllByOrderByCreatedAtDesc();
+
+    List<RegradePermission> findByStatusOrderByCreatedAtDesc(RegradePermission.RegradeStatus status);
+
+    List<RegradePermission> findByTeacher_IdOrderByCreatedAtDesc(Long teacherId);
+
+    /** Check if there is an active APPROVED permission for this teacher+subject+term+year */
+    @Query("SELECT r FROM RegradePermission r WHERE r.teacher.id = :teacherId " +
+           "AND r.subject.id = :subjectId AND r.term = :term " +
+           "AND r.academicYear = :academicYear AND r.status = 'APPROVED'")
+    Optional<RegradePermission> findActiveByTeacherAndSubjectAndTerm(
+            Long teacherId, Long subjectId, Integer term, String academicYear);
+
+    /** Prevent duplicate pending requests */
+    boolean existsByTeacher_IdAndSubject_IdAndTermAndAcademicYearAndStatus(
+            Long teacherId, Long subjectId, Integer term, String academicYear,
+            RegradePermission.RegradeStatus status);
+}

@@ -22,6 +22,7 @@ import AccountPage from './pages/AccountPage'
 import ParentReportCardPage from './pages/ParentReportCardPage'
 import SubjectsPage from './pages/SubjectsPage'
 import MyAttendancePage from './pages/MyAttendancePage'
+import RegradeRequestsPage from './pages/RegradeRequestsPage'
 
 function RoleHomeRedirect() {
   const { user, isLoggedIn } = useAuth()
@@ -100,6 +101,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <Layout><SubjectsPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/regrade-requests"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><RegradeRequestsPage /></Layout>
           </ProtectedRoute>
         }
       />

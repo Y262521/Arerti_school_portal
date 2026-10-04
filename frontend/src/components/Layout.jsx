@@ -10,6 +10,7 @@ const ROLE_LINKS = {
     { to: '/admin/subjects', label: 'Subjects' },
     { to: '/admin/grades', label: 'Gradebook' },
     { to: '/admin/attendance', label: 'Attendance' },
+    { to: '/admin/regrade-requests', label: 'Regrade' },
     { to: '/notices', label: 'Notice Board' },
     { to: '/resources', label: 'Resources' },
     { to: '/admin/audit-log', label: 'Audit Log' },

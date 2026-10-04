@@ -7,6 +7,11 @@ public record GradeEntryRequest(
         @NotNull Long subjectId,
         @NotNull @Min(1) @Max(3) Integer term,
         @NotBlank String academicYear,
-        @NotNull @DecimalMin("0") @DecimalMax("100") Double score,
+
+        @DecimalMin("0") @DecimalMax("30")  Double midExam,    // out of 30
+        @DecimalMin("0") @DecimalMax("40")  Double finalExam,  // out of 40
+        @DecimalMin("0") @DecimalMax("20")  Double assignment, // out of 20
+        @DecimalMin("0") @DecimalMax("10")  Double testQuiz,   // out of 10
+
         String comment
 ) {}

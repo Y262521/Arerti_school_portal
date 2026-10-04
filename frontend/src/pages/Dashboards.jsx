@@ -81,6 +81,11 @@ export function AdminDashboard() {
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
           <div className="mt-1 text-xs text-slate-500">Manage subjects & grades</div>
         </Link>
+        <Link to="/admin/regrade-requests" className="card hover:shadow-md transition cursor-pointer">
+          <div className="text-xs uppercase tracking-wide text-slate-500">Regrade Requests</div>
+          <div className="mt-1 text-3xl font-bold text-brand">→</div>
+          <div className="mt-1 text-xs text-slate-500">Review mark correction requests</div>
+        </Link>
         <Link to="/resources" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">Resources</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
@@ -91,27 +96,6 @@ export function AdminDashboard() {
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
           <div className="mt-1 text-xs text-slate-500">Review system activity</div>
         </Link>
-      </div>
-
-      <div className="mt-8 card">
-        <h2 className="font-display font-semibold text-lg text-slate-900">System Status</h2>
-        <ul className="mt-3 space-y-2 text-sm text-slate-600">
-          <li>✅ JWT authentication with 4 roles (Admin, Teacher, Student, Parent)</li>
-          <li>✅ Student &amp; Teacher CRUD with auto-generated UIDs</li>
-          <li>✅ Class / Section management</li>
-          <li>✅ Subject management</li>
-          <li>✅ Gradebook — per-section spreadsheet, upsert grades</li>
-          <li>✅ Attendance — per-section per-day, mark-all shortcuts</li>
-          <li>✅ Report cards — grades + attendance aggregation, letter grades</li>
-          <li>✅ Notice board with audience targeting &amp; pinning</li>
-          <li>✅ Resource repository with authenticated file download</li>
-          <li>✅ Parent portal — link children by UID, view report cards</li>
-          <li>✅ Student self-service — grades, attendance, notices</li>
-          <li>✅ Password change for all users</li>
-          <li>✅ Audit log — append-only event trail</li>
-          <li>✅ MySQL (structured) + MongoDB (flexible) dual-database</li>
-          <li>✅ PWA-ready service worker</li>
-        </ul>
       </div>
     </div>
   )
