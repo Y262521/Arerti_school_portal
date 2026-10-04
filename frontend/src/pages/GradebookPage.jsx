@@ -113,18 +113,22 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
 }
 
 // ── Regrade Request Form ───────────────────────────────────────────────────────
-function RegradeRequestForm({ subject, sectionId, term, academicYear, onSubmit, onClose, loading }) {
+function RegradeRequestForm({ student, subject, sectionId, term, academicYear, onSubmit, onClose, loading }) {
     const [reason, setReason] = useState('')
     return (
         <form onSubmit={e => { e.preventDefault(); onSubmit(reason) }} className="space-y-3">
             <p className="text-sm text-slate-600">
-                Request permission to edit marks for <strong>{subject.name}</strong> — Term {term}, {academicYear}.
+                Request permission to edit marks for <strong>{student.fullName}</strong> in{' '}
+                <strong>{subject.name}</strong> — Term {term}, {academicYear}.
             </p>
+            <div className="text-xs text-slate-400 bg-slate-50 rounded px-3 py-2">
+                Student UID: {student.studentUid}
+            </div>
             <div>
                 <label className="field-label">Reason *</label>
                 <textarea className="field" rows={3} value={reason}
                     onChange={e => setReason(e.target.value)}
-                    placeholder="Explain why the marks need correction…"
+                    placeholder="Explain why this student's marks need correction…"
                     required />
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -218,10 +222,11 @@ export default function GradebookPage() {
             .map(a => a.subjectId)
     )
 
-    // Active APPROVED regrade permission for a subject
-    const hasRegradePermission = (subjectId) =>
+    // Active APPROVED regrade permission for a SPECIFIC student+subject
+    const hasRegradePermission = (subjectId, studentId) =>
         myRegradePerms.some(p =>
             p.subjectId === subjectId &&
+            p.studentId === studentId &&
             String(p.sectionId) === String(sectionId) &&
             p.term === term &&
             p.academicYear === academicYear &&
@@ -264,6 +269,7 @@ export default function GradebookPage() {
         setRequestingRegrade(true)
         try {
             await regradeService.request({
+                studentId:    regradeModal.student.id,   // scoped to specific student
                 subjectId:    regradeModal.subject.id,
                 sectionId:    Number(sectionId),
                 term, academicYear, reason,
@@ -332,7 +338,14 @@ export default function GradebookPage() {
                                 <th className="px-4 py-3 text-left sticky left-0 bg-slate-50 min-w-[160px]">Student</th>
                                 {visibleSubjects.map(subj => {
                                     const isMine   = isAdmin || myAssignedSubjectIds.has(subj.id)
-                                    const hasReg   = hasRegradePermission(subj.id)
+                                    // Show regrade indicator in header if ANY student has active permission
+                                    const hasRegAny = myRegradePerms.some(p =>
+                                        p.subjectId === subj.id &&
+                                        String(p.sectionId) === String(sectionId) &&
+                                        p.term === term &&
+                                        p.academicYear === academicYear &&
+                                        p.status === 'APPROVED'
+                                    )
                                     return (
                                         <th key={subj.id} className="px-2 py-3 text-center min-w-[120px]">
                                             <div>{subj.name}</div>
@@ -341,7 +354,7 @@ export default function GradebookPage() {
                                                     {isMine
                                                         ? <span className="text-green-500">✏️ yours</span>
                                                         : <span className="text-slate-400">👁 view</span>}
-                                                    {hasReg && <span className="text-blue-500 ml-1">🔓 regrade</span>}
+                                                    {hasRegAny && <span className="text-blue-500 ml-1">🔓 regrade</span>}
                                                 </div>
                                             )}
                                         </th>
@@ -368,21 +381,19 @@ export default function GradebookPage() {
                                         {visibleSubjects.map(subj => {
                                             const entry    = getGrade(student.id, subj.id)
                                             const isMine   = isAdmin || myAssignedSubjectIds.has(subj.id)
-                                            const hasReg   = hasRegradePermission(subj.id)
+                                            const hasReg   = hasRegradePermission(subj.id, student.id)
                                             const isLocked = entry?.locked ?? false
 
-                                            // FIX 1: canEdit for homeroom with regrade permission
-                                            // Admin: always
-                                            // Own subject (new): always
-                                            // Own subject (locked) + regrade: yes
-                                            // Homeroom + locked + regrade: yes
-                                            // Otherwise: no
+                                            // canEdit:
+                                            // - Admin: always
+                                            // - Own subject, new entry: yes
+                                            // - Locked + regrade permission for THIS student: yes (homeroom or own)
                                             const canEdit = isAdmin
                                                 || (!isLocked && isMine)
                                                 || (isLocked && hasReg && (isMine || isHomeroomOfSection))
 
-                                            // FIX 2: only homeroom teacher sees regrade button
-                                            // Condition: teacher IS homeroom, entry exists and locked, no active permission
+                                            // Regrade button: homeroom only, entry exists, locked,
+                                            // no active permission for THIS student
                                             const canRequestRegrade = isTeacher
                                                 && isHomeroomOfSection
                                                 && isLocked
@@ -415,11 +426,11 @@ export default function GradebookPage() {
                                                             )}
                                                         </button>
 
-                                                        {/* FIX 2: regrade button only for homeroom on locked entries */}
+                                                        {/* Regrade button only for homeroom, only on specific locked student */}
                                                         {canRequestRegrade && (
                                                             <button
                                                                 className="text-xs text-blue-500 hover:underline whitespace-nowrap"
-                                                                onClick={() => setRegradeModal({ subject: subj })}
+                                                                onClick={() => setRegradeModal({ student, subject: subj })}
                                                             >
                                                                 🔄 Request regrade
                                                             </button>
@@ -467,7 +478,7 @@ export default function GradebookPage() {
                         loading={saving}
                         canEdit={isAdmin || myAssignedSubjectIds.has(modal.subject.id) || isHomeroomOfSection}
                         isLocked={modal.entry?.locked ?? false}
-                        hasRegradePermission={hasRegradePermission(modal.subject.id)}
+                        hasRegradePermission={hasRegradePermission(modal.subject.id, modal.student.id)}
                     />
                 </Modal>
             )}
@@ -476,6 +487,7 @@ export default function GradebookPage() {
             {regradeModal && (
                 <Modal title="Request Regrade Permission" onClose={() => setRegradeModal(null)}>
                     <RegradeRequestForm
+                        student={regradeModal.student}
                         subject={regradeModal.subject}
                         sectionId={sectionId}
                         term={term}

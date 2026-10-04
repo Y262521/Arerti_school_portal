@@ -49,25 +49,28 @@ public class GradeBookController {
                                                       Authentication auth) {
         boolean isAdmin = hasRole(auth, "ADMIN");
         boolean isRegradeAllowed = false;
+        Teacher teacher = null;
 
         if (!isAdmin) {
-            Teacher teacher = teacherRepository.findByUser_Username(auth.getName()).orElse(null);
+            teacher = teacherRepository.findByUser_Username(auth.getName()).orElse(null);
             if (teacher != null) {
+                // Check regrade permission scoped to specific student+subject+term+year
                 isRegradeAllowed = regradePermissionRepository
-                        .findActiveByTeacherAndSubjectAndTerm(
-                                teacher.getId(), req.subjectId(), req.term(), req.academicYear())
+                        .findActiveByTeacherAndStudentAndSubjectAndTerm(
+                                teacher.getId(), req.studentId(),
+                                req.subjectId(), req.term(), req.academicYear())
                         .isPresent();
             }
         }
 
-        GradeEntryResponse result = gradeBookService.upsert(req, auth.getName(), isAdmin, isRegradeAllowed);
+        GradeEntryResponse result = gradeBookService.upsert(
+                req, auth.getName(), isAdmin, isRegradeAllowed);
 
-        // Auto-revoke regrade permission after use (one-time only)
-        if (!isAdmin && isRegradeAllowed) {
-            Teacher teacher = teacherRepository.findByUser_Username(auth.getName()).orElse(null);
-            if (teacher != null) {
-                regradeService.markUsed(teacher.getId(), req.subjectId(), req.term(), req.academicYear());
-            }
+        // Auto-revoke permission after use — scoped to this specific student
+        if (!isAdmin && isRegradeAllowed && teacher != null) {
+            regradeService.markUsed(
+                    teacher.getId(), req.studentId(),
+                    req.subjectId(), req.term(), req.academicYear());
         }
 
         return ResponseEntity.ok(result);

@@ -20,10 +20,11 @@ public class RegradeService {
 
     private final RegradePermissionRepository regradeRepo;
     private final TeacherRepository teacherRepository;
+    private final StudentRepository studentRepository;
     private final SubjectRepository subjectRepository;
     private final GradeSectionRepository sectionRepository;
 
-    // ── Homeroom teacher requests regrade ────────────────────────────────────
+    // ── Homeroom teacher requests regrade for a specific student ─────────────
 
     @Transactional
     public RegradePermissionResponse request(String teacherUsername, RegradePermissionRequest req) {
@@ -40,19 +41,23 @@ public class RegradeService {
                     "Only the homeroom teacher of this class can request a regrade");
         }
 
+        Student student = studentRepository.findById(req.studentId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+
         Subject subject = subjectRepository.findById(req.subjectId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
 
-        // Prevent duplicate pending request
-        if (regradeRepo.existsByTeacher_IdAndSubject_IdAndTermAndAcademicYearAndStatus(
-                teacher.getId(), req.subjectId(), req.term(), req.academicYear(),
-                RegradePermission.RegradeStatus.PENDING)) {
+        // Prevent duplicate pending request for same student+subject
+        if (regradeRepo.existsByTeacher_IdAndStudent_IdAndSubject_IdAndTermAndAcademicYearAndStatus(
+                teacher.getId(), req.studentId(), req.subjectId(),
+                req.term(), req.academicYear(), RegradePermission.RegradeStatus.PENDING)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "A regrade request for this subject is already pending");
+                    "A regrade request for this student and subject is already pending");
         }
 
         RegradePermission perm = RegradePermission.builder()
                 .teacher(teacher)
+                .student(student)
                 .subject(subject)
                 .section(section)
                 .term(req.term())
@@ -67,7 +72,8 @@ public class RegradeService {
     // ── Admin approves or rejects ─────────────────────────────────────────────
 
     @Transactional
-    public RegradePermissionResponse resolve(Long id, boolean approve, String adminNote, String adminUsername) {
+    public RegradePermissionResponse resolve(Long id, boolean approve,
+                                              String adminNote, String adminUsername) {
         RegradePermission perm = regradeRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Regrade request not found"));
 
@@ -86,11 +92,13 @@ public class RegradeService {
         return RegradePermissionResponse.from(regradeRepo.save(perm));
     }
 
-    // ── Auto-revoke after use (called by GradeBookService after edit) ─────────
+    // ── Auto-revoke after use (called by controller after edit) ──────────────
 
     @Transactional
-    public void markUsed(Long teacherId, Long subjectId, Integer term, String academicYear) {
-        regradeRepo.findActiveByTeacherAndSubjectAndTerm(teacherId, subjectId, term, academicYear)
+    public void markUsed(Long teacherId, Long studentId, Long subjectId,
+                         Integer term, String academicYear) {
+        regradeRepo.findActiveByTeacherAndStudentAndSubjectAndTerm(
+                        teacherId, studentId, subjectId, term, academicYear)
                 .ifPresent(p -> {
                     p.setStatus(RegradePermission.RegradeStatus.USED);
                     p.setResolvedAt(Instant.now());

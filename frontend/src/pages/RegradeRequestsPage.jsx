@@ -26,6 +26,7 @@ function ResolveModal({ request, onResolve, onClose }) {
         <div className="space-y-4">
             <div className="text-sm text-slate-700 space-y-1">
                 <p><span className="text-slate-500">Teacher:</span> <strong>{request.teacherName}</strong> ({request.teacherEmployeeId})</p>
+                <p><span className="text-slate-500">Student:</span> <strong>{request.studentName}</strong> <span className="text-xs text-slate-400">({request.studentUid})</span></p>
                 <p><span className="text-slate-500">Subject:</span> {request.subjectName}</p>
                 <p><span className="text-slate-500">Class:</span> {request.sectionLabel}</p>
                 <p><span className="text-slate-500">Term:</span> {request.term} · {request.academicYear}</p>
@@ -124,6 +125,7 @@ export default function RegradeRequestsPage() {
                             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
                                 <th className="px-4 py-3 text-left">Teacher</th>
                                 <th className="px-4 py-3 text-left">Subject</th>
+                                <th className="px-4 py-3 text-left">Student</th>
                                 <th className="px-4 py-3 text-left">Class</th>
                                 <th className="px-4 py-3 text-center">Term</th>
                                 <th className="px-4 py-3 text-left">Reason</th>
@@ -140,6 +142,10 @@ export default function RegradeRequestsPage() {
                                         <div className="text-xs text-slate-400">{r.teacherEmployeeId}</div>
                                     </td>
                                     <td className="px-4 py-3 text-slate-700">{r.subjectName}</td>
+                                    <td className="px-4 py-3">
+                                        <div className="text-slate-700">{r.studentName}</div>
+                                        <div className="text-xs text-slate-400">{r.studentUid}</div>
+                                    </td>
                                     <td className="px-4 py-3 text-slate-700">{r.sectionLabel}</td>
                                     <td className="px-4 py-3 text-center text-slate-600">
                                         {r.term} · {r.academicYear}
