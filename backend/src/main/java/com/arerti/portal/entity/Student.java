@@ -37,7 +37,7 @@ public class Student {
     private String gender;
 
     @Column(name = "guardian_name", length = 120)
-    private String guardianName;
+    private String guardianName;   // renamed to parentName in DTOs but kept as guardian_name in DB for compatibility
 
     @Column(name = "guardian_phone", length = 20)
     private String guardianPhone;

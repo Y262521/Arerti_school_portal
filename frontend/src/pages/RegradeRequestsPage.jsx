@@ -148,7 +148,7 @@ export default function RegradeRequestsPage() {
                                     </td>
                                     <td className="px-4 py-3 text-slate-700">{r.sectionLabel}</td>
                                     <td className="px-4 py-3 text-center text-slate-600">
-                                        {r.term} · {r.academicYear}
+                                        Sem {r.term} · {r.academicYear}
                                     </td>
                                     <td className="px-4 py-3 text-slate-500 text-xs max-w-xs truncate">
                                         {r.reason || '—'}

@@ -56,7 +56,8 @@ export default function Layout({ children }) {
           <Link to="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="Arerti" className="h-10 w-10 rounded-full object-cover" />
             <div className="leading-tight">
-              <div className="font-display font-bold text-brand">Arerti HS</div>
+              <div className="font-display font-bold text-brand text-sm">Arerti General and Secondary</div>
+              <div className="font-display font-bold text-brand text-sm">Preparatory School</div>
               <div className="text-xs text-slate-500 hidden sm:block">Digital Portal</div>
             </div>
           </Link>
@@ -115,7 +116,7 @@ export default function Layout({ children }) {
 
       <footer className="border-t border-slate-200 bg-white py-4">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} Arerti General Secondary & Preparatory School
+          © {new Date().getFullYear()} Arerti General and Secondary Preparatory School
         </div>
       </footer>
     </div>

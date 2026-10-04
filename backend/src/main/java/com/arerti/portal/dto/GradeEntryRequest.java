@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 public record GradeEntryRequest(
         @NotNull Long studentId,
         @NotNull Long subjectId,
-        @NotNull @Min(1) @Max(3) Integer term,
+        @NotNull @Min(1) @Max(2) Integer term,   // 1 = Semester 1, 2 = Semester 2
         @NotBlank String academicYear,
 
         @DecimalMin("0") @DecimalMax("20")  Double midExam,    // out of 20

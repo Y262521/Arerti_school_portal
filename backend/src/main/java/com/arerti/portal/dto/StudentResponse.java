@@ -14,11 +14,14 @@ public record StudentResponse(
         String phone,
         LocalDate dateOfBirth,
         String gender,
-        String guardianName,
-        String guardianPhone,
+        String parentName,        // renamed from guardianName
+        String parentPhone,
         Integer enrollmentYear,
         Long sectionId,
-        String sectionLabel
+        String sectionLabel,
+        // Only set on creation — contains the auto-generated plain-text credentials for admin to share
+        String generatedUsername,
+        String generatedPassword
 ) {
     public static StudentResponse from(Student s, String sectionLabel) {
         return new StudentResponse(
@@ -35,7 +38,32 @@ public record StudentResponse(
                 s.getGuardianPhone(),
                 s.getEnrollmentYear(),
                 s.getSectionId(),
-                sectionLabel
+                sectionLabel,
+                null,   // only set on creation
+                null
+        );
+    }
+
+    /** Used after creation to include generated credentials */
+    public static StudentResponse fromWithCredentials(Student s, String sectionLabel,
+                                                       String genUsername, String genPassword) {
+        return new StudentResponse(
+                s.getId(),
+                s.getStudentUid(),
+                s.getUser().getId(),
+                s.getUser().getUsername(),
+                s.getUser().getFullName(),
+                s.getUser().getEmail(),
+                s.getUser().getPhone(),
+                s.getDateOfBirth(),
+                s.getGender(),
+                s.getGuardianName(),
+                s.getGuardianPhone(),
+                s.getEnrollmentYear(),
+                s.getSectionId(),
+                sectionLabel,
+                genUsername,
+                genPassword
         );
     }
 }

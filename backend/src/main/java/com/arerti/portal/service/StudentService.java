@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Year;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,38 +52,48 @@ public class StudentService {
 
     @Transactional
     public StudentResponse create(StudentCreateRequest req) {
-        if (userRepository.existsByUsername(req.username()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
         if (userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
+        // Auto-generate username and password
+        String uid = generateUid();
+        String username = uid.toLowerCase().replace("-", "");  // e.g. stu2026abc123
+        String plainPassword = generatePassword();
+
+        if (userRepository.existsByUsername(username)) {
+            username = username + Year.now().getValue();
+        }
+
         User user = User.builder()
-                .username(req.username())
+                .username(username)
                 .email(req.email())
-                .password(passwordEncoder.encode(req.password()))
+                .password(passwordEncoder.encode(plainPassword))
                 .fullName(req.fullName())
                 .phone(req.phone())
                 .role(Role.STUDENT)
                 .enabled(true)
-                .mustChangePassword(false)
+                .mustChangePassword(true)   // student must change on first login
                 .build();
         userRepository.save(user);
 
-        String uid = generateUid();
         Student student = Student.builder()
                 .studentUid(uid)
                 .user(user)
                 .dateOfBirth(req.dateOfBirth())
                 .gender(req.gender())
-                .guardianName(req.guardianName())
-                .guardianPhone(req.guardianPhone())
+                .guardianName(req.parentName())
+                .guardianPhone(req.parentPhone())
                 .enrollmentYear(req.enrollmentYear() != null ? req.enrollmentYear() : Year.now().getValue())
                 .sectionId(req.sectionId())
                 .build();
         studentRepository.save(student);
+
         auditService.log(actorUsername(), actorRole(), "CREATE", "STUDENT", uid,
-                "Created student " + uid + " (" + user.getFullName() + ")");
-        return StudentResponse.from(student, sectionLabel(student.getSectionId()));
+                "Created student " + uid + " (" + user.getFullName() + ") — credentials sent to admin");
+
+        // Return with generated credentials so admin can share them
+        return StudentResponse.fromWithCredentials(student, sectionLabel(student.getSectionId()),
+                username, plainPassword);
     }
 
     @Transactional
@@ -93,25 +102,18 @@ public class StudentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
         User user = student.getUser();
 
-        // Check uniqueness only if changed
-        if (!user.getUsername().equals(req.username()) && userRepository.existsByUsername(req.username()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
         if (!user.getEmail().equals(req.email()) && userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
-        user.setUsername(req.username());
         user.setEmail(req.email());
         user.setFullName(req.fullName());
         user.setPhone(req.phone());
-        if (req.password() != null && !req.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(req.password()));
-        }
         userRepository.save(user);
 
         student.setDateOfBirth(req.dateOfBirth());
         student.setGender(req.gender());
-        student.setGuardianName(req.guardianName());
-        student.setGuardianPhone(req.guardianPhone());
+        student.setGuardianName(req.parentName());
+        student.setGuardianPhone(req.parentPhone());
         if (req.enrollmentYear() != null) student.setEnrollmentYear(req.enrollmentYear());
         student.setSectionId(req.sectionId());
         studentRepository.save(student);
@@ -134,15 +136,19 @@ public class StudentService {
         return studentRepository.count();
     }
 
-    // ---- helpers ----
+    // ── helpers ──────────────────────────────────────────────────────────────
 
     private String generateUid() {
         int year = Year.now().getValue();
-        // Use UUID suffix to avoid race conditions from count-based numbering.
-        // The UID is still human-readable (year-prefixed) and guaranteed unique.
         String suffix = java.util.UUID.randomUUID().toString()
                 .replace("-", "").substring(0, 6).toUpperCase();
         return String.format("STU-%d-%s", year, suffix);
+    }
+
+    /** Generates a readable password: e.g. Arerti@2026 + 3 random digits */
+    private String generatePassword() {
+        int rand = 100 + (int)(Math.random() * 900);
+        return "Arerti@" + Year.now().getValue() + rand;
     }
 
     private String sectionLabel(Long sectionId) {

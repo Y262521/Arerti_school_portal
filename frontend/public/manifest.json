@@ -1,7 +1,7 @@
 {
-  "name": "Arerti General Secondary & Preparatory School",
-  "short_name": "Arerti HS",
-  "description": "Digital portal for Arerti General Secondary & Preparatory School",
+  "name": "Arerti General and Secondary Preparatory School",
+  "short_name": "Arerti Portal",
+  "description": "Digital portal for Arerti General and Secondary Preparatory School",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

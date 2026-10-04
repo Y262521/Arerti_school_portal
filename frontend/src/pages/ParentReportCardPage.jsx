@@ -32,7 +32,7 @@ function ReportCard({ child, term, academicYear }) {
 
   if (!report || report.grades.length === 0) return (
     <div className="card p-6 text-center text-slate-400 text-sm">
-      No grades recorded for Term {term}, {academicYear}.
+      No grades recorded for Semester {term}, {academicYear}.
     </div>
   )
 
@@ -157,11 +157,10 @@ export default function ParentReportCardPage() {
         </div>
 
         <div>
-          <label className="field-label">Term</label>
-          <select className="field w-28" value={term} onChange={e => setTerm(Number(e.target.value))}>
-            <option value={1}>Term 1</option>
-            <option value={2}>Term 2</option>
-            <option value={3}>Term 3</option>
+          <label className="field-label">Semester</label>
+          <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
+            <option value={1}>Semester 1</option>
+            <option value={2}>Semester 2</option>
           </select>
         </div>
 

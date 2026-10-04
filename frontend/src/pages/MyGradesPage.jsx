@@ -58,11 +58,10 @@ export default function MyGradesPage() {
                 </div>
                 <div className="flex gap-3 items-end">
                     <div>
-                        <label className="field-label">Term</label>
-                        <select className="field w-28" value={term} onChange={e => setTerm(Number(e.target.value))}>
-                            <option value={1}>Term 1</option>
-                            <option value={2}>Term 2</option>
-                            <option value={3}>Term 3</option>
+                        <label className="field-label">Semester</label>
+                        <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
+                            <option value={1}>Semester 1</option>
+                            <option value={2}>Semester 2</option>
                         </select>
                     </div>
                     <div>
@@ -94,7 +93,7 @@ export default function MyGradesPage() {
                         <div className="text-xs text-slate-400">{report.presentDays}/{report.totalDays} days</div>
                     </div>
                     <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">Term</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wide">Semester</div>
                         <div className="text-3xl font-bold text-brand mt-1">{term}</div>
                         <div className="text-xs text-slate-400">{academicYear}</div>
                     </div>
@@ -104,7 +103,7 @@ export default function MyGradesPage() {
             {/* Grade table */}
             {!report || report.grades.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
-                    No grades recorded for Term {term}, {academicYear} yet.
+                    No grades recorded for Semester {term}, {academicYear} yet.
                 </div>
             ) : (
                 <div className="card overflow-x-auto p-0">

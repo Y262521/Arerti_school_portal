@@ -4,11 +4,9 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
-/** Used when updating an existing teacher — password is optional (blank = keep existing). */
+/** Update existing teacher — username stays the same, password optional. */
 public record TeacherUpdateRequest(
-        @NotBlank String username,
         @NotBlank @Email String email,
-        @Size(min = 6) String password,   // null or blank → keep current password
         @NotBlank String fullName,
         String phone,
         String qualification,

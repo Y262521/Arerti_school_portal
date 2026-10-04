@@ -42,24 +42,30 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponse create(TeacherCreateRequest req) {
-        if (userRepository.existsByUsername(req.username()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
         if (userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
+        // Auto-generate employee ID, username, and password
+        String employeeId = generateEmployeeId();
+        String username = employeeId.toLowerCase().replace("-", ""); // e.g. tch2026abc123
+        String plainPassword = generatePassword();
+
+        if (userRepository.existsByUsername(username)) {
+            username = username + Year.now().getValue();
+        }
+
         User user = User.builder()
-                .username(req.username())
+                .username(username)
                 .email(req.email())
-                .password(passwordEncoder.encode(req.password()))
+                .password(passwordEncoder.encode(plainPassword))
                 .fullName(req.fullName())
                 .phone(req.phone())
                 .role(Role.TEACHER)
                 .enabled(true)
-                .mustChangePassword(false)
+                .mustChangePassword(true)
                 .build();
         userRepository.save(user);
 
-        String employeeId = generateEmployeeId();
         Teacher teacher = Teacher.builder()
                 .user(user)
                 .employeeId(employeeId)
@@ -68,7 +74,8 @@ public class TeacherService {
                 .hireDate(req.hireDate() != null ? req.hireDate() : LocalDate.now())
                 .build();
         teacherRepository.save(teacher);
-        return TeacherResponse.from(teacher);
+
+        return TeacherResponse.fromWithCredentials(teacher, username, plainPassword);
     }
 
     @Transactional
@@ -77,18 +84,12 @@ public class TeacherService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
         User user = teacher.getUser();
 
-        if (!user.getUsername().equals(req.username()) && userRepository.existsByUsername(req.username()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
         if (!user.getEmail().equals(req.email()) && userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
-        user.setUsername(req.username());
         user.setEmail(req.email());
         user.setFullName(req.fullName());
         user.setPhone(req.phone());
-        if (req.password() != null && !req.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(req.password()));
-        }
         userRepository.save(user);
 
         teacher.setQualification(req.qualification());
@@ -113,9 +114,13 @@ public class TeacherService {
 
     private String generateEmployeeId() {
         int year = Year.now().getValue();
-        // Use UUID suffix to avoid race conditions from count-based numbering.
         String suffix = java.util.UUID.randomUUID().toString()
                 .replace("-", "").substring(0, 6).toUpperCase();
         return String.format("TCH-%d-%s", year, suffix);
+    }
+
+    private String generatePassword() {
+        int rand = 100 + (int)(Math.random() * 900);
+        return "Arerti@" + Year.now().getValue() + rand;
     }
 }

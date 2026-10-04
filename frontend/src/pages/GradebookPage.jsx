@@ -55,7 +55,7 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-slate-500">Term {term} · {academicYear}</p>
+            <p className="text-sm text-slate-500">Semester {term} · {academicYear}</p>
 
             {isLocked && !hasRegradePermission && (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
@@ -119,7 +119,7 @@ function RegradeRequestForm({ student, subject, sectionId, term, academicYear, o
         <form onSubmit={e => { e.preventDefault(); onSubmit(reason) }} className="space-y-3">
             <p className="text-sm text-slate-600">
                 Request permission to edit marks for <strong>{student.fullName}</strong> in{' '}
-                <strong>{subject.name}</strong> — Term {term}, {academicYear}.
+                <strong>{subject.name}</strong> — Semester {term}, {academicYear}.
             </p>
             <div className="text-xs text-slate-400 bg-slate-50 rounded px-3 py-2">
                 Student UID: {student.studentUid}
@@ -311,11 +311,10 @@ export default function GradebookPage() {
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Term</label>
-                    <select className="field w-28" value={term} onChange={e => setTerm(Number(e.target.value))}>
-                        <option value={1}>Term 1</option>
-                        <option value={2}>Term 2</option>
-                        <option value={3}>Term 3</option>
+                    <label className="field-label">Semester</label>
+                    <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
+                        <option value={1}>Semester 1</option>
+                        <option value={2}>Semester 2</option>
                     </select>
                 </div>
                 <div>

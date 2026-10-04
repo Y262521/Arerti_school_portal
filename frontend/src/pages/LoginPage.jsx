@@ -47,14 +47,15 @@ export default function LoginPage() {
           <div className="flex items-center gap-3">
             <img src="/logo.png" className="h-14 w-14 rounded-full bg-white p-1" alt="logo" />
             <div>
-              <div className="font-display text-2xl font-bold">Arerti HS</div>
-              <div className="text-sm text-white/80">Digital Portal</div>
+              <div className="font-display text-xl font-bold leading-tight">Arerti General and Secondary</div>
+              <div className="font-display text-xl font-bold leading-tight">Preparatory School</div>
+              <div className="text-sm text-white/80 mt-1">Digital Portal</div>
             </div>
           </div>
         </div>
         <div>
           <h1 className="font-display text-4xl xl:text-5xl font-bold leading-tight">
-            Welcome to the<br/>Arerti School Portal
+            Welcome to the<br/>Arerti General and Secondary<br/>Preparatory School Portal
           </h1>
           <p className="mt-4 text-white/80 max-w-md">
             Manage students, grades, attendance and communication — securely, from any device.
