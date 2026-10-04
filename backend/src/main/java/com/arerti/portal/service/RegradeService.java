@@ -24,14 +24,11 @@ public class RegradeService {
     private final SubjectRepository subjectRepository;
     private final GradeSectionRepository sectionRepository;
 
-    // ── Homeroom teacher requests regrade for a specific student ─────────────
-
     @Transactional
     public RegradePermissionResponse request(String teacherUsername, RegradePermissionRequest req) {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
 
-        // Verify this teacher is the homeroom teacher of the section
         GradeSection section = sectionRepository.findById(req.sectionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
 
@@ -47,7 +44,6 @@ public class RegradeService {
         Subject subject = subjectRepository.findById(req.subjectId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
 
-        // Prevent duplicate pending request for same student+subject
         if (regradeRepo.existsByTeacher_IdAndStudent_IdAndSubject_IdAndTermAndAcademicYearAndStatus(
                 teacher.getId(), req.studentId(), req.subjectId(),
                 req.term(), req.academicYear(), RegradePermission.RegradeStatus.PENDING)) {
@@ -68,8 +64,6 @@ public class RegradeService {
 
         return RegradePermissionResponse.from(regradeRepo.save(perm));
     }
-
-    // ── Admin approves or rejects ─────────────────────────────────────────────
 
     @Transactional
     public RegradePermissionResponse resolve(Long id, boolean approve,
@@ -92,8 +86,6 @@ public class RegradeService {
         return RegradePermissionResponse.from(regradeRepo.save(perm));
     }
 
-    // ── Auto-revoke after use (called by controller after edit) ──────────────
-
     @Transactional
     public void markUsed(Long teacherId, Long studentId, Long subjectId,
                          Integer term, String academicYear) {
@@ -105,8 +97,6 @@ public class RegradeService {
                     regradeRepo.save(p);
                 });
     }
-
-    // ── Queries ───────────────────────────────────────────────────────────────
 
     public List<RegradePermissionResponse> findAll() {
         return regradeRepo.findAllByOrderByCreatedAtDesc()

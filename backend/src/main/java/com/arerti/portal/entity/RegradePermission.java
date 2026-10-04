@@ -32,8 +32,8 @@ public class RegradePermission {
     private Teacher teacher;
 
     /** The specific student whose mark needs correction */
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
     private Student student;
 
     /** The subject whose marks need correction */
