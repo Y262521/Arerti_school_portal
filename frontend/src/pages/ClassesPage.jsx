@@ -107,6 +107,25 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         } finally { setSaving(null) }
     }
 
+    const handleApplyCurriculum = async () => {
+        try {
+            const curriculum = await curriculumService.get(cls.grade)
+            if (curriculum.length === 0) {
+                toast.error(`No curriculum defined for Grade ${cls.grade}. Set it up first via 📚 Grade Curriculum.`)
+                return
+            }
+            let applied = 0
+            for (const c of curriculum) {
+                try {
+                    await classService.assignTeacher(cls.id, { subjectId: c.subjectId, teacherId: null })
+                    applied++
+                } catch { /* already assigned — skip */ }
+            }
+            toast.success(`${applied} subject(s) applied from Grade ${cls.grade} curriculum`)
+            load()
+        } catch { toast.error('Failed to apply curriculum') }
+    }
+
     const unassigned = assignments.filter(a => !a.teacherId).length
 
     return (
@@ -122,13 +141,22 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                         </p>
                     )}
                 </div>
+                <button className="btn-ghost text-xs" onClick={handleApplyCurriculum}>
+                    ↺ Apply Grade {cls.grade} Curriculum
+                </button>
             </div>
 
             {loading ? (
                 <div className="text-center text-slate-500 py-6">Loading…</div>
             ) : assignments.length === 0 ? (
-                <div className="text-center text-slate-500 py-6">
-                    No subjects assigned yet. Configure the Grade {cls.grade} curriculum first.
+                <div className="text-center text-slate-500 py-6 space-y-3">
+                    <p>No subjects assigned yet.</p>
+                    <button className="btn-primary text-sm" onClick={handleApplyCurriculum}>
+                        ↺ Apply Grade {cls.grade} Curriculum
+                    </button>
+                    <p className="text-xs text-slate-400">
+                        If nothing applies, go to 📚 Grade Curriculum and add subjects first.
+                    </p>
                 </div>
             ) : (
                 <div className="space-y-2">
