@@ -180,16 +180,19 @@ export default function GradebookPage() {
         if (!sectionId) return
         setLoading(true)
         try {
-            const [g, allStudents, sectionAssignments] = await Promise.all([
+            const [g, allStudents] = await Promise.all([
                 gradeService.getForSection(sectionId, term, academicYear),
                 studentService.getAll(),
-                classService.getAssignments(sectionId),
             ])
             setGrades(g)
             setStudents(allStudents.filter(st => String(st.sectionId) === String(sectionId)))
-            setAssignments(sectionAssignments)
-        } catch { toast.error('Failed to load grades') }
-        finally { setLoading(false) }
+            // Load assignments separately — may fail if table not yet created on first deploy
+            classService.getAssignments(sectionId)
+                .then(setAssignments)
+                .catch(() => setAssignments([]))
+        } catch (err) {
+            toast.error('Failed to load grades')
+        } finally { setLoading(false) }
     }
 
     useEffect(() => { loadGrades() }, [sectionId, term, academicYear])
