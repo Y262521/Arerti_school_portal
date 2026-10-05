@@ -2,8 +2,7 @@ package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.*;
 import com.arerti.portal.service.CloudinaryService;
-import com.arerti.portal.service.RegistrationService;
-import jakarta.validation.Valid;
+import com.arerti.portal.service.RegistrationService;import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,6 +81,14 @@ public class RegistrationController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<EnrollmentRecordResponse>> getEnrollments(@PathVariable Long id) {
         return ResponseEntity.ok(registrationService.getEnrollmentsForWindow(id));
+    }
+
+    /** Director triggers auto-assignment of registered students to sections */
+    @PostMapping("/auto-assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AutoAssignResponse> autoAssign(
+            @Valid @RequestBody AutoAssignRequest req) {
+        return ResponseEntity.ok(registrationService.autoAssign(req));
     }
 
     // ── Teacher: check active window ─────────────────────────────────────────

@@ -12,6 +12,6 @@ public record NewStudentEnrollRequest(
         String gender,
         @NotBlank String parentName,
         String parentPhone,
-        @NotNull Long sectionId,          // which Grade 9 section
+        @NotNull Long sectionId,          // which section — optional, can be null (auto-assigned later)
         @NotBlank String bankTransactionRef
 ) {}

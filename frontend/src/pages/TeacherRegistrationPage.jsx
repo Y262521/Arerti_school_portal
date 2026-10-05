@@ -92,7 +92,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
         // Academic
         grade8Score: '', previousSchool: '',
         grade8CertificateUrl: '', releaseLetterUrl: '',
-        sectionId: '', stream: '',
+        stream: '',
         // Guardian
         parentName: '', parentRelationship: '', parentPhone: '',
         // Payment
@@ -106,7 +106,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
     const canNext = () => {
         if (step === 0) return form.firstName && form.fatherName && form.grandfatherName
             && form.gender && form.email
-        if (step === 1) return form.sectionId && form.previousSchool
+        if (step === 1) return form.previousSchool
             && (enrollmentType === 'TRANSFER' ? form.releaseLetterUrl : true)
             && (!needsStream || form.stream)
         if (step === 2) return form.parentName && form.parentPhone
@@ -118,7 +118,9 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
         try {
             const result = await registrationService.enrollFull(windowId, {
                 ...form,
-                sectionId: Number(form.sectionId),
+                sectionId: null,           // no section at registration — director auto-assigns
+                targetGrade: grade,
+                academicYear: newYear,
                 grade8Score: form.grade8Score ? Number(form.grade8Score) : null,
                 dateOfBirth: form.dateOfBirth || null,
                 enrollmentType,
@@ -210,6 +212,9 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
             {/* Step 2: Academic */}
             {step === 1 && (
                 <div className="space-y-4">
+                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
+                        ℹ️ Section will be auto-assigned by the director after registration closes, based on performance scores.
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="field-label">Previous School *</label>
@@ -221,19 +226,6 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
                             <input className="field" type="number" min={0} max={100}
                                 value={form.grade8Score}
                                 onChange={e => set('grade8Score', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="field-label">Target Section *</label>
-                            <select className="field" value={form.sectionId}
-                                onChange={e => set('sectionId', e.target.value)} required>
-                                <option value="">— Select —</option>
-                                {filteredSections.map(s => (
-                                    <option key={s.id} value={s.id}>
-                                        Grade {s.grade} – {s.section}
-                                        {s.maxCapacity ? ` (${s.studentCount}/${s.maxCapacity})` : ''}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
                         {needsStream && (
                             <div>
@@ -406,7 +398,6 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
 
     const handleEnroll = async (student, type) => {
         const f = forms[student.studentId] || {}
-        if (!f.sectionId) { toast.error('Select a section'); return }
         if (!f.paymentMethod) { toast.error('Select payment method'); return }
         if (!f.bankTransactionRef) { toast.error('Enter transaction reference'); return }
         if (needsStream && !f.stream) { toast.error('Select stream'); return }
@@ -415,7 +406,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
         try {
             await registrationService.enrollExisting(windowId, {
                 studentId: student.studentId,
-                newSectionId: Number(f.sectionId),
+                newSectionId: null,      // section auto-assigned by director later
                 enrollmentType: type,
                 stream: f.stream || null,
                 paymentMethod: f.paymentMethod,
@@ -484,19 +475,6 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
 
                             {!s.alreadyEnrolled && (
                                 <div className="flex gap-2 flex-wrap items-end">
-                                    <div>
-                                        <label className="field-label text-xs">Section</label>
-                                        <select className="field text-xs py-1 w-32"
-                                            value={getField(s.studentId, 'sectionId')}
-                                            onChange={e => setField(s.studentId, 'sectionId', e.target.value)}>
-                                            <option value="">—</option>
-                                            {targetSections.map(sec => (
-                                                <option key={sec.id} value={sec.id}>
-                                                    {sec.section}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
                                     {needsStream && (
                                         <div>
                                             <label className="field-label text-xs">Stream</label>

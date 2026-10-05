@@ -7,6 +7,92 @@ import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
+// ── Auto-Assign Modal ─────────────────────────────────────────────────────────
+function AutoAssignModal({ onClose }) {
+    const [grade, setGrade] = useState(9)
+    const [academicYear, setAcademicYear] = useState(CURRENT_YEAR)
+    const [loading, setLoading] = useState(false)
+    const [result, setResult] = useState(null)
+
+    const handleAssign = async () => {
+        setLoading(true)
+        try {
+            const r = await registrationService.autoAssign(grade, academicYear)
+            setResult(r)
+            toast.success(r.message)
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Auto-assign failed')
+        } finally { setLoading(false) }
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-800">
+                <strong>🔀 Auto-Assign Students to Sections</strong>
+                <p className="mt-1 text-xs">
+                    Students are sorted by their previous grade's performance score, then
+                    distributed evenly across sections using round-robin (best → A, 2nd best → B, etc.)
+                    so every section gets a balanced mix of high, mid, and low performers.
+                </p>
+            </div>
+
+            {result ? (
+                <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm space-y-2">
+                    <p className="text-green-800 font-semibold">✅ {result.message}</p>
+                    <p className="text-green-700">Total students: {result.totalStudents}</p>
+                    <p className="text-green-700">Assigned: {result.assignedStudents}</p>
+                    {result.sectionCounts && (
+                        <div className="mt-2">
+                            <p className="text-xs text-green-600 font-medium mb-1">Per section:</p>
+                            {Object.entries(result.sectionCounts).map(([sec, count]) => (
+                                <div key={sec} className="flex justify-between text-xs text-green-700">
+                                    <span>{sec}</span><span>{count} students</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="field-label">Grade *</label>
+                            <select className="field" value={grade}
+                                onChange={e => setGrade(Number(e.target.value))}>
+                                {[9, 10, 11, 12].map(g => (
+                                    <option key={g} value={g}>Grade {g}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="field-label">Academic Year *</label>
+                            <input className="field" value={academicYear}
+                                onChange={e => setAcademicYear(e.target.value)}
+                                placeholder="2026/2027" />
+                        </div>
+                    </div>
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+                        ⚠️ Make sure sections for Grade {grade} exist before running this.
+                        Go to <strong>Classes</strong> to create sections first.
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
+                        <button className="btn-ghost" onClick={onClose}>Cancel</button>
+                        <button className="btn-primary" onClick={handleAssign} disabled={loading}>
+                            {loading ? '⏳ Assigning…' : '🔀 Run Auto-Assign'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {result && (
+                <div className="flex justify-end">
+                    <button className="btn-primary" onClick={onClose}>Done</button>
+                </div>
+            )}
+        </div>
+    )
+}
+
 function OpenWindowForm({ onSubmit, onClose, loading }) {
     const [form, setForm] = useState({
         academicYear: CURRENT_YEAR,
@@ -122,6 +208,7 @@ export default function DirectorRegistrationPage() {
     const [assignModal, setAssignModal] = useState(null)  // windowId
     const [openingWindow, setOpeningWindow] = useState(false)
     const [confirmClose, setConfirmClose] = useState(null)
+    const [autoAssignModal, setAutoAssignModal] = useState(false)
 
     const load = async () => {
         setLoading(true)
@@ -179,6 +266,11 @@ export default function DirectorRegistrationPage() {
                 </div>
                 <button className="btn-primary" onClick={() => setOpenModal(true)}>
                     + Open Registration Window
+                </button>
+                <button
+                    className="btn-ghost text-sm border-brand text-brand hover:bg-brand/5"
+                    onClick={() => setAutoAssignModal(true)}>
+                    🔀 Auto-Assign Students
                 </button>
             </div>
 
@@ -259,6 +351,13 @@ export default function DirectorRegistrationPage() {
                         onSuccess={() => { setAssignModal(null); load() }}
                         onClose={() => setAssignModal(null)}
                     />
+                </Modal>
+            )}
+
+            {/* Auto-Assign Students modal */}
+            {autoAssignModal && (
+                <Modal title="Auto-Assign Students to Sections" onClose={() => setAutoAssignModal(false)}>
+                    <AutoAssignModal onClose={() => setAutoAssignModal(false)} />
                 </Modal>
             )}
 
