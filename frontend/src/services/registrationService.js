@@ -50,4 +50,8 @@ export const registrationService = {
         api.post(`/registration/windows/${windowId}/enroll-existing`, payload, {
             params: { previousAcademicYear }
         }).then(r => r.data),
+
+    // Director: auto-assign students to sections by performance
+    autoAssign: (grade, academicYear) =>
+        api.post('/registration/auto-assign', { grade, academicYear }).then(r => r.data),
 }
