@@ -108,15 +108,7 @@ export default function ResourcesPage() {
     const handleDownload = async (resource) => {
         setDownloadingId(resource.id)
         try {
-            const res = await resourceService.download(resource.id)
-            const url = window.URL.createObjectURL(new Blob([res.data]))
-            const a = document.createElement('a')
-            a.href = url
-            a.download = resource.fileName || resource.title
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-            window.URL.revokeObjectURL(url)
+            await resourceService.download(resource)
         } catch {
             toast.error('Download failed')
         } finally { setDownloadingId(null) }

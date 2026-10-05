@@ -15,6 +15,7 @@ public record ResourceResponse(
         String contentType,
         long sizeBytes,
         String uploadedBy,
+        String downloadUrl,    // direct Cloudinary URL — use this for downloads
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -22,7 +23,9 @@ public record ResourceResponse(
         return new ResourceResponse(
                 r.getId(), r.getTitle(), r.getDescription(), r.getAudience(),
                 r.getSectionId(), r.getSubject(), r.getFileName(), r.getContentType(),
-                r.getSizeBytes(), r.getUploadedBy(), r.getCreatedAt(), r.getUpdatedAt()
+                r.getSizeBytes(), r.getUploadedBy(),
+                r.getDownloadUrl(),
+                r.getCreatedAt(), r.getUpdatedAt()
         );
     }
 }

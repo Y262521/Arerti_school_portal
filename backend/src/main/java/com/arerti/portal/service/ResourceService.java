@@ -4,7 +4,6 @@ import com.arerti.portal.dto.ResourceResponse;
 import com.arerti.portal.entity.Resource;
 import com.arerti.portal.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
-    private final FileStorageService fileStorageService;
+    private final CloudinaryService cloudinaryService;
     private final AuditService auditService;
 
     public List<ResourceResponse> findAll() {
@@ -27,19 +26,15 @@ public class ResourceService {
                 .stream().map(ResourceResponse::from).collect(Collectors.toList());
     }
 
-    /** ADMIN sees everything; others see GENERAL + resources targeted at their role + their own uploads. */
     public List<ResourceResponse> findForAudience(String role, String username) {
-        List<Resource> byAudience = resourceRepository.findByAudienceInOrderByCreatedAtDesc(List.of("GENERAL", role));
-        List<Resource> myUploads = resourceRepository.findByUploadedByOrderByCreatedAtDesc(username);
+        List<Resource> byAudience = resourceRepository
+                .findByAudienceInOrderByCreatedAtDesc(List.of("GENERAL", role));
+        List<Resource> myUploads = resourceRepository
+                .findByUploadedByOrderByCreatedAtDesc(username);
 
-        // Merge — own uploads first, then audience-matched, no duplicates
         List<String> seen = myUploads.stream().map(Resource::getId).collect(Collectors.toList());
         List<Resource> merged = new java.util.ArrayList<>(myUploads);
-        byAudience.stream()
-                .filter(r -> !seen.contains(r.getId()))
-                .forEach(merged::add);
-
-        // Sort by createdAt desc
+        byAudience.stream().filter(r -> !seen.contains(r.getId())).forEach(merged::add);
         merged.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
         return merged.stream().map(ResourceResponse::from).collect(Collectors.toList());
     }
@@ -48,9 +43,14 @@ public class ResourceService {
         return ResourceResponse.from(get(id));
     }
 
+    /**
+     * Uploads file to Cloudinary and saves the permanent URL.
+     * Downloads are now direct Cloudinary URLs — no backend streaming needed.
+     */
     public ResourceResponse upload(MultipartFile file, String title, String description,
                                     String audience, Long sectionId, String subject) {
-        String storedName = fileStorageService.store(file);
+        // Upload to Cloudinary — returns a permanent HTTPS URL
+        String downloadUrl = cloudinaryService.upload(file, "resources");
 
         Resource resource = Resource.builder()
                 .title(title)
@@ -59,7 +59,8 @@ public class ResourceService {
                 .sectionId(sectionId)
                 .subject(subject)
                 .fileName(file.getOriginalFilename())
-                .storedFileName(storedName)
+                .storedFileName(downloadUrl)  // keep for backward compat
+                .downloadUrl(downloadUrl)
                 .contentType(file.getContentType())
                 .sizeBytes(file.getSize())
                 .uploadedBy(actorUsername())
@@ -67,16 +68,26 @@ public class ResourceService {
         resourceRepository.save(resource);
 
         auditService.log(actorUsername(), actorRole(), "UPLOAD", "RESOURCE", resource.getId(),
-                "Uploaded resource \"" + title + "\" (" + file.getOriginalFilename() + ")");
+                "Uploaded resource \"" + title + "\"");
         return ResourceResponse.from(resource);
     }
 
-    public org.springframework.core.io.Resource download(String id) {
+    /**
+     * Returns the download URL for a resource.
+     * For new resources (Cloudinary): returns the direct URL.
+     * For legacy resources (GridFS/filesystem): returns null (file may be gone).
+     */
+    public String getDownloadUrl(String id) {
         Resource resource = get(id);
-        UrlResource file = (UrlResource) fileStorageService.loadAsResource(resource.getStoredFileName());
         auditService.log(actorUsername(), actorRole(), "DOWNLOAD", "RESOURCE", id,
                 "Downloaded resource \"" + resource.getTitle() + "\"");
-        return file;
+        if (resource.getDownloadUrl() != null) return resource.getDownloadUrl();
+        // Legacy — check if storedFileName looks like a URL
+        if (resource.getStoredFileName() != null &&
+                resource.getStoredFileName().startsWith("http")) {
+            return resource.getStoredFileName();
+        }
+        return null;
     }
 
     public ResourceResponse metaOf(String id) {
@@ -85,7 +96,6 @@ public class ResourceService {
 
     public void delete(String id) {
         Resource resource = get(id);
-        fileStorageService.delete(resource.getStoredFileName());
         resourceRepository.delete(resource);
         auditService.log(actorUsername(), actorRole(), "DELETE", "RESOURCE", id,
                 "Deleted resource \"" + resource.getTitle() + "\"");

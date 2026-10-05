@@ -3,8 +3,6 @@ package com.arerti.portal.controller;
 import com.arerti.portal.dto.ResourceResponse;
 import com.arerti.portal.service.ResourceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -22,7 +21,6 @@ public class ResourceController {
 
     private final ResourceService resourceService;
 
-    /** All authenticated users can browse resources relevant to their role. */
     @GetMapping
     public ResponseEntity<List<ResourceResponse>> list(Authentication auth) {
         String role = auth.getAuthorities().stream()
@@ -52,17 +50,20 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    /**
+     * Download endpoint — redirects to Cloudinary URL directly.
+     * For legacy files that no longer exist, returns 404.
+     */
     @GetMapping("/{id}/download")
-    public ResponseEntity<Resource> download(@PathVariable String id) {
-        ResourceResponse meta = resourceService.metaOf(id);
-        Resource file = resourceService.download(id);
-        MediaType type = meta.contentType() != null
-                ? MediaType.parseMediaType(meta.contentType())
-                : MediaType.APPLICATION_OCTET_STREAM;
-        return ResponseEntity.ok()
-                .contentType(type)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + meta.fileName() + "\"")
-                .body(file);
+    public ResponseEntity<Void> download(@PathVariable String id) {
+        String url = resourceService.getDownloadUrl(id);
+        if (url == null) {
+            return ResponseEntity.status(HttpStatus.GONE).build(); // file no longer available
+        }
+        // Redirect browser directly to Cloudinary — no backend streaming needed
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(url))
+                .build();
     }
 
     @DeleteMapping("/{id}")

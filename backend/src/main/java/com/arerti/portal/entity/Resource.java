@@ -31,23 +31,25 @@ public class Resource {
     /** GENERAL | STUDENTS | TEACHERS | PARENTS */
     private String audience;
 
-    /** Optional: restrict to a grade section, e.g. "Grade 9 - A" */
     private Long sectionId;
 
-    /** Optional free-text subject label, e.g. "Mathematics" */
     private String subject;
 
-    /** Original filename as uploaded by the user */
     private String fileName;
 
-    /** UUID-based name the file is actually stored under on disk */
+    /**
+     * For old resources: UUID-based filename on GridFS.
+     * For new resources: Cloudinary secure_url (starts with https://).
+     */
     private String storedFileName;
+
+    /** Direct Cloudinary HTTPS URL — set for new uploads, null for legacy */
+    private String downloadUrl;
 
     private String contentType;
 
     private long sizeBytes;
 
-    /** Username of the teacher/admin who uploaded it */
     private String uploadedBy;
 
     @CreatedDate
@@ -55,4 +57,9 @@ public class Resource {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    /** Returns true if this resource has a direct download URL (Cloudinary) */
+    public boolean hasDirectUrl() {
+        return downloadUrl != null && !downloadUrl.isBlank();
+    }
 }
