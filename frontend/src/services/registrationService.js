@@ -1,5 +1,28 @@
 import api from './api'
 
+// Upload directly to Cloudinary from browser — no backend roundtrip
+// Uses Cloudinary's unsigned upload preset
+const CLOUDINARY_CLOUD = 'komb41ew'
+const CLOUDINARY_UPLOAD_PRESET = 'arerti_unsigned'  // we'll create this preset
+
+const uploadDirect = async (file, folder) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+    formData.append('folder', `arerti/${folder}`)
+
+    const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`,
+        { method: 'POST', body: formData }
+    )
+    if (!response.ok) {
+        const err = await response.json()
+        throw new Error(err.error?.message || 'Cloudinary upload failed')
+    }
+    const data = await response.json()
+    return data.secure_url
+}
+
 export const registrationService = {
     // Director
     getWindows: () => api.get('/registration/windows').then(r => r.data),
@@ -12,15 +35,8 @@ export const registrationService = {
     getEnrollments: (windowId) =>
         api.get(`/registration/windows/${windowId}/enrollments`).then(r => r.data),
 
-    // File upload — returns { url: "https://res.cloudinary.com/..." }
-    uploadFile: (file, folder = 'documents') => {
-        const fd = new FormData()
-        fd.append('file', file)
-        fd.append('folder', folder)
-        return api.post('/registration/upload', fd, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        }).then(r => r.data.url)
-    },
+    // File upload — direct to Cloudinary from browser (no backend roundtrip)
+    uploadFile: (file, folder = 'documents') => uploadDirect(file, folder),
 
     // Teacher
     getMyWindow: () => api.get('/registration/my-window').then(r => r.data).catch(() => null),
