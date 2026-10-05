@@ -1,14 +1,14 @@
 import api from './api'
 
-// Upload directly to Cloudinary from browser — no backend roundtrip
-// Uses Cloudinary's unsigned upload preset
+// Upload directly to Cloudinary from browser using unsigned preset
+// No backend roundtrip — faster, no Render timeout issues
 const CLOUDINARY_CLOUD = 'komb41ew'
-const CLOUDINARY_UPLOAD_PRESET = 'arerti_unsigned'  // we'll create this preset
+const UPLOAD_PRESET = 'arerti_unsigned'
 
-const uploadDirect = async (file, folder) => {
+const uploadDirect = async (file, folder = 'documents') => {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
+    formData.append('upload_preset', UPLOAD_PRESET)
     formData.append('folder', `arerti/${folder}`)
 
     const response = await fetch(
@@ -16,8 +16,8 @@ const uploadDirect = async (file, folder) => {
         { method: 'POST', body: formData }
     )
     if (!response.ok) {
-        const err = await response.json()
-        throw new Error(err.error?.message || 'Cloudinary upload failed')
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error?.message || 'Upload failed')
     }
     const data = await response.json()
     return data.secure_url
@@ -35,8 +35,8 @@ export const registrationService = {
     getEnrollments: (windowId) =>
         api.get(`/registration/windows/${windowId}/enrollments`).then(r => r.data),
 
-    // File upload — direct to Cloudinary from browser (no backend roundtrip)
-    uploadFile: (file, folder = 'documents') => uploadDirect(file, folder),
+    // File upload — direct to Cloudinary from browser (no backend, no timeout)
+    uploadFile: uploadDirect,
 
     // Teacher
     getMyWindow: () => api.get('/registration/my-window').then(r => r.data).catch(() => null),
