@@ -58,7 +58,7 @@ app:
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME:komb41ew}
   api-key: ${CLOUDINARY_API_KEY:765123853833281}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+  api-secret: ${CLOUDINARY_API_SECRET:4ryLQ5hRbk5O7yOV7Hvpjlx_huY}
 
 server:
   port: ${PORT:8080}
