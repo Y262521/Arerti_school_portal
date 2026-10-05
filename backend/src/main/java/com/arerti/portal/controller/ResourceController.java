@@ -50,19 +50,41 @@ public class ResourceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    /** Save metadata only — file already uploaded to Cloudinary by the browser */
+    @PostMapping(value = "/meta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    public ResponseEntity<ResourceResponse> saveMeta(
+            @RequestParam String downloadUrl,
+            @RequestParam String fileName,
+            @RequestParam(required = false) String contentType,
+            @RequestParam(required = false) Long sizeBytes,
+            @RequestParam String title,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String audience,
+            @RequestParam(required = false) Long sectionId,
+            @RequestParam(required = false) String subject) {
+        ResourceResponse saved = resourceService.saveMeta(
+                downloadUrl, fileName, contentType, sizeBytes,
+                title, description, audience, sectionId, subject);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
     /**
-     * Download endpoint — redirects to Cloudinary URL directly.
-     * For legacy files that no longer exist, returns 404.
+     * Download redirect — no auth required since Cloudinary URLs are public.
+     * For legacy files, returns 410 Gone.
      */
     @GetMapping("/{id}/download")
-    public ResponseEntity<Void> download(@PathVariable String id) {
+    public ResponseEntity<Void> download(@PathVariable String id, Authentication auth) {
+        // Log the download if authenticated
+        if (auth != null) {
+            resourceService.logDownload(id, auth.getName());
+        }
         String url = resourceService.getDownloadUrl(id);
         if (url == null) {
-            return ResponseEntity.status(HttpStatus.GONE).build(); // file no longer available
+            return ResponseEntity.status(HttpStatus.GONE).build();
         }
-        // Redirect browser directly to Cloudinary — no backend streaming needed
         return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(url))
+                .location(java.net.URI.create(url))
                 .build();
     }
 

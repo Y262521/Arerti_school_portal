@@ -79,10 +79,7 @@ public class ResourceService {
      */
     public String getDownloadUrl(String id) {
         Resource resource = get(id);
-        auditService.log(actorUsername(), actorRole(), "DOWNLOAD", "RESOURCE", id,
-                "Downloaded resource \"" + resource.getTitle() + "\"");
         if (resource.getDownloadUrl() != null) return resource.getDownloadUrl();
-        // Legacy — check if storedFileName looks like a URL
         if (resource.getStoredFileName() != null &&
                 resource.getStoredFileName().startsWith("http")) {
             return resource.getStoredFileName();
@@ -90,8 +87,40 @@ public class ResourceService {
         return null;
     }
 
+    public void logDownload(String id, String username) {
+        try {
+            Resource resource = get(id);
+            auditService.log(username, "USER", "DOWNLOAD", "RESOURCE", id,
+                    "Downloaded resource \"" + resource.getTitle() + "\"");
+        } catch (Exception ignored) {}
+    }
+
     public ResourceResponse metaOf(String id) {
         return ResourceResponse.from(get(id));
+    }
+
+    /** Save metadata for a file already uploaded to Cloudinary by the browser */
+    public ResourceResponse saveMeta(String downloadUrl, String fileName, String contentType,
+                                      Long sizeBytes, String title, String description,
+                                      String audience, Long sectionId, String subject) {
+        Resource resource = Resource.builder()
+                .title(title)
+                .description(description)
+                .audience(audience != null ? audience.toUpperCase() : "GENERAL")
+                .sectionId(sectionId)
+                .subject(subject)
+                .fileName(fileName)
+                .storedFileName(downloadUrl)
+                .downloadUrl(downloadUrl)
+                .contentType(contentType != null ? contentType : "application/octet-stream")
+                .sizeBytes(sizeBytes != null ? sizeBytes : 0)
+                .uploadedBy(actorUsername())
+                .build();
+        resourceRepository.save(resource);
+
+        auditService.log(actorUsername(), actorRole(), "UPLOAD", "RESOURCE", resource.getId(),
+                "Uploaded resource \"" + title + "\"");
+        return ResourceResponse.from(resource);
     }
 
     public void delete(String id) {
