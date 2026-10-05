@@ -91,11 +91,19 @@ public class RegistrationService {
     public RegistrationWindowResponse getMyActiveWindow(String teacherUsername) {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         if (teacher == null) return null;
-        RegistrationWindow activeWindow = windowRepository.findActive(LocalDate.now()).orElse(null);
+
+        // First try: window active today (within date range)
+        RegistrationWindow activeWindow = windowRepository.findActive(LocalDate.now())
+                // Fallback: any OPEN window (director may have set future start date during setup/testing)
+                .or(() -> windowRepository.findFirstByStatusOrderByCreatedAtDesc(
+                        RegistrationWindow.WindowStatus.OPEN))
+                .orElse(null);
         if (activeWindow == null) return null;
+
         RegistrationAssignment assignment = assignmentRepository
                 .findByWindowAndTeacher(activeWindow, teacher).orElse(null);
         if (assignment == null) return null;
+
         return RegistrationWindowResponse.from(activeWindow, List.of(
                 RegistrationAssignmentResponse.from(assignment)
         ));

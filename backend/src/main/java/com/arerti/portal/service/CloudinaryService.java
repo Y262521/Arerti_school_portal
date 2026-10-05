@@ -50,16 +50,24 @@ public class CloudinaryService {
                     file.getBytes(),
                     ObjectUtils.asMap(
                             "folder",          "arerti/" + folder,
-                            "resource_type",   "auto",   // handles images AND PDFs
+                            "resource_type",   "auto",
                             "use_filename",    false,
                             "unique_filename", true
                     )
             );
             String url = (String) result.get("secure_url");
-            log.info("Uploaded file to Cloudinary: {}", url);
+            if (url == null) {
+                log.error("Cloudinary returned no URL. Result: {}", result);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Upload succeeded but no URL returned");
+            }
+            log.info("Uploaded to Cloudinary: {}", url);
             return url;
-        } catch (IOException e) {
-            log.error("Cloudinary upload failed: {}", e.getMessage());
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Cloudinary upload failed for folder '{}': {} - {}",
+                    folder, e.getClass().getSimpleName(), e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "File upload failed: " + e.getMessage());
         }
