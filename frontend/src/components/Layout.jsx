@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 const ROLE_LINKS = {
   ADMIN: [
     { to: '/admin', label: 'Dashboard' },
+    { to: '/admin/registration', label: 'Registration' },
     { to: '/admin/students', label: 'Students' },
     { to: '/admin/teachers', label: 'Teachers' },
     { to: '/admin/classes', label: 'Classes' },
@@ -17,6 +18,7 @@ const ROLE_LINKS = {
   ],
   TEACHER: [
     { to: '/teacher', label: 'Dashboard' },
+    { to: '/teacher/registration', label: 'Registration' },
     { to: '/teacher/grades', label: 'Gradebook' },
     { to: '/teacher/attendance', label: 'Attendance' },
     { to: '/notices', label: 'Notice Board' },
@@ -80,7 +82,7 @@ export default function Layout({ children }) {
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <div className="text-sm font-semibold text-slate-700">{user?.fullName}</div>
-              <div className="text-xs text-slate-500">{user?.role}</div>
+              <div className="text-xs text-slate-500">{user?.role === 'ADMIN' ? 'Director' : user?.role}</div>
             </div>
             <Link to="/account" className="btn-ghost text-xs hidden sm:inline-flex">
               Account

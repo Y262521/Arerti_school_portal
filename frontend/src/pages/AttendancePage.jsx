@@ -127,7 +127,7 @@ export default function AttendancePage() {
             {!sectionId ? (
                 <div className="card p-8 text-center text-slate-500">
                     {sections.length === 0 && !isAdmin
-                        ? '⚠️ You are not assigned as a homeroom teacher to any class. Contact the admin.'
+                        ? '⚠️ You are not assigned as a homeroom teacher to any class. Contact the director.'
                         : 'Select a class to mark attendance.'}
                 </div>
             ) : loading ? (

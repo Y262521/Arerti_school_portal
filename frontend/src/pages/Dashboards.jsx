@@ -40,7 +40,7 @@ export function AdminDashboard() {
     <div>
       <DashboardHeader
         title={`Welcome, ${user?.fullName}`}
-        subtitle="Overview of the school system"
+        subtitle="Director's overview of the school system"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to="/admin/students" className="card hover:shadow-md transition cursor-pointer">
@@ -66,6 +66,11 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <Link to="/admin/registration" className="card hover:shadow-md transition cursor-pointer border-brand/20 bg-brand/5">
+          <div className="text-xs uppercase tracking-wide text-brand font-semibold">Student Registration</div>
+          <div className="mt-1 text-3xl font-bold text-brand">→</div>
+          <div className="mt-1 text-xs text-slate-500">Open windows, assign teachers, enroll students</div>
+        </Link>
         <Link to="/admin/grades" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">Gradebook</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>

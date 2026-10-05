@@ -4,7 +4,7 @@ import { authService } from '../services/authService'
 import toast from 'react-hot-toast'
 
 const ROLE_LABELS = {
-  ADMIN: 'Administrator',
+  ADMIN: 'Director',
   TEACHER: 'Teacher',
   STUDENT: 'Student',
   PARENT: 'Parent / Guardian',

@@ -59,7 +59,7 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
 
             {isLocked && !hasRegradePermission && (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                    🔒 Marks are locked. Request regrade permission from the administrator to edit.
+                    🔒 Marks are locked. Request regrade permission from the director to edit.
                 </div>
             )}
             {isLocked && hasRegradePermission && (
@@ -274,7 +274,7 @@ export default function GradebookPage() {
                 sectionId:    Number(sectionId),
                 term, academicYear, reason,
             })
-            toast.success('Regrade request submitted — waiting for admin approval')
+            toast.success('Regrade request submitted — waiting for director approval')
             setRegradeModal(null)
             const perms = await regradeService.myRequests()
             setMyRegradePerms(perms)

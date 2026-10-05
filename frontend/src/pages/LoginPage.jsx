@@ -62,7 +62,7 @@ export default function LoginPage() {
           </p>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-md text-sm">
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">For Admins</div>
+              <div className="font-semibold">For Directors</div>
               <div className="text-white/70 text-xs">Manage the whole school</div>
             </div>
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
