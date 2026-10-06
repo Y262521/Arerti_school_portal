@@ -60,16 +60,23 @@ public class GradeSectionService {
                     "Grade " + req.grade() + " section " + req.section() + " already exists for " + req.academicYear());
         }
 
+        // Validate stream for Grade 11-12
+        if (req.grade() >= 11 && (req.stream() == null || req.stream().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Stream (NATURAL_SCIENCE or SOCIAL_SCIENCE) is required for Grade 11 and 12");
+        }
+
         GradeSection gs = GradeSection.builder()
                 .grade(req.grade())
                 .section(req.section())
                 .academicYear(req.academicYear())
                 .maxCapacity(req.maxCapacity())
                 .homeroomTeacher(resolveTeacher(req.homeroomTeacherId()))
+                .stream(req.grade() >= 11 ? req.stream() : null)
                 .build();
         gradeSectionRepository.save(gs);
 
-        // Auto-apply the standardized curriculum for this grade level
+        // Auto-apply the standardized curriculum for this grade+stream
         assignmentService.applyGradeCurriculum(gs);
 
         return GradeSectionResponse.from(gs, 0L);

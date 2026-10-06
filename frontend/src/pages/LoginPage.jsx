@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 const HOME_BY_ROLE = {
   ADMIN:   '/admin',
@@ -26,6 +27,7 @@ const EyeOffIcon = () => (
 
 export default function LoginPage() {
   const { login } = useAuth()
+  const { t, lang, toggleLang } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname
@@ -105,13 +107,13 @@ export default function LoginPage() {
           <div className="lg:hidden flex justify-center mb-6">
             <img src="/logo.png" alt="logo" className="h-16 w-16 rounded-full" />
           </div>
-          <h2 className="font-display text-3xl font-bold text-slate-900">Sign in</h2>
-          <p className="text-slate-500 mt-1">Use your username or email address.</p>
+          <h2 className="font-display text-3xl font-bold text-slate-900">{t('signIn')}</h2>
+          <p className="text-slate-500 mt-1">{t('signInSubtitle')}</p>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Username / Email
+                {t('usernameEmail')}
               </label>
               <input
                 name="username"
@@ -126,7 +128,7 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Password
+                {t('password')}
               </label>
               <div className="relative">
                 <input
@@ -143,7 +145,6 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
                   tabIndex={-1}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
@@ -151,13 +152,21 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t('signingIn') : t('signIn')}
             </button>
           </form>
 
           <p className="mt-6 text-xs text-slate-500 text-center">
-            Trouble signing in? Contact the school office.
+            {t('troubleSignIn')}
           </p>
+
+          {/* Language toggle on login page */}
+          <div className="mt-4 flex justify-center">
+            <button onClick={toggleLang}
+              className="text-xs text-slate-400 hover:text-brand transition">
+              {lang === 'en' ? '🇪🇹 አማርኛ' : '🇬🇧 English'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

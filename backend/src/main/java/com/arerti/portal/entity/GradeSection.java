@@ -46,6 +46,13 @@ public class GradeSection {
     @Column(name = "max_capacity")
     private Integer maxCapacity;
 
+    /**
+     * Stream for Grade 11-12 sections only.
+     * NATURAL_SCIENCE | SOCIAL_SCIENCE | null (Grade 9-10)
+     */
+    @Column(length = 30, columnDefinition = "VARCHAR(30) DEFAULT NULL")
+    private String stream;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

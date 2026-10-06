@@ -9,14 +9,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
- * Director opens a registration window with start/end datetime.
- * Can be postponed (end datetime extended) by the director.
+ * Director opens a grade entry window after final exams.
+ * Teachers can only enter/edit grades during an open window.
+ * Director can extend (postpone) the window.
  */
 @Entity
-@Table(name = "registration_windows")
+@Table(name = "grade_entry_windows")
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-public class RegistrationWindow {
+public class GradeEntryWindow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,16 +26,17 @@ public class RegistrationWindow {
     @Column(name = "academic_year", nullable = false, length = 20)
     private String academicYear;
 
-    /** Registration opens at this exact date and time */
+    @Column(nullable = false)
+    private Integer semester;             // 1 or 2
+
     @Column(name = "start_datetime", nullable = false)
     private LocalDateTime startDatetime;
 
-    /** Registration closes at this exact date and time (can be postponed) */
     @Column(name = "end_datetime", nullable = false)
     private LocalDateTime endDatetime;
 
-    @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private WindowStatus status = WindowStatus.OPEN;
 
     @Column(length = 500)
@@ -43,7 +45,6 @@ public class RegistrationWindow {
     @Column(name = "opened_by", length = 80)
     private String openedBy;
 
-    /** Tracks how many times the window was postponed */
     @Column(name = "postpone_count", nullable = false)
     private int postponeCount = 0;
 
@@ -53,7 +54,6 @@ public class RegistrationWindow {
 
     public enum WindowStatus { OPEN, CLOSED }
 
-    /** True if current datetime is within the window and status is OPEN */
     public boolean isActive() {
         LocalDateTime now = LocalDateTime.now();
         return status == WindowStatus.OPEN

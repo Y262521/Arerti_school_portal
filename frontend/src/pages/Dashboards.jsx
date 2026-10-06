@@ -96,6 +96,11 @@ export function AdminDashboard() {
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
           <div className="mt-1 text-xs text-slate-500">Upload & manage study materials</div>
         </Link>
+        <Link to="/admin/grade-entry" className="card hover:shadow-md transition cursor-pointer">
+          <div className="text-xs uppercase tracking-wide text-slate-500">Grade Entry</div>
+          <div className="mt-1 text-3xl font-bold text-brand">→</div>
+          <div className="mt-1 text-xs text-slate-500">Open grade entry window after exams</div>
+        </Link>
         <Link to="/admin/user-lookup" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">User Lookup</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>

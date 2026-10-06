@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { gradeService, subjectService, regradeService } from '../services/gradeService'
 import { classService } from '../services/classService'
 import { studentService } from '../services/studentService'
+import { gradeEntryWindowService } from '../services/registrationService'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
@@ -146,8 +148,11 @@ function RegradeRequestForm({ student, subject, sectionId, term, academicYear, o
 // ── Main GradebookPage ─────────────────────────────────────────────────────────
 export default function GradebookPage() {
     const { user } = useAuth()
+    const { t } = useLanguage()
     const isAdmin   = user?.role === 'ADMIN'
     const isTeacher = user?.role === 'TEACHER'
+
+    const [gradeEntryStatus, setGradeEntryStatus] = useState(null) // null | { open, message }
 
     const [sections,           setSections]           = useState([])
     const [subjects,           setSubjects]           = useState([])
@@ -214,6 +219,15 @@ export default function GradebookPage() {
     }
 
     useEffect(() => { loadGrades() }, [sectionId, term, academicYear])
+
+    // Check grade entry window status when term/year changes
+    useEffect(() => {
+        if (isTeacher && academicYear && term) {
+            gradeEntryWindowService.getStatus(academicYear, term)
+                .then(setGradeEntryStatus)
+                .catch(() => setGradeEntryStatus(null))
+        }
+    }, [term, academicYear, isTeacher])
 
     // ── Derived helpers ──────────────────────────────────────────────────────
 
@@ -290,7 +304,7 @@ export default function GradebookPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Gradebook</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('gradebook')}</h1>
                     <p className="text-slate-500 mt-1">
                         {isTeacher
                             ? isHomeroomOfSection
@@ -300,6 +314,20 @@ export default function GradebookPage() {
                     </p>
                 </div>
             </div>
+
+            {/* Grade entry window status banner for teachers */}
+            {isTeacher && gradeEntryStatus && (
+                <div className={`mb-4 rounded-lg border p-3 text-sm ${
+                    gradeEntryStatus.open
+                        ? 'bg-green-50 border-green-200 text-green-800'
+                        : 'bg-amber-50 border-amber-300 text-amber-800'
+                }`}>
+                    {gradeEntryStatus.open
+                        ? `✅ ${t('gradeEntryOpen')} — Semester ${term}, ${academicYear}`
+                        : `🔒 ${t('gradeEntryClosed')}`
+                    }
+                </div>
+            )}
 
             {/* Filters */}
             <div className="card mb-6 flex flex-wrap gap-4 items-end">

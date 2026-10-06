@@ -32,25 +32,29 @@ public class ClassSubjectAssignmentController {
 
     @GetMapping("/api/curriculum/{grade}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
-    public ResponseEntity<List<GradeCurriculumResponse>> getCurriculum(@PathVariable Integer grade) {
-        return ResponseEntity.ok(assignmentService.getCurriculum(grade));
+    public ResponseEntity<List<GradeCurriculumResponse>> getCurriculum(
+            @PathVariable Integer grade,
+            @RequestParam(required = false) String stream) {
+        return ResponseEntity.ok(assignmentService.getCurriculum(grade, stream));
     }
 
     @PostMapping("/api/curriculum/{grade}/subjects")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GradeCurriculumResponse> addToCurriculum(
             @PathVariable Integer grade,
-            @RequestParam Long subjectId) {
+            @RequestParam Long subjectId,
+            @RequestParam(required = false) String stream) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(assignmentService.addToCurriculum(grade, subjectId));
+                .body(assignmentService.addToCurriculum(grade, subjectId, stream));
     }
 
     @DeleteMapping("/api/curriculum/{grade}/subjects/{subjectId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeFromCurriculum(
             @PathVariable Integer grade,
-            @PathVariable Long subjectId) {
-        assignmentService.removeFromCurriculum(grade, subjectId);
+            @PathVariable Long subjectId,
+            @RequestParam(required = false) String stream) {
+        assignmentService.removeFromCurriculum(grade, subjectId, stream);
         return ResponseEntity.noContent().build();
     }
 

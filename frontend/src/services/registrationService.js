@@ -56,7 +56,21 @@ export const registrationService = {
             params: { previousAcademicYear }
         }).then(r => r.data),
 
+    // Director: postpone registration window
+    postponeWindow: (windowId, payload) =>
+        api.post(`/registration/windows/${windowId}/postpone`, payload).then(r => r.data),
+
     // Director: auto-assign students to sections by performance
     autoAssign: (grade, academicYear) =>
         api.post('/registration/auto-assign', { grade, academicYear }).then(r => r.data),
+}
+
+// Grade Entry Window service
+export const gradeEntryWindowService = {
+    getAll: () => api.get('/grade-entry-windows').then(r => r.data),
+    getStatus: (academicYear, semester) =>
+        api.get('/grade-entry-windows/status', { params: { academicYear, semester } }).then(r => r.data),
+    open: (payload) => api.post('/grade-entry-windows', payload).then(r => r.data),
+    postpone: (id, payload) => api.post(`/grade-entry-windows/${id}/postpone`, payload).then(r => r.data),
+    close: (id) => api.post(`/grade-entry-windows/${id}/close`).then(r => r.data),
 }

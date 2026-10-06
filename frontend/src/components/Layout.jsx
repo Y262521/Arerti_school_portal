@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 
 const ROLE_LINKS = {
   ADMIN: [
@@ -11,6 +12,7 @@ const ROLE_LINKS = {
     { to: '/admin/subjects', label: 'Subjects' },
     { to: '/admin/grades', label: 'Gradebook' },
     { to: '/admin/attendance', label: 'Attendance' },
+    { to: '/admin/grade-entry', label: 'Grade Entry' },
     { to: '/admin/regrade-requests', label: 'Regrade' },
     { to: '/notices', label: 'Notice Board' },
     { to: '/resources', label: 'Resources' },
@@ -43,6 +45,7 @@ const ROLE_LINKS = {
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth()
+  const { lang, toggleLang } = useLanguage()
   const navigate = useNavigate()
   const links = ROLE_LINKS[user?.role] || []
 
@@ -80,7 +83,15 @@ export default function Layout({ children }) {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2">
+            {/* Language toggle */}
+            <button
+              onClick={toggleLang}
+              className="text-xs font-semibold px-2 py-1 rounded border border-slate-200 hover:border-brand hover:text-brand transition"
+              title="Switch language / ቋንቋ ቀይር"
+            >
+              {lang === 'en' ? '🇪🇹 አማ' : '🇬🇧 EN'}
+            </button>
             <div className="text-right hidden sm:block">
               <div className="text-sm font-semibold text-slate-700">{user?.fullName}</div>
               <div className="text-xs text-slate-500">{user?.role === 'ADMIN' ? 'Director' : user?.role}</div>

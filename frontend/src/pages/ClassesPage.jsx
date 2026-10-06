@@ -9,7 +9,7 @@ const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1
 
 const EMPTY = {
     grade: 9, section: 'A', academicYear: CURRENT_YEAR,
-    homeroomTeacherId: '', maxCapacity: 40
+    homeroomTeacherId: '', maxCapacity: 40, stream: ''
 }
 
 // ── Class create/edit form ────────────────────────────────────────────────────
@@ -24,6 +24,7 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
             grade: Number(form.grade),
             maxCapacity: form.maxCapacity ? Number(form.maxCapacity) : null,
             homeroomTeacherId: form.homeroomTeacherId ? Number(form.homeroomTeacherId) : null,
+            stream: form.stream || null,
         })
     }
 
@@ -67,6 +68,18 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                     The homeroom teacher is the only teacher who can mark attendance for this class.
                 </p>
             </div>
+            {Number(form.grade) >= 11 && (
+                <div>
+                    <label className="field-label">Stream * (required for Grade 11-12)</label>
+                    <select className="field" value={form.stream}
+                        onChange={e => set('stream', e.target.value)}
+                        required={Number(form.grade) >= 11}>
+                        <option value="">— Select stream —</option>
+                        <option value="NATURAL_SCIENCE">Natural Science / ተፈጥሮ ሳይንስ</option>
+                        <option value="SOCIAL_SCIENCE">Social Science / ማህበራዊ ሳይንስ</option>
+                    </select>
+                </div>
+            )}
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
@@ -134,6 +147,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 <div>
                     <p className="text-sm text-slate-600">
                         Grade {cls.grade} – Section {cls.section} · {cls.academicYear}
+                        {cls.stream && <span className="ml-2 text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">{cls.stream.replace('_', ' ')}</span>}
                     </p>
                     {unassigned > 0 && (
                         <p className="text-xs text-orange-600 font-medium mt-1">
@@ -141,21 +155,17 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                         </p>
                     )}
                 </div>
-                <button className="btn-ghost text-xs" onClick={handleApplyCurriculum}>
-                    ↺ Apply Grade {cls.grade} Curriculum
-                </button>
             </div>
 
             {loading ? (
                 <div className="text-center text-slate-500 py-6">Loading…</div>
             ) : assignments.length === 0 ? (
-                <div className="text-center text-slate-500 py-6 space-y-3">
+                <div className="text-center text-slate-500 py-6 space-y-2">
                     <p>No subjects assigned yet.</p>
-                    <button className="btn-primary text-sm" onClick={handleApplyCurriculum}>
-                        ↺ Apply Grade {cls.grade} Curriculum
-                    </button>
                     <p className="text-xs text-slate-400">
-                        If nothing applies, go to 📚 Grade Curriculum and add subjects first.
+                        Curriculum is applied automatically when the class is created.
+                        If subjects are missing, check that the Grade {cls.grade}
+                        {cls.stream ? ` (${cls.stream.replace('_', ' ')})` : ''} curriculum is configured.
                     </p>
                 </div>
             ) : (
@@ -195,30 +205,35 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
 // ── Grade curriculum manager ──────────────────────────────────────────────────
 function CurriculumPanel({ onClose }) {
     const [grade, setGrade] = useState(9)
+    const [stream, setStream] = useState('')
     const [curriculum, setCurriculum] = useState([])
     const [allSubjects, setAllSubjects] = useState([])
     const [loading, setLoading] = useState(true)
     const [adding, setAdding] = useState(false)
     const [selectedSubject, setSelectedSubject] = useState('')
 
+    const needsStream = grade >= 11
+
     const load = () => {
         setLoading(true)
-        Promise.all([curriculumService.get(grade), subjectService.getAll()])
+        const effectiveStream = needsStream ? stream : null
+        Promise.all([curriculumService.get(grade, effectiveStream), subjectService.getAll()])
             .then(([c, s]) => { setCurriculum(c); setAllSubjects(s) })
             .catch(() => toast.error('Failed to load curriculum'))
             .finally(() => setLoading(false))
     }
 
-    useEffect(() => { load() }, [grade])
+    useEffect(() => { load() }, [grade, stream])
 
     const inCurriculum = new Set(curriculum.map(c => c.subjectId))
     const available = allSubjects.filter(s => !inCurriculum.has(s.id))
 
     const handleAdd = async () => {
         if (!selectedSubject) return
+        if (needsStream && !stream) { toast.error('Select a stream first'); return }
         setAdding(true)
         try {
-            await curriculumService.addSubject(grade, selectedSubject)
+            await curriculumService.addSubject(grade, selectedSubject, needsStream ? stream : null)
             toast.success('Subject added to curriculum')
             setSelectedSubject('')
             load()
@@ -229,7 +244,7 @@ function CurriculumPanel({ onClose }) {
 
     const handleRemove = async (subjectId) => {
         try {
-            await curriculumService.removeSubject(grade, subjectId)
+            await curriculumService.removeSubject(grade, subjectId, needsStream ? stream : null)
             toast.success('Subject removed from curriculum')
             load()
         } catch { toast.error('Failed to remove') }
@@ -238,23 +253,42 @@ function CurriculumPanel({ onClose }) {
     return (
         <div className="space-y-4">
             <p className="text-sm text-slate-500">
-                Define which subjects are automatically assigned when a new class is created for each grade.
+                Define which subjects are automatically assigned when a new class is created.
+                Curriculum is applied automatically — no manual button needed.
             </p>
 
-            <div className="flex gap-3 items-center">
-                <label className="field-label mb-0">Grade:</label>
-                <select className="field w-32" value={grade} onChange={e => setGrade(Number(e.target.value))}>
-                    {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
-                </select>
+            <div className="flex gap-3 items-center flex-wrap">
+                <div>
+                    <label className="field-label mb-0">Grade:</label>
+                    <select className="field w-32" value={grade} onChange={e => { setGrade(Number(e.target.value)); setStream('') }}>
+                        {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
+                    </select>
+                </div>
+                {needsStream && (
+                    <div>
+                        <label className="field-label mb-0">Stream: *</label>
+                        <select className="field w-44" value={stream} onChange={e => setStream(e.target.value)}>
+                            <option value="">— Select stream —</option>
+                            <option value="NATURAL_SCIENCE">Natural Science</option>
+                            <option value="SOCIAL_SCIENCE">Social Science</option>
+                        </select>
+                    </div>
+                )}
             </div>
 
-            {loading ? (
+            {needsStream && !stream ? (
+                <div className="card p-6 text-center text-slate-400 text-sm">
+                    Select a stream to view and edit the Grade {grade} curriculum.
+                </div>
+            ) : loading ? (
                 <div className="text-center text-slate-500 py-4">Loading…</div>
             ) : (
                 <>
                     <div className="space-y-1">
                         {curriculum.length === 0 ? (
-                            <p className="text-slate-400 text-sm py-2">No subjects in Grade {grade} curriculum yet.</p>
+                            <p className="text-slate-400 text-sm py-2">
+                                No subjects in Grade {grade} {stream ? stream.replace('_', ' ') : ''} curriculum yet.
+                            </p>
                         ) : curriculum.map((c, i) => (
                             <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 border border-slate-100">
                                 <div className="text-sm text-slate-800">
@@ -262,10 +296,8 @@ function CurriculumPanel({ onClose }) {
                                     {c.subjectName}
                                     {c.subjectCode && <span className="text-xs text-slate-400 ml-2">({c.subjectCode})</span>}
                                 </div>
-                                <button
-                                    className="text-xs text-red-400 hover:text-red-600"
-                                    onClick={() => handleRemove(c.subjectId)}
-                                >
+                                <button className="text-xs text-red-400 hover:text-red-600"
+                                    onClick={() => handleRemove(c.subjectId)}>
                                     Remove
                                 </button>
                             </div>
@@ -507,6 +539,7 @@ export default function ClassesPage() {
                             academicYear: modal.cls.academicYear,
                             homeroomTeacherId: modal.cls.homeroomTeacherId || '',
                             maxCapacity: modal.cls.maxCapacity || 40,
+                            stream: modal.cls.stream || '',
                         } : EMPTY}
                         teachers={teachers}
                         onSubmit={handleSave}

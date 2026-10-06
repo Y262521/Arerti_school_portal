@@ -45,6 +45,16 @@ public class ReportCardService {
                 .orElse(null)
                 : null;
 
+        // Annual average across both semesters
+        var allYearGrades = gradeEntryRepository.findByStudentAndAcademicYear(student, academicYear);
+        double sem1Avg = allYearGrades.stream().filter(e -> e.getTerm() == 1)
+                .mapToDouble(e -> e.getScore()).average().orElse(0);
+        double sem2Avg = allYearGrades.stream().filter(e -> e.getTerm() == 2)
+                .mapToDouble(e -> e.getScore()).average().orElse(0);
+        boolean hasBoth = allYearGrades.stream().anyMatch(e -> e.getTerm() == 1)
+                && allYearGrades.stream().anyMatch(e -> e.getTerm() == 2);
+        double annualAvg = hasBoth ? (sem1Avg + sem2Avg) / 2.0 : (sem1Avg > 0 ? sem1Avg : sem2Avg);
+
         return new ReportCardResponse(
                 student.getId(),
                 student.getStudentUid(),

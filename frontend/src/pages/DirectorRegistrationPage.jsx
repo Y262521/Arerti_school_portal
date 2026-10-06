@@ -2,10 +2,61 @@ import { useEffect, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { teacherService } from '../services/teacherService'
 import { classService } from '../services/classService'
+import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
+
+// ── Postpone modal ────────────────────────────────────────────────────────────
+function PostponeModal({ windowId, currentEnd, onSuccess, onClose }) {
+    const { t } = useLanguage()
+    const [newEnd, setNewEnd] = useState('')
+    const [reason, setReason] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (!newEnd) { toast.error('New end date and time is required'); return }
+        setLoading(true)
+        try {
+            await registrationService.postponeWindow(windowId, {
+                newEndDatetime: newEnd + ':00',
+                reason
+            })
+            toast.success('Registration window postponed')
+            onSuccess()
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to postpone')
+        } finally { setLoading(false) }
+    }
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                Current end: <strong>{new Date(currentEnd).toLocaleString()}</strong>
+                <br />New end must be later than current end.
+            </div>
+            <div>
+                <label className="field-label">{t('newEndDate')} *</label>
+                <input className="field" type="datetime-local" value={newEnd}
+                    onChange={e => setNewEnd(e.target.value)} required />
+                {!newEnd && <p className="text-xs text-red-500 mt-0.5">Required</p>}
+            </div>
+            <div>
+                <label className="field-label">{t('postponeReason')}</label>
+                <input className="field" value={reason} onChange={e => setReason(e.target.value)}
+                    placeholder="e.g. Extended by 3 days for late applicants" />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
+                <button type="submit" className="btn-primary" disabled={loading || !newEnd}>
+                    {loading ? 'Postponing…' : t('postponeRegistration')}
+                </button>
+            </div>
+        </form>
+    )
+}
 
 // ── Auto-Assign Modal ─────────────────────────────────────────────────────────
 function AutoAssignModal({ onClose }) {
@@ -94,32 +145,48 @@ function AutoAssignModal({ onClose }) {
 }
 
 function OpenWindowForm({ onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
+    const now = new Date()
+    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 16)
+
     const [form, setForm] = useState({
         academicYear: CURRENT_YEAR,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: '',
+        startDatetime: localNow,
+        endDatetime: '',
         note: ''
     })
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (!form.endDatetime) { toast.error('End date and time is required'); return }
+        onSubmit({
+            ...form,
+            startDatetime: form.startDatetime + ':00',
+            endDatetime: form.endDatetime + ':00',
+        })
+    }
+
     return (
-        <form onSubmit={e => { e.preventDefault(); onSubmit(form) }} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="field-label">Academic Year *</label>
+                    <label className="field-label">{t('academicYear')} *</label>
                     <input className="field" value={form.academicYear}
                         onChange={e => set('academicYear', e.target.value)}
                         placeholder="2026/2027" required />
                 </div>
                 <div>
-                    <label className="field-label">Start Date *</label>
-                    <input className="field" type="date" value={form.startDate}
-                        onChange={e => set('startDate', e.target.value)} required />
+                    <label className="field-label">Start Date & Time *</label>
+                    <input className="field" type="datetime-local" value={form.startDatetime}
+                        onChange={e => set('startDatetime', e.target.value)} required />
                 </div>
                 <div>
-                    <label className="field-label">End Date *</label>
-                    <input className="field" type="date" value={form.endDate}
-                        onChange={e => set('endDate', e.target.value)} required />
+                    <label className="field-label">End Date & Time *</label>
+                    <input className="field" type="datetime-local" value={form.endDatetime}
+                        onChange={e => set('endDatetime', e.target.value)} required />
+                    {!form.endDatetime && <p className="text-xs text-red-500 mt-0.5">Required</p>}
                 </div>
                 <div>
                     <label className="field-label">Note</label>
@@ -129,9 +196,9 @@ function OpenWindowForm({ onSubmit, onClose, loading }) {
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Opening…' : 'Open Window'}
+                    {loading ? 'Opening…' : t('openRegistration')}
                 </button>
             </div>
         </form>
@@ -209,6 +276,8 @@ export default function DirectorRegistrationPage() {
     const [openingWindow, setOpeningWindow] = useState(false)
     const [confirmClose, setConfirmClose] = useState(null)
     const [autoAssignModal, setAutoAssignModal] = useState(false)
+    const [postponeModal, setPostponeModal] = useState(null)
+    const { t } = useLanguage()
 
     const load = async () => {
         setLoading(true)
@@ -291,6 +360,7 @@ export default function DirectorRegistrationPage() {
                                         key={w.id} window={w} teachers={teachers}
                                         onAssign={() => setAssignModal(w)}
                                         onClose={() => setConfirmClose(w)}
+                                        onPostpone={() => setPostponeModal(w)}
                                         onRemoveAssignment={handleRemoveAssignment}
                                         active
                                     />
@@ -361,6 +431,18 @@ export default function DirectorRegistrationPage() {
                 </Modal>
             )}
 
+            {/* Postpone registration window modal */}
+            {postponeModal && (
+                <Modal title={t('postponeRegistration')} onClose={() => setPostponeModal(null)}>
+                    <PostponeModal
+                        windowId={postponeModal.id}
+                        currentEnd={postponeModal.endDatetime || postponeModal.endDate}
+                        onSuccess={() => { setPostponeModal(null); load() }}
+                        onClose={() => setPostponeModal(null)}
+                    />
+                </Modal>
+            )}
+
             {/* Close window confirm */}
             {confirmClose && (
                 <Modal title="Close Registration Window" onClose={() => setConfirmClose(null)}>
@@ -385,7 +467,7 @@ export default function DirectorRegistrationPage() {
     )
 }
 
-function WindowCard({ window: w, teachers, onAssign, onClose, onRemoveAssignment, active }) {
+function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemoveAssignment, active }) {
     const [showEnrollments, setShowEnrollments] = useState(false)
     const [enrollments, setEnrollments] = useState([])
     const [loadingEnroll, setLoadingEnroll] = useState(false)
@@ -413,24 +495,31 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onRemoveAssignment
                     <div className="flex items-center gap-2">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                             active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-                        }`}>{w.status}</span>
+                        }`}>{active ? t('registrationOpened') : t('registrationClosed')}</span>
                         <span className="font-semibold text-slate-900">{w.academicYear}</span>
                         {w.active && <span className="text-xs text-green-600 font-medium">● Live now</span>}
                     </div>
                     <p className="text-sm text-slate-500 mt-1">
-                        {w.startDate} → {w.endDate}
-                        {w.note && <span className="ml-2 italic">"{w.note}"</span>}
+                        {w.startDatetime ? new Date(w.startDatetime).toLocaleString() : w.startDate}
+                        {' → '}
+                        {w.endDatetime ? new Date(w.endDatetime).toLocaleString() : w.endDate}
+                        {w.postponeCount > 0 && <span className="ml-2 text-blue-500 text-xs">⏰ Postponed {w.postponeCount}x</span>}
+                        {w.note && <span className="ml-2 italic text-xs">"{w.note}"</span>}
                     </p>
                     <p className="text-xs text-slate-400">Opened by: {w.openedBy}</p>
                 </div>
                 {active && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <button className="btn-ghost text-xs" onClick={loadEnrollments} disabled={loadingEnroll}>
                             {loadingEnroll ? '…' : '📋 Enrollments'}
                         </button>
                         <button className="btn-ghost text-xs" onClick={onAssign}>+ Assign Teacher</button>
+                        <button className="btn-ghost text-xs border-blue-200 text-blue-600 hover:border-blue-400"
+                            onClick={onPostpone}>
+                            ⏰ Postpone
+                        </button>
                         <button className="btn-ghost text-xs border-red-200 text-red-600" onClick={onClose}>
-                            Close Window
+                            Close Registration
                         </button>
                     </div>
                 )}

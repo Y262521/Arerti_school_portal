@@ -7,5 +7,6 @@ public record GradeSectionRequest(
         @NotBlank String section,
         @NotBlank String academicYear,
         Long homeroomTeacherId,
-        Integer maxCapacity
+        Integer maxCapacity,
+        String stream    // required for Grade 11-12: NATURAL_SCIENCE or SOCIAL_SCIENCE
 ) {}

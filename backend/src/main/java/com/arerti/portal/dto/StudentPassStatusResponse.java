@@ -1,6 +1,6 @@
 package com.arerti.portal.dto;
 
-/** Summary of a student's pass/fail status for the current academic year */
+/** Summary of a student's pass/fail status using two-semester criteria */
 public record StudentPassStatusResponse(
         Long studentId,
         String studentUid,
@@ -8,9 +8,12 @@ public record StudentPassStatusResponse(
         String currentSectionLabel,
         Integer currentGrade,
         boolean passed,
-        double average,
-        int failedSubjects,
+        double semester1Average,
+        double semester2Average,
+        double annualAverage,
+        int failedSubjectsSem1,
+        int failedSubjectsSem2,
         int totalSubjects,
         String reason,
-        boolean alreadyEnrolled  // already enrolled for the new academic year
+        boolean alreadyEnrolled
 ) {}

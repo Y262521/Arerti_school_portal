@@ -62,6 +62,14 @@ public class RegistrationController {
         return ResponseEntity.ok(registrationService.closeWindow(id));
     }
 
+    @PostMapping("/windows/{id}/postpone")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<RegistrationWindowResponse> postponeWindow(
+            @PathVariable Long id,
+            @Valid @RequestBody PostponeRequest req) {
+        return ResponseEntity.ok(registrationService.postponeWindow(id, req));
+    }
+
     @PostMapping("/windows/{windowId}/assign")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RegistrationAssignmentResponse> assignTeacher(

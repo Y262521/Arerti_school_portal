@@ -26,6 +26,7 @@ import RegradeRequestsPage from './pages/RegradeRequestsPage'
 import DirectorRegistrationPage from './pages/DirectorRegistrationPage'
 import TeacherRegistrationPage from './pages/TeacherRegistrationPage'
 import UserLookupPage from './pages/UserLookupPage'
+import GradeEntryWindowPage from './pages/GradeEntryWindowPage'
 
 function RoleHomeRedirect() {
   const { user, isLoggedIn } = useAuth()
@@ -120,6 +121,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <Layout><UserLookupPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/grade-entry"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><GradeEntryWindowPage /></Layout>
           </ProtectedRoute>
         }
       />

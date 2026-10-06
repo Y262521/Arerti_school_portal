@@ -18,7 +18,12 @@ export const classService = {
 }
 
 export const curriculumService = {
-    get: (grade) => api.get(`/curriculum/${grade}`).then(r => r.data),
-    addSubject: (grade, subjectId) => api.post(`/curriculum/${grade}/subjects`, null, { params: { subjectId } }).then(r => r.data),
-    removeSubject: (grade, subjectId) => api.delete(`/curriculum/${grade}/subjects/${subjectId}`),
+    get: (grade, stream) => api.get(`/curriculum/${grade}`, { params: stream ? { stream } : {} }).then(r => r.data),
+    addSubject: (grade, subjectId, stream) =>
+        api.post(`/curriculum/${grade}/subjects`, null, {
+            params: stream ? { subjectId, stream } : { subjectId }
+        }).then(r => r.data),
+    removeSubject: (grade, subjectId, stream) =>
+        api.delete(`/curriculum/${grade}/subjects/${subjectId}`,
+            { params: stream ? { stream } : {} }),
 }

@@ -28,31 +28,40 @@ public class ClassSubjectAssignmentService {
     // Curriculum management
     // ----------------------------------------------------------------
 
-    public List<GradeCurriculumResponse> getCurriculum(Integer grade) {
-        return curriculumRepository.findByGradeOrderBySortOrderAsc(grade)
-                .stream().map(GradeCurriculumResponse::from).collect(Collectors.toList());
+    public List<GradeCurriculumResponse> getCurriculum(Integer grade, String stream) {
+        List<GradeCurriculum> entries;
+        if (grade >= 11 && stream != null) {
+            entries = curriculumRepository.findByGradeAndStreamOrderBySortOrderAsc(grade, stream);
+        } else {
+            entries = curriculumRepository.findByGradeAndStreamIsNullOrderBySortOrderAsc(grade);
+        }
+        return entries.stream().map(GradeCurriculumResponse::from).collect(Collectors.toList());
     }
 
     @Transactional
-    public GradeCurriculumResponse addToCurriculum(Integer grade, Long subjectId) {
-        if (curriculumRepository.existsByGradeAndSubjectId(grade, subjectId)) {
+    public GradeCurriculumResponse addToCurriculum(Integer grade, Long subjectId, String stream) {
+        String effectiveStream = (grade >= 11) ? stream : null;
+        if (curriculumRepository.existsByGradeAndStreamAndSubjectId(grade, effectiveStream, subjectId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Subject already in Grade " + grade + " curriculum");
+                    "Subject already in Grade " + grade +
+                    (effectiveStream != null ? " " + effectiveStream : "") + " curriculum");
         }
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
-        long order = curriculumRepository.findByGradeOrderBySortOrderAsc(grade).size();
+        List<GradeCurriculum> existing = grade >= 11 && effectiveStream != null
+                ? curriculumRepository.findByGradeAndStreamOrderBySortOrderAsc(grade, effectiveStream)
+                : curriculumRepository.findByGradeAndStreamIsNullOrderBySortOrderAsc(grade);
         GradeCurriculum entry = GradeCurriculum.builder()
-                .grade(grade)
-                .subject(subject)
-                .sortOrder((int) order)
+                .grade(grade).stream(effectiveStream).subject(subject)
+                .sortOrder(existing.size())
                 .build();
         return GradeCurriculumResponse.from(curriculumRepository.save(entry));
     }
 
     @Transactional
-    public void removeFromCurriculum(Integer grade, Long subjectId) {
-        curriculumRepository.deleteByGradeAndSubjectId(grade, subjectId);
+    public void removeFromCurriculum(Integer grade, Long subjectId, String stream) {
+        String effectiveStream = (grade >= 11) ? stream : null;
+        curriculumRepository.deleteByGradeAndStreamAndSubjectId(grade, effectiveStream, subjectId);
     }
 
     // ----------------------------------------------------------------
@@ -65,14 +74,22 @@ public class ClassSubjectAssignmentService {
      */
     @Transactional
     public void applyGradeCurriculum(GradeSection section) {
-        List<GradeCurriculum> curriculum =
-                curriculumRepository.findByGradeOrderBySortOrderAsc(section.getGrade());
+        // For Grade 11-12 use the section's stream; for 9-10 stream is null
+        String stream = section.getStream();
+        List<GradeCurriculum> curriculum;
+        if (section.getGrade() >= 11 && stream != null) {
+            curriculum = curriculumRepository.findByGradeAndStreamOrderBySortOrderAsc(
+                    section.getGrade(), stream);
+        } else {
+            curriculum = curriculumRepository.findByGradeAndStreamIsNullOrderBySortOrderAsc(
+                    section.getGrade());
+        }
         for (GradeCurriculum c : curriculum) {
             if (!assignmentRepository.existsBySectionAndSubjectId(section, c.getSubject().getId())) {
                 ClassSubjectAssignment a = ClassSubjectAssignment.builder()
                         .section(section)
                         .subject(c.getSubject())
-                        .teacher(null)          // admin assigns teacher later
+                        .teacher(null)
                         .academicYear(section.getAcademicYear())
                         .archived(false)
                         .build();

@@ -49,13 +49,32 @@ public class RegistrationService {
     public RegistrationWindowResponse openWindow(RegistrationWindowRequest req) {
         RegistrationWindow w = RegistrationWindow.builder()
                 .academicYear(req.academicYear())
-                .startDate(req.startDate())
-                .endDate(req.endDate())
+                .startDatetime(req.startDatetime())
+                .endDatetime(req.endDatetime())
                 .status(RegistrationWindow.WindowStatus.OPEN)
                 .note(req.note())
                 .openedBy(actorUsername())
+                .postponeCount(0)
                 .build();
         return RegistrationWindowResponse.from(windowRepository.save(w), List.of());
+    }
+
+    @Transactional
+    public RegistrationWindowResponse postponeWindow(Long id, PostponeRequest req) {
+        RegistrationWindow w = getWindow(id);
+        if (w.getStatus() != RegistrationWindow.WindowStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Window is already closed");
+        }
+        if (req.newEndDatetime().isBefore(w.getEndDatetime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "New end datetime must be later than the current end datetime");
+        }
+        w.setEndDatetime(req.newEndDatetime());
+        w.setPostponeCount(w.getPostponeCount() + 1);
+        if (req.reason() != null && !req.reason().isBlank()) {
+            w.setNote((w.getNote() != null ? w.getNote() + " | " : "") + "Postponed: " + req.reason());
+        }
+        return RegistrationWindowResponse.from(windowRepository.save(w), getAssignments(w));
     }
 
     @Transactional
@@ -93,8 +112,8 @@ public class RegistrationService {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         if (teacher == null) return null;
 
-        // First try: window active today (within date range)
-        RegistrationWindow activeWindow = windowRepository.findActive(LocalDate.now())
+        // First try: window active right now (within datetime range)
+        RegistrationWindow activeWindow = windowRepository.findActive(java.time.LocalDateTime.now())
                 // Fallback: any OPEN window (director may have set future start date during setup/testing)
                 .or(() -> windowRepository.findFirstByStatusOrderByCreatedAtDesc(
                         RegistrationWindow.WindowStatus.OPEN))
@@ -133,9 +152,10 @@ public class RegistrationService {
             return new StudentPassStatusResponse(
                     student.getId(), student.getStudentUid(),
                     student.getUser().getFullName(), sectionLabel, grade,
-                    result.passed(), result.average(),
-                    result.failedSubjects(), result.totalSubjects(),
-                    result.reason(), alreadyEnrolled
+                    result.passed(),
+                    result.semester1Average(), result.semester2Average(), result.annualAverage(),
+                    result.failedSubjectsSem1(), result.failedSubjectsSem2(),
+                    result.totalSubjects(), result.reason(), alreadyEnrolled
             );
         }).collect(Collectors.toList());
     }

@@ -4,7 +4,9 @@ import com.arerti.portal.dto.GradeEntryRequest;
 import com.arerti.portal.dto.GradeEntryResponse;
 import com.arerti.portal.entity.*;
 import com.arerti.portal.repository.*;
+import com.arerti.portal.service.GradeEntryWindowService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,8 @@ public class GradeBookService {
     private final TeacherRepository teacherRepository;
     private final ClassSubjectAssignmentRepository assignmentRepository;
     private final GradeSectionRepository sectionRepository;
+    @Lazy
+    private final GradeEntryWindowService gradeEntryWindowService;
 
     // ── Queries ─────────────────────────────────────────────────────────────
 
@@ -83,6 +87,11 @@ public class GradeBookService {
         if (!isAdmin) {
             if (teacher == null) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only teachers or admins can enter grades");
+            }
+            // Check grade entry window is open for this semester+year
+            if (!gradeEntryWindowService.isGradeEntryOpen(req.academicYear(), req.term())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Grade entry is closed. The director must open the grade entry window first.");
             }
             if (!isNewEntry && entry.isLocked()) {
                 // Entry exists and is locked — only allowed if regrade permission granted

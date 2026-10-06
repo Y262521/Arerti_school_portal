@@ -5,6 +5,7 @@ import com.arerti.portal.entity.GradeCurriculum;
 public record GradeCurriculumResponse(
         Long id,
         Integer grade,
+        String stream,        // null for Grade 9-10, NATURAL_SCIENCE or SOCIAL_SCIENCE for 11-12
         Long subjectId,
         String subjectName,
         String subjectCode,
@@ -12,12 +13,9 @@ public record GradeCurriculumResponse(
 ) {
     public static GradeCurriculumResponse from(GradeCurriculum c) {
         return new GradeCurriculumResponse(
-                c.getId(),
-                c.getGrade(),
-                c.getSubject().getId(),
-                c.getSubject().getName(),
-                c.getSubject().getCode(),
-                c.getSortOrder()
+                c.getId(), c.getGrade(), c.getStream(),
+                c.getSubject().getId(), c.getSubject().getName(),
+                c.getSubject().getCode(), c.getSortOrder()
         );
     }
 }
