@@ -10,8 +10,13 @@ const uploadToCloudinary = async (file) => {
     formData.append('upload_preset', UPLOAD_PRESET)
     formData.append('folder', 'arerti/resources')
 
+    // Use 'raw' for PDFs and docs, 'image' for images, 'video' for videos
+    const type = file.type.startsWith('image/') ? 'image'
+        : file.type.startsWith('video/') ? 'video'
+        : 'raw'   // PDFs, docs, pptx etc.
+
     const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`,
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${type}/upload`,
         { method: 'POST', body: formData }
     )
     if (!response.ok) {
@@ -55,13 +60,28 @@ export const resourceService = {
 
     remove: (id) => api.delete(`/resources/${id}`),
 
-    // Download: open direct Cloudinary URL — no auth needed, no 403
-    download: (resource) => {
+    // Download: fetch the file and force download to disk
+    download: async (resource) => {
         const url = resource.downloadUrl || resource.storedFileName
-        if (url && url.startsWith('http')) {
-            window.open(url, '_blank', 'noopener')
-        } else {
+        if (!url || !url.startsWith('http')) {
             throw new Error('No download URL available for this resource')
+        }
+        // Fetch and create blob to force download (not open in tab)
+        try {
+            const response = await fetch(url)
+            if (!response.ok) throw new Error('Download failed')
+            const blob = await response.blob()
+            const blobUrl = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = blobUrl
+            a.download = resource.fileName || resource.title || 'download'
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            window.URL.revokeObjectURL(blobUrl)
+        } catch {
+            // Fallback: open in new tab if blob download fails
+            window.open(url, '_blank', 'noopener')
         }
     },
 }

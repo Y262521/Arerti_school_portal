@@ -11,8 +11,13 @@ const uploadDirect = async (file, folder = 'documents') => {
     formData.append('upload_preset', UPLOAD_PRESET)
     formData.append('folder', `arerti/${folder}`)
 
+    // Use correct resource type based on file mime type
+    const type = file.type.startsWith('image/') ? 'image'
+        : file.type.startsWith('video/') ? 'video'
+        : 'raw'
+
     const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`,
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${type}/upload`,
         { method: 'POST', body: formData }
     )
     if (!response.ok) {
