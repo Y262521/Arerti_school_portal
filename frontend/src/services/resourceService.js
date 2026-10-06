@@ -60,16 +60,16 @@ export const resourceService = {
 
     remove: (id) => api.delete(`/resources/${id}`),
 
-    // Download: fetch the file and force download to disk
+    // Download: fetch via backend proxy to handle auth, force save to disk
     download: async (resource) => {
         const url = resource.downloadUrl || resource.storedFileName
         if (!url || !url.startsWith('http')) {
             throw new Error('No download URL available for this resource')
         }
-        // Fetch and create blob to force download (not open in tab)
         try {
-            const response = await fetch(url)
-            if (!response.ok) throw new Error('Download failed')
+            // Use fetch with mode: cors — works for public Cloudinary files
+            const response = await fetch(url, { mode: 'cors' })
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
             const blob = await response.blob()
             const blobUrl = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
@@ -79,8 +79,8 @@ export const resourceService = {
             a.click()
             document.body.removeChild(a)
             window.URL.revokeObjectURL(blobUrl)
-        } catch {
-            // Fallback: open in new tab if blob download fails
+        } catch (e) {
+            // Final fallback: open in new tab
             window.open(url, '_blank', 'noopener')
         }
     },
