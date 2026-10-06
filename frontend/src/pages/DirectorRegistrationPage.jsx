@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { teacherService } from '../services/teacherService'
+import { classService } from '../services/classService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
@@ -286,6 +287,26 @@ export default function DirectorRegistrationPage() {
 }
 
 function WindowCard({ window: w, teachers, onAssign, onClose, onRemoveAssignment, active }) {
+    const [showEnrollments, setShowEnrollments] = useState(false)
+    const [enrollments, setEnrollments] = useState([])
+    const [loadingEnroll, setLoadingEnroll] = useState(false)
+
+    const loadEnrollments = async () => {
+        setLoadingEnroll(true)
+        try {
+            const data = await registrationService.getEnrollments(w.id)
+            setEnrollments(data)
+            setShowEnrollments(true)
+        } catch { toast.error('Failed to load enrollments') }
+        finally { setLoadingEnroll(false) }
+    }
+
+    const byTeacher = enrollments.reduce((acc, e) => {
+        const key = e.registeredBy || 'Unknown'
+        if (!acc[key]) acc[key] = []
+        acc[key].push(e)
+        return acc
+    }, {})
     return (
         <div className={`card ${active ? 'border-green-200 bg-green-50/30' : 'opacity-70'}`}>
             <div className="flex items-start justify-between flex-wrap gap-3">
@@ -305,6 +326,9 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onRemoveAssignment
                 </div>
                 {active && (
                     <div className="flex gap-2">
+                        <button className="btn-ghost text-xs" onClick={loadEnrollments} disabled={loadingEnroll}>
+                            {loadingEnroll ? '…' : '📋 Enrollments'}
+                        </button>
                         <button className="btn-ghost text-xs" onClick={onAssign}>+ Assign Teacher</button>
                         <button className="btn-ghost text-xs border-red-200 text-red-600" onClick={onClose}>
                             Close Window
@@ -340,6 +364,50 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onRemoveAssignment
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {/* Enrollment audit log */}
+            {showEnrollments && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">
+                            Enrollment Audit ({enrollments.length} total)
+                        </p>
+                        <button className="text-xs text-slate-400 hover:text-slate-600"
+                            onClick={() => setShowEnrollments(false)}>Hide</button>
+                    </div>
+                    {enrollments.length === 0 ? (
+                        <p className="text-xs text-slate-400 text-center py-2">No enrollments yet</p>
+                    ) : Object.entries(byTeacher).map(([teacher, recs]) => (
+                        <div key={teacher} className="mb-3">
+                            <p className="text-xs font-medium text-slate-600 mb-1">
+                                👤 {teacher} — {recs.length} student(s) registered
+                            </p>
+                            <div className="space-y-1 pl-3">
+                                {recs.map(r => (
+                                    <div key={r.id} className="flex items-center gap-2 text-xs text-slate-600 flex-wrap">
+                                        <span className="font-mono text-slate-400">{r.studentUid}</span>
+                                        <span>{r.studentName}</span>
+                                        <span className={`px-1.5 py-0.5 rounded ${
+                                            r.enrollmentType === 'NEW' ? 'bg-green-100 text-green-700' :
+                                            r.enrollmentType === 'PROMOTED' ? 'bg-blue-100 text-blue-700' :
+                                            r.enrollmentType === 'TRANSFER' ? 'bg-purple-100 text-purple-700' :
+                                            'bg-yellow-100 text-yellow-700'
+                                        }`}>{r.enrollmentType}</span>
+                                        {r.stream && (
+                                            <span className="text-slate-400">
+                                                {r.stream === 'NATURAL_SCIENCE' ? '🔬 Natural' : '📚 Social'}
+                                            </span>
+                                        )}
+                                        <span className="text-slate-400 ml-auto">
+                                            {new Date(r.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

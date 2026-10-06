@@ -8,8 +8,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 
 /**
- * Tracks each student's enrollment/re-enrollment for an academic year.
- * For Grade 9: full registration. For Grade 10-12: re-enrollment with bank receipt.
+ * Full enrollment record for every student registration event.
+ * Covers: NEW (Grade 9 first-timer), REPEATER, PROMOTED, TRANSFER.
+ * All file fields store Cloudinary HTTPS URLs.
  */
 @Entity
 @Table(name = "enrollment_records",
@@ -29,32 +30,104 @@ public class EnrollmentRecord {
     @Column(name = "academic_year", nullable = false, length = 20)
     private String academicYear;
 
-    /** Grade the student is enrolling INTO */
     @Column(nullable = false)
     private Integer grade;
 
-    /** Bank transaction / payment receipt number */
-    @Column(name = "bank_transaction_ref", nullable = false, length = 100)
+    // ── Student type ──────────────────────────────────────────────────────────
+    @Enumerated(EnumType.STRING)
+    @Column(name = "enrollment_type", nullable = false, length = 20)
+    private EnrollmentType enrollmentType;
+
+    // ── Stream (Grade 11-12 only) ─────────────────────────────────────────────
+    /** NATURAL_SCIENCE | SOCIAL_SCIENCE | null (for Grades 9-10) */
+    @Column(length = 30)
+    private String stream;
+
+    // ── Personal info (new/transfer only) ────────────────────────────────────
+    @Column(name = "first_name", length = 80)
+    private String firstName;
+
+    @Column(name = "father_name", length = 80)
+    private String fatherName;
+
+    @Column(name = "grandfather_name", length = 80)
+    private String grandfatherName;
+
+    @Column(length = 10)
+    private String gender;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(length = 80)
+    private String region;
+
+    @Column(length = 80)
+    private String city;
+
+    @Column(length = 80)
+    private String kebele;
+
+    @Column(name = "house_no", length = 30)
+    private String houseNo;
+
+    // ── Cloudinary document URLs ───────────────────────────────────────────────
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;           // student photo
+
+    @Column(name = "id_doc_url", length = 500)
+    private String idDocUrl;           // resident ID / birth certificate
+
+    @Column(name = "grade8_certificate_url", length = 500)
+    private String grade8CertificateUrl;  // Grade 8 transcript/certificate
+
+    @Column(name = "release_letter_url", length = 500)
+    private String releaseLetterUrl;   // transfer release letter
+
+    @Column(name = "payment_receipt_url", length = 500)
+    private String paymentReceiptUrl;  // bank/payment receipt photo
+
+    // ── Academic history ──────────────────────────────────────────────────────
+    @Column(name = "grade8_score")
+    private Double grade8Score;
+
+    @Column(name = "previous_school", length = 200)
+    private String previousSchool;
+
+    // ── Payment ───────────────────────────────────────────────────────────────
+    @Column(name = "bank_transaction_ref", length = 100)
     private String bankTransactionRef;
 
-    /** Which registration window was used */
+    @Column(name = "payment_method", length = 30)
+    private String paymentMethod;     // TELEBIRR | CBE | BANK_TRANSFER
+
+    // ── Parent/guardian ───────────────────────────────────────────────────────
+    @Column(name = "parent_name", length = 120)
+    private String parentName;
+
+    @Column(name = "parent_relationship", length = 30)
+    private String parentRelationship;  // Mother | Father | Uncle | Aunt | Other
+
+    @Column(name = "parent_phone", length = 20)
+    private String parentPhone;
+
+    // ── Registration metadata ─────────────────────────────────────────────────
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "window_id")
     private RegistrationWindow window;
 
-    /** Teacher who registered this student */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registered_by")
     private Teacher registeredBy;
-
-    /** NEW = first-time Grade 9, RE_ENROLLMENT = returning student */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "enrollment_type", nullable = false, length = 20)
-    private EnrollmentType enrollmentType;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
-    public enum EnrollmentType { NEW, RE_ENROLLMENT }
+    public enum EnrollmentType {
+        NEW,           // Grade 9 first-timer (never in system)
+        PROMOTED,      // Moved up from previous grade (in system)
+        REPEATER,      // Failed, staying in same grade (in system)
+        TRANSFER       // Coming from another school (not in system)
+    }
 }

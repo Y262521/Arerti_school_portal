@@ -55,6 +55,11 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
 
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:komb41ew}
+  api-key: ${CLOUDINARY_API_KEY:765123853833281}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
 server:
   port: ${PORT:8080}
   # Tomcat tuning for 1500+ concurrent users

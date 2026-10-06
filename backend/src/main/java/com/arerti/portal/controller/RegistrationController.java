@@ -1,16 +1,20 @@
 package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.*;
+import com.arerti.portal.service.CloudinaryService;
 import com.arerti.portal.service.RegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/registration")
@@ -18,6 +22,18 @@ import java.util.List;
 public class RegistrationController {
 
     private final RegistrationService registrationService;
+    private final CloudinaryService cloudinaryService;
+
+    // ── File upload (used before submitting forms) ────────────────────────────
+
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(defaultValue = "documents") String folder) {
+        String url = cloudinaryService.upload(file, folder);
+        return ResponseEntity.ok(Map.of("url", url));
+    }
 
     // ── Director: window management ──────────────────────────────────────────
 
@@ -62,7 +78,13 @@ public class RegistrationController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Teacher: check active window assignment ───────────────────────────────
+    @GetMapping("/windows/{id}/enrollments")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EnrollmentRecordResponse>> getEnrollments(@PathVariable Long id) {
+        return ResponseEntity.ok(registrationService.getEnrollmentsForWindow(id));
+    }
+
+    // ── Teacher: check active window ─────────────────────────────────────────
 
     @GetMapping("/my-window")
     @PreAuthorize("hasRole('TEACHER')")
@@ -72,7 +94,7 @@ public class RegistrationController {
         return ResponseEntity.ok(w);
     }
 
-    // ── Teacher: view pass status for a grade (for re-enrollment) ────────────
+    // ── Pass status for re-enrollment list ───────────────────────────────────
 
     @GetMapping("/pass-status")
     @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
@@ -84,29 +106,29 @@ public class RegistrationController {
                 grade, previousAcademicYear, newAcademicYear));
     }
 
-    // ── Teacher: enroll new Grade 9 student ──────────────────────────────────
+    // ── Full enrollment (NEW / TRANSFER) ─────────────────────────────────────
 
-    @PostMapping("/windows/{windowId}/enroll-new")
+    @PostMapping("/windows/{windowId}/enroll")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<StudentResponse> enrollNew(
+    public ResponseEntity<StudentResponse> enrollFull(
             @PathVariable Long windowId,
-            @Valid @RequestBody NewStudentEnrollRequest req,
+            @Valid @RequestBody FullEnrollRequest req,
             Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(registrationService.enrollNewStudent(req, auth.getName(), windowId));
+                .body(registrationService.enrollFullForm(req, auth.getName(), windowId));
     }
 
-    // ── Teacher: re-enroll Grade 10-12 student ───────────────────────────────
+    // ── Quick re-enrollment (PROMOTED / REPEATER) ────────────────────────────
 
-    @PostMapping("/windows/{windowId}/re-enroll")
+    @PostMapping("/windows/{windowId}/enroll-existing")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<StudentResponse> reEnroll(
+    public ResponseEntity<EnrollmentRecordResponse> enrollExisting(
             @PathVariable Long windowId,
-            @Valid @RequestBody ReEnrollRequest req,
+            @Valid @RequestBody ExistingStudentEnrollRequest req,
             @RequestParam String previousAcademicYear,
             Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(registrationService.reEnrollStudent(
+                .body(registrationService.enrollExisting(
                         req, auth.getName(), windowId, previousAcademicYear));
     }
 }

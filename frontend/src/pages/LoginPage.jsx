@@ -55,7 +55,7 @@ export default function LoginPage() {
         </div>
         <div>
           <h1 className="font-display text-4xl xl:text-5xl font-bold leading-tight">
-            Welcome to Arerti General Secondary<br/>& Preparatory School Portal
+            Welcome to Arerti General Secondary & Preparatory <br/> School Portal
           </h1>
           <p className="mt-4 text-white/80 max-w-md">
             Manage students, grades, attendance and communication — securely, from any device.

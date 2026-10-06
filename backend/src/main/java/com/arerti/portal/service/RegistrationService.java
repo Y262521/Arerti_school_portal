@@ -71,16 +71,13 @@ public class RegistrationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
 
         if (assignmentRepository.existsByWindowAndTeacher(w, teacher)) {
-            // Update existing assignment
             RegistrationAssignment existing = assignmentRepository.findByWindowAndTeacher(w, teacher).get();
             existing.setAllowedGrades(req.allowedGrades());
             return RegistrationAssignmentResponse.from(assignmentRepository.save(existing));
         }
 
         RegistrationAssignment a = RegistrationAssignment.builder()
-                .window(w)
-                .teacher(teacher)
-                .allowedGrades(req.allowedGrades())
+                .window(w).teacher(teacher).allowedGrades(req.allowedGrades())
                 .build();
         return RegistrationAssignmentResponse.from(assignmentRepository.save(a));
     }
@@ -89,32 +86,25 @@ public class RegistrationService {
         assignmentRepository.deleteById(assignmentId);
     }
 
-    // ── Teacher: check their active assignment ────────────────────────────────
+    // ── Teacher: active window ────────────────────────────────────────────────
 
     public RegistrationWindowResponse getMyActiveWindow(String teacherUsername) {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         if (teacher == null) return null;
-
-        // Find active window
         RegistrationWindow activeWindow = windowRepository.findActive(LocalDate.now()).orElse(null);
         if (activeWindow == null) return null;
-
-        // Check teacher is assigned to this window
         RegistrationAssignment assignment = assignmentRepository
                 .findByWindowAndTeacher(activeWindow, teacher).orElse(null);
         if (assignment == null) return null;
-
         return RegistrationWindowResponse.from(activeWindow, List.of(
                 RegistrationAssignmentResponse.from(assignment)
         ));
     }
 
-    // ── Student pass status for re-enrollment ────────────────────────────────
+    // ── Pass status for re-enrollment list ───────────────────────────────────
 
     public List<StudentPassStatusResponse> getPassStatusForGrade(
             Integer grade, String previousAcademicYear, String newAcademicYear) {
-
-        // Get all students currently in this grade (from their section)
         List<Student> students = studentRepository.findAll().stream()
                 .filter(s -> s.getSectionId() != null)
                 .filter(s -> {
@@ -127,57 +117,45 @@ public class RegistrationService {
         return students.stream().map(student -> {
             PassingCriteriaService.PassResult result =
                     passingCriteria.evaluate(student, previousAcademicYear);
-
             GradeSection sec = sectionRepository.findById(student.getSectionId()).orElse(null);
             String sectionLabel = sec != null ? "Grade " + sec.getGrade() + " - " + sec.getSection() : null;
-
             boolean alreadyEnrolled = enrollmentRepository
                     .existsByStudentAndAcademicYear(student, newAcademicYear);
-
             return new StudentPassStatusResponse(
-                    student.getId(),
-                    student.getStudentUid(),
-                    student.getUser().getFullName(),
-                    sectionLabel,
-                    grade,
-                    result.passed(),
-                    result.average(),
-                    result.failedSubjects(),
-                    result.totalSubjects(),
-                    result.reason(),
-                    alreadyEnrolled
+                    student.getId(), student.getStudentUid(),
+                    student.getUser().getFullName(), sectionLabel, grade,
+                    result.passed(), result.average(),
+                    result.failedSubjects(), result.totalSubjects(),
+                    result.reason(), alreadyEnrolled
             );
         }).collect(Collectors.toList());
     }
 
-    // ── Grade 9: New student enrollment ──────────────────────────────────────
+    // ── NEW / TRANSFER: Full enrollment form ──────────────────────────────────
 
     @Transactional
-    public StudentResponse enrollNewStudent(NewStudentEnrollRequest req,
-                                             String teacherUsername, Long windowId) {
+    public StudentResponse enrollFullForm(FullEnrollRequest req,
+                                           String teacherUsername, Long windowId) {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         RegistrationWindow window = getWindow(windowId);
 
-        // Validate window is still active
-        if (!window.isActive()) {
+        if (!window.isActive())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration window is closed");
-        }
 
-        // Validate teacher is assigned and can register Grade 9
-        validateTeacherGradeAccess(window, teacher, 9);
-
-        // Validate section is Grade 9
         GradeSection section = sectionRepository.findById(req.sectionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found"));
-        if (!section.getGrade().equals(9)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "New student enrollment only allowed for Grade 9 sections");
-        }
+
+        validateTeacherGradeAccess(window, teacher, section.getGrade());
+        validateCapacity(section);
+
+        // TRANSFER can go to any grade; NEW must be Grade 9
+        EnrollmentRecord.EnrollmentType type = EnrollmentRecord.EnrollmentType.valueOf(req.enrollmentType());
+        if (type == EnrollmentRecord.EnrollmentType.NEW && section.getGrade() != 9)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New students can only enroll in Grade 9");
 
         if (userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
-        // Auto-generate credentials
         String uid = generateUid();
         String username = uid.toLowerCase().replace("-", "");
         String plainPassword = generatePassword();
@@ -185,7 +163,7 @@ public class RegistrationService {
         User user = User.builder()
                 .username(username).email(req.email())
                 .password(passwordEncoder.encode(plainPassword))
-                .fullName(req.fullName()).phone(req.phone())
+                .fullName(req.firstName() + " " + req.fatherName())
                 .role(Role.STUDENT).enabled(true).mustChangePassword(true)
                 .build();
         userRepository.save(user);
@@ -196,37 +174,50 @@ public class RegistrationService {
                 .guardianName(req.parentName()).guardianPhone(req.parentPhone())
                 .enrollmentYear(Year.now().getValue())
                 .sectionId(req.sectionId())
+                .currentStream(req.stream())
+                .photoUrl(req.photoUrl())
                 .build();
         studentRepository.save(student);
 
-        // Save enrollment record
         EnrollmentRecord record = EnrollmentRecord.builder()
                 .student(student).academicYear(section.getAcademicYear())
-                .grade(9).bankTransactionRef(req.bankTransactionRef())
+                .grade(section.getGrade()).enrollmentType(type)
+                .stream(req.stream())
+                .firstName(req.firstName()).fatherName(req.fatherName())
+                .grandfatherName(req.grandfatherName()).gender(req.gender())
+                .dateOfBirth(req.dateOfBirth()).region(req.region())
+                .city(req.city()).kebele(req.kebele()).houseNo(req.houseNo())
+                .photoUrl(req.photoUrl()).idDocUrl(req.idDocUrl())
+                .grade8CertificateUrl(req.grade8CertificateUrl())
+                .releaseLetterUrl(req.releaseLetterUrl())
+                .grade8Score(req.grade8Score()).previousSchool(req.previousSchool())
+                .parentName(req.parentName()).parentRelationship(req.parentRelationship())
+                .parentPhone(req.parentPhone())
+                .paymentMethod(req.paymentMethod())
+                .bankTransactionRef(req.bankTransactionRef())
+                .paymentReceiptUrl(req.paymentReceiptUrl())
                 .window(window).registeredBy(teacher)
-                .enrollmentType(EnrollmentRecord.EnrollmentType.NEW)
                 .build();
         enrollmentRepository.save(record);
 
-        auditService.log(teacherUsername, "TEACHER", "ENROLL_NEW", "STUDENT", uid,
-                "New Grade 9 student enrolled: " + req.fullName());
+        auditService.log(teacherUsername, "TEACHER", "ENROLL_" + type.name(), "STUDENT", uid,
+                type.name() + " student enrolled: " + req.firstName() + " " + req.fatherName());
 
-        return StudentResponse.fromWithCredentials(student,
-                "Grade 9 - " + section.getSection(), username, plainPassword);
+        String sectionLabel = "Grade " + section.getGrade() + " - " + section.getSection();
+        return StudentResponse.fromWithCredentials(student, sectionLabel, username, plainPassword);
     }
 
-    // ── Grade 10-12: Re-enrollment ────────────────────────────────────────────
+    // ── PROMOTED / REPEATER: Quick re-enrollment ──────────────────────────────
 
     @Transactional
-    public StudentResponse reEnrollStudent(ReEnrollRequest req,
-                                            String teacherUsername, Long windowId,
-                                            String previousAcademicYear) {
+    public EnrollmentRecordResponse enrollExisting(ExistingStudentEnrollRequest req,
+                                                    String teacherUsername, Long windowId,
+                                                    String previousAcademicYear) {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         RegistrationWindow window = getWindow(windowId);
 
-        if (!window.isActive()) {
+        if (!window.isActive())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registration window is closed");
-        }
 
         Student student = studentRepository.findById(req.studentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
@@ -234,67 +225,81 @@ public class RegistrationService {
         GradeSection newSection = sectionRepository.findById(req.newSectionId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found"));
 
-        int newGrade = newSection.getGrade();
+        validateTeacherGradeAccess(window, teacher, newSection.getGrade());
+        validateCapacity(newSection);
 
-        // Validate teacher access for this grade
-        validateTeacherGradeAccess(window, teacher, newGrade);
+        EnrollmentRecord.EnrollmentType type = EnrollmentRecord.EnrollmentType.valueOf(req.enrollmentType());
 
-        // Check student passes criteria for new grade
-        PassingCriteriaService.PassResult result =
-                passingCriteria.evaluate(student, previousAcademicYear);
-        if (!result.passed()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Student has not passed: " + result.reason());
+        // For PROMOTED: verify they passed
+        if (type == EnrollmentRecord.EnrollmentType.PROMOTED) {
+            PassingCriteriaService.PassResult result =
+                    passingCriteria.evaluate(student, previousAcademicYear);
+            if (!result.passed())
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Student has not passed: " + result.reason());
         }
 
-        // Check not already enrolled
-        if (enrollmentRepository.existsByStudentAndAcademicYear(student, window.getAcademicYear())) {
+        if (enrollmentRepository.existsByStudentAndAcademicYear(student, window.getAcademicYear()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Student is already enrolled for " + window.getAcademicYear());
-        }
+                    "Student already enrolled for " + window.getAcademicYear());
 
-        // Move student to new section
+        // Update student section + stream
         student.setSectionId(req.newSectionId());
+        if (req.stream() != null) student.setCurrentStream(req.stream());
         studentRepository.save(student);
 
-        // Save enrollment record
         EnrollmentRecord record = EnrollmentRecord.builder()
                 .student(student).academicYear(window.getAcademicYear())
-                .grade(newGrade).bankTransactionRef(req.bankTransactionRef())
+                .grade(newSection.getGrade()).enrollmentType(type)
+                .stream(req.stream())
+                .paymentMethod(req.paymentMethod())
+                .bankTransactionRef(req.bankTransactionRef())
+                .paymentReceiptUrl(req.paymentReceiptUrl())
                 .window(window).registeredBy(teacher)
-                .enrollmentType(EnrollmentRecord.EnrollmentType.RE_ENROLLMENT)
                 .build();
         enrollmentRepository.save(record);
 
-        auditService.log(teacherUsername, "TEACHER", "RE_ENROLL", "STUDENT", student.getStudentUid(),
-                "Re-enrolled to Grade " + newGrade + " section " + newSection.getSection());
+        auditService.log(teacherUsername, "TEACHER", "RE_ENROLL_" + type.name(), "STUDENT",
+                student.getStudentUid(), type.name() + " → Grade " + newSection.getGrade());
 
-        String sectionLabel = "Grade " + newSection.getGrade() + " - " + newSection.getSection();
-        return StudentResponse.from(student, sectionLabel);
+        return EnrollmentRecordResponse.from(record);
+    }
+
+    // ── Enrollment audit for director ─────────────────────────────────────────
+
+    public List<EnrollmentRecordResponse> getEnrollmentsForWindow(Long windowId) {
+        RegistrationWindow window = getWindow(windowId);
+        return enrollmentRepository.findByWindowOrderByCreatedAtDesc(window)
+                .stream().map(EnrollmentRecordResponse::from).collect(Collectors.toList());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private void validateTeacherGradeAccess(RegistrationWindow window,
-                                             Teacher teacher, Integer grade) {
-        if (teacher == null) {
+    private void validateTeacherGradeAccess(RegistrationWindow window, Teacher teacher, Integer grade) {
+        if (teacher == null)
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only teachers can register students");
-        }
         RegistrationAssignment assignment = assignmentRepository
                 .findByWindowAndTeacher(window, teacher)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "You are not assigned to this registration window"));
-
-        if (!assignment.getAllowedGradeList().contains(grade)) {
+        if (!assignment.getAllowedGradeList().contains(grade))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You are not authorized to register Grade " + grade + " students");
-        }
+    }
+
+    private void validateCapacity(GradeSection section) {
+        if (section.getMaxCapacity() == null) return;
+        long current = studentRepository.findAll().stream()
+                .filter(s -> section.getId().equals(s.getSectionId())).count();
+        if (current >= section.getMaxCapacity())
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Grade " + section.getGrade() + " Section " + section.getSection()
+                    + " is full (" + section.getMaxCapacity() + "/" + section.getMaxCapacity() + ")");
     }
 
     private List<RegistrationAssignmentResponse> getAssignments(RegistrationWindow w) {
         return assignmentRepository.findByWindow(w).stream()
-                .map(RegistrationAssignmentResponse::from)
-                .collect(Collectors.toList());
+                .map(RegistrationAssignmentResponse::from).collect(Collectors.toList());
     }
 
     private RegistrationWindow getWindow(Long id) {
