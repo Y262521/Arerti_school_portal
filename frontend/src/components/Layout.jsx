@@ -14,6 +14,7 @@ const ROLE_LINKS = {
     { to: '/admin/regrade-requests', label: 'Regrade' },
     { to: '/notices', label: 'Notice Board' },
     { to: '/resources', label: 'Resources' },
+    { to: '/admin/user-lookup', label: 'User Lookup' },
     { to: '/admin/audit-log', label: 'Audit Log' },
   ],
   TEACHER: [

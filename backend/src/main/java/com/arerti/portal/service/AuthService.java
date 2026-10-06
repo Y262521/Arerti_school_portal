@@ -96,4 +96,9 @@ public class AuthService {
         auditService.log(username, user.getRole().name(), "CHANGE_PASSWORD", "AUTH", username,
                 "Password changed successfully");
     }
+
+    public void logAdminReset(String adminUsername, String targetUsername) {
+        auditService.log(adminUsername, "ADMIN", "ADMIN_RESET_PASSWORD", "AUTH", targetUsername,
+                "Admin reset password for user: " + targetUsername);
+    }
 }

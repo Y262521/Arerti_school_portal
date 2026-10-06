@@ -7,6 +7,8 @@ import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
+const cy = new Date().getFullYear()
+const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => { const y = cy - 3 + i; return `${y}/${y + 1}` })
 
 const GRADE_COLOR = (g) => {
     if (!g || g === '—') return 'text-slate-400'
@@ -319,7 +321,11 @@ export default function GradebookPage() {
                 </div>
                 <div>
                     <label className="field-label">Academic Year</label>
-                    <input className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)} />
+                    <select className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)}>
+                        {YEAR_OPTIONS.map(y => (
+                            <option key={y} value={y}>{y}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 

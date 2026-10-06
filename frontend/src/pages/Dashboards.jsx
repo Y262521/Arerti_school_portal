@@ -96,6 +96,11 @@ export function AdminDashboard() {
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
           <div className="mt-1 text-xs text-slate-500">Upload & manage study materials</div>
         </Link>
+        <Link to="/admin/user-lookup" className="card hover:shadow-md transition cursor-pointer">
+          <div className="text-xs uppercase tracking-wide text-slate-500">User Lookup</div>
+          <div className="mt-1 text-3xl font-bold text-brand">→</div>
+          <div className="mt-1 text-xs text-slate-500">Find username, reset forgotten password</div>
+        </Link>
         <Link to="/admin/audit-log" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">Audit Log</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>

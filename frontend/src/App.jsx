@@ -25,6 +25,7 @@ import MyAttendancePage from './pages/MyAttendancePage'
 import RegradeRequestsPage from './pages/RegradeRequestsPage'
 import DirectorRegistrationPage from './pages/DirectorRegistrationPage'
 import TeacherRegistrationPage from './pages/TeacherRegistrationPage'
+import UserLookupPage from './pages/UserLookupPage'
 
 function RoleHomeRedirect() {
   const { user, isLoggedIn } = useAuth()
@@ -111,6 +112,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <Layout><RegradeRequestsPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/user-lookup"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><UserLookupPage /></Layout>
           </ProtectedRoute>
         }
       />

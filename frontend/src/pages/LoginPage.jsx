@@ -106,19 +106,19 @@ export default function LoginPage() {
             <img src="/logo.png" alt="logo" className="h-16 w-16 rounded-full" />
           </div>
           <h2 className="font-display text-3xl font-bold text-slate-900">Sign in</h2>
-          <p className="text-slate-500 mt-1">Use your username, email, or School ID.</p>
+          <p className="text-slate-500 mt-1">Use your username or email address.</p>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Username / School ID / Email
+                Username / Email
               </label>
               <input
                 name="username"
                 value={form.username}
                 onChange={onChange}
                 className="input"
-                placeholder="e.g. admin or STU-2026-XXXXXX"
+                placeholder="e.g. admin or name@email.com"
                 autoComplete="username"
                 autoFocus
               />
