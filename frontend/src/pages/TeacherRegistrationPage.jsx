@@ -78,7 +78,7 @@ const ETHIOPIAN_REGIONS = [
     'South Ethiopia', 'Southwest Ethiopia', 'Tigray', 'Other'
 ]
 
-function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuccess, onClose }) {
+function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, academicYear, onSuccess, onClose }) {
     const [step, setStep] = useState(0)
     const [saving, setSaving] = useState(false)
 
@@ -114,20 +114,26 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, onSuc
     }
 
     const handleSubmit = async () => {
+        if (!windowId) {
+            toast.error('No active registration window found. Please refresh the page.')
+            return
+        }
         setSaving(true)
         try {
             const result = await registrationService.enrollFull(windowId, {
                 ...form,
-                sectionId: null,           // no section at registration — director auto-assigns
+                sectionId: null,
                 targetGrade: grade,
-                academicYear: newYear,
+                academicYear: academicYear,
                 grade8Score: form.grade8Score ? Number(form.grade8Score) : null,
                 dateOfBirth: form.dateOfBirth || null,
                 enrollmentType,
             })
             onSuccess(result)
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Enrollment failed')
+            const msg = err.response?.data?.message || err.message || 'Enrollment failed'
+            toast.error(msg)
+            console.error('Enrollment error:', err.response?.status, err.response?.data)
         } finally { setSaving(false) }
     }
 
@@ -705,6 +711,7 @@ export default function TeacherRegistrationPage() {
                         sections={sections}
                         grade={wizardModal.grade}
                         enrollmentType={wizardModal.type}
+                        academicYear={newYear}
                         onSuccess={(s) => { setWizardModal(null); setCredentialsModal(s) }}
                         onClose={() => setWizardModal(null)}
                     />
