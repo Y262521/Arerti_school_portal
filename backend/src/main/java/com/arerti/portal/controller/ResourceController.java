@@ -90,8 +90,10 @@ public class ResourceController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        resourceService.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable String id, Authentication auth) {
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        resourceService.delete(id, auth.getName(), isAdmin);
         return ResponseEntity.noContent().build();
     }
 }

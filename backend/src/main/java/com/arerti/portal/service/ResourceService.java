@@ -123,10 +123,15 @@ public class ResourceService {
         return ResourceResponse.from(resource);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String username, boolean isAdmin) {
         Resource resource = get(id);
+        // Only admin OR the uploader can delete
+        if (!isAdmin && !resource.getUploadedBy().equals(username)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Only the director or the teacher who uploaded this resource can delete it");
+        }
         resourceRepository.delete(resource);
-        auditService.log(actorUsername(), actorRole(), "DELETE", "RESOURCE", id,
+        auditService.log(username, isAdmin ? "ADMIN" : "TEACHER", "DELETE", "RESOURCE", id,
                 "Deleted resource \"" + resource.getTitle() + "\"");
     }
 

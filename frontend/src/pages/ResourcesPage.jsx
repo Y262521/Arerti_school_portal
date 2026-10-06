@@ -170,7 +170,7 @@ export default function ResourcesPage() {
                                 >
                                     {downloadingId === r.id ? 'Downloading…' : 'Download'}
                                 </button>
-                                {canUpload && (
+                                {(user?.role === 'ADMIN' || r.uploadedBy === user?.username) && (
                                     <button className="text-xs text-red-500 hover:underline"
                                         onClick={() => setConfirmDelete(r)}>
                                         Delete
