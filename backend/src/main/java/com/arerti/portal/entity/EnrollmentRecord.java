@@ -13,7 +13,7 @@ import java.time.Instant;
  * All file fields store Cloudinary HTTPS URLs.
  */
 @Entity
-@Table(name = "enrollment_records",
+@Table(name = "enrollment_records_v2",
         uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "academic_year"}))
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
