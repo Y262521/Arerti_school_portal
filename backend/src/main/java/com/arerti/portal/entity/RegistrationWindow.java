@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * Can be postponed (end datetime extended) by the director.
  */
 @Entity
-@Table(name = "registration_windows")
+@Table(name = "registration_windows_v2")
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class RegistrationWindow {

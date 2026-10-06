@@ -13,7 +13,7 @@ import java.time.Instant;
  * allowedGrades is stored as comma-separated integers e.g. "9,10,11,12"
  */
 @Entity
-@Table(name = "registration_assignments",
+@Table(name = "registration_assignments_v2",
         uniqueConstraints = @UniqueConstraint(columnNames = {"window_id", "teacher_id"}))
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
