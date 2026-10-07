@@ -78,7 +78,377 @@ const ETHIOPIAN_REGIONS = [
     'South Ethiopia', 'Southwest Ethiopia', 'Tigray', 'Other'
 ]
 
+const PAYMENT_METHODS = [
+    { value: 'FINANCE_OFFICE', label: 'Finance Office (School)' },
+    { value: 'TELEBIRR', label: 'Telebirr' },
+    { value: 'CBE', label: 'CBE (Commercial Bank)' },
+    { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+    { value: 'OTHER', label: 'Other' },
+]
+
+// Phone field with +251 prefix locked, 9 digits after (starts with 9 or 7)
+function EthiopianPhoneInput({ value, onChange, required }) {
+    const digits = value.replace(/^\+251/, '')
+
+    const handleChange = (e) => {
+        let raw = e.target.value.replace(/\D/g, '')
+        if (raw.length > 9) raw = raw.slice(0, 9)
+        onChange(raw ? `+251${raw}` : '')
+    }
+
+    const isValid = /^(9|7)\d{8}$/.test(digits)
+    const showError = digits.length > 0 && !isValid
+
+    return (
+        <div>
+            <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-medium">
+                    🇪🇹 +251
+                </span>
+                <input
+                    className={`field rounded-l-none flex-1 ${showError ? 'border-red-400' : ''}`}
+                    type="tel"
+                    value={digits}
+                    onChange={handleChange}
+                    placeholder="9XXXXXXXX or 7XXXXXXXX"
+                    maxLength={9}
+                    required={required}
+                />
+            </div>
+            {showError && (
+                <p className="text-xs text-red-500 mt-0.5">
+                    Must start with 9 or 7 and be exactly 9 digits
+                </p>
+            )}
+            {required && !digits && (
+                <p className="text-xs text-red-500 mt-0.5">Required</p>
+            )}
+        </div>
+    )
+}
+
 function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, academicYear, onSuccess, onClose }) {
+    const [step, setStep] = useState(0)
+    const [saving, setSaving] = useState(false)
+    const [errors, setErrors] = useState({})
+
+    const [form, setForm] = useState({
+        firstName: '', fatherName: '', grandfatherName: '',
+        gender: '', dateOfBirth: '',
+        region: '', city: '', kebele: '', houseNo: '',
+        photoUrl: '', idDocUrl: '',
+        email: '',
+        grade8Score: '', previousSchool: '',
+        grade8CertificateUrl: '', releaseLetterUrl: '',
+        stream: '',
+        parentName: '', parentRelationship: '', parentPhone: '',
+        paymentMethod: '', bankTransactionRef: '', paymentReceiptUrl: '',
+    })
+    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+    const filteredSections = sections.filter(s => s.grade === grade)
+    const needsStream = grade >= 11
+
+    // Validate current step — returns error messages
+    const validateStep = () => {
+        const e = {}
+        if (step === 0) {
+            if (!form.firstName) e.firstName = 'Required'
+            if (!form.fatherName) e.fatherName = 'Required'
+            if (!form.grandfatherName) e.grandfatherName = 'Required'
+            if (!form.gender) e.gender = 'Required'
+            if (!form.dateOfBirth) e.dateOfBirth = 'Required'
+            if (!form.region) e.region = 'Required'
+            if (!form.city) e.city = 'Required'
+            if (!form.kebele) e.kebele = 'Required'
+            if (!form.email) e.email = 'Required'
+            if (!form.photoUrl) e.photoUrl = 'Student photo is required'
+            if (!form.idDocUrl) e.idDocUrl = 'ID / Birth certificate is required'
+        }
+        if (step === 1) {
+            if (!form.previousSchool) e.previousSchool = 'Required'
+            if (!form.grade8Score && form.grade8Score !== 0) e.grade8Score = 'Required'
+            else if (Number(form.grade8Score) < 0 || Number(form.grade8Score) > 100)
+                e.grade8Score = 'Must be between 0 and 100'
+            if (!form.grade8CertificateUrl) e.grade8CertificateUrl = 'Grade 8 certificate is required'
+            if (enrollmentType === 'TRANSFER' && !form.releaseLetterUrl)
+                e.releaseLetterUrl = 'Release letter is required for transfers'
+            if (needsStream && !form.stream) e.stream = 'Stream is required for Grade 11-12'
+        }
+        if (step === 2) {
+            if (!form.parentName) e.parentName = 'Required'
+            if (!form.parentRelationship) e.parentRelationship = 'Required'
+            const digits = form.parentPhone.replace(/^\+251/, '')
+            if (!digits) e.parentPhone = 'Required'
+            else if (!/^(9|7)\d{8}$/.test(digits))
+                e.parentPhone = 'Must start with 9 or 7 and be 9 digits'
+        }
+        if (step === 3) {
+            if (!form.paymentMethod) e.paymentMethod = 'Required'
+            if (!form.bankTransactionRef) e.bankTransactionRef = 'Required'
+            if (!form.paymentReceiptUrl) e.paymentReceiptUrl = 'Payment receipt is required'
+        }
+        return e
+    }
+
+    const handleNext = () => {
+        const e = validateStep()
+        setErrors(e)
+        if (Object.keys(e).length === 0) setStep(s => s + 1)
+    }
+
+    const handleSubmit = async () => {
+        const e = validateStep()
+        setErrors(e)
+        if (Object.keys(e).length > 0) return
+
+        if (!windowId) {
+            toast.error('No active registration window found. Please refresh the page.')
+            return
+        }
+        setSaving(true)
+        try {
+            const result = await registrationService.enrollFull(windowId, {
+                ...form,
+                sectionId: null,
+                targetGrade: grade,
+                academicYear,
+                grade8Score: form.grade8Score !== '' ? Number(form.grade8Score) : null,
+                dateOfBirth: form.dateOfBirth || null,
+                enrollmentType,
+            })
+            onSuccess(result)
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message || 'Registration failed')
+        } finally { setSaving(false) }
+    }
+
+    const F = ({ field, children }) => (
+        <div>
+            {children}
+            {errors[field] && <p className="text-xs text-red-500 mt-0.5">{errors[field]}</p>}
+        </div>
+    )
+
+    return (
+        <div className="space-y-6">
+            <StepIndicator current={step} steps={WIZARD_STEPS} />
+
+            {/* Step 1: Personal Info */}
+            {step === 0 && (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                        <F field="firstName">
+                            <label className="field-label">First Name *</label>
+                            <input className={`field ${errors.firstName ? 'border-red-400' : ''}`}
+                                value={form.firstName} onChange={e => set('firstName', e.target.value)} />
+                        </F>
+                        <F field="fatherName">
+                            <label className="field-label">Father's Name *</label>
+                            <input className={`field ${errors.fatherName ? 'border-red-400' : ''}`}
+                                value={form.fatherName} onChange={e => set('fatherName', e.target.value)} />
+                        </F>
+                        <F field="grandfatherName">
+                            <label className="field-label">Grandfather's Name *</label>
+                            <input className={`field ${errors.grandfatherName ? 'border-red-400' : ''}`}
+                                value={form.grandfatherName} onChange={e => set('grandfatherName', e.target.value)} />
+                        </F>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <F field="gender">
+                            <label className="field-label">Gender *</label>
+                            <select className={`field ${errors.gender ? 'border-red-400' : ''}`}
+                                value={form.gender} onChange={e => set('gender', e.target.value)}>
+                                <option value="">— Select —</option>
+                                <option>Male</option><option>Female</option>
+                            </select>
+                        </F>
+                        <F field="dateOfBirth">
+                            <label className="field-label">Date of Birth *</label>
+                            <input className={`field ${errors.dateOfBirth ? 'border-red-400' : ''}`}
+                                type="date" value={form.dateOfBirth}
+                                onChange={e => set('dateOfBirth', e.target.value)} />
+                        </F>
+                        <F field="email">
+                            <label className="field-label">Email *</label>
+                            <input className={`field ${errors.email ? 'border-red-400' : ''}`}
+                                type="email" value={form.email}
+                                onChange={e => set('email', e.target.value)} />
+                        </F>
+                        <F field="region">
+                            <label className="field-label">Region *</label>
+                            <select className={`field ${errors.region ? 'border-red-400' : ''}`}
+                                value={form.region} onChange={e => set('region', e.target.value)}>
+                                <option value="">— Select —</option>
+                                {ETHIOPIAN_REGIONS.map(r => <option key={r}>{r}</option>)}
+                            </select>
+                        </F>
+                        <F field="city">
+                            <label className="field-label">City / Woreda *</label>
+                            <input className={`field ${errors.city ? 'border-red-400' : ''}`}
+                                value={form.city} onChange={e => set('city', e.target.value)} />
+                        </F>
+                        <F field="kebele">
+                            <label className="field-label">Kebele *</label>
+                            <input className={`field ${errors.kebele ? 'border-red-400' : ''}`}
+                                value={form.kebele} onChange={e => set('kebele', e.target.value)} />
+                        </F>
+                        <div>
+                            <label className="field-label">House No. <span className="text-slate-400 font-normal">(optional)</span></label>
+                            <input className="field" value={form.houseNo}
+                                onChange={e => set('houseNo', e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <F field="photoUrl">
+                            <FileUploadField label="Student Photo *" required folder="student-photos"
+                                value={form.photoUrl} onChange={v => set('photoUrl', v)}
+                                accept="image/jpeg,image/png" />
+                        </F>
+                        <F field="idDocUrl">
+                            <FileUploadField label="Resident ID / Birth Certificate *" required
+                                folder="id-docs" value={form.idDocUrl}
+                                onChange={v => set('idDocUrl', v)} />
+                        </F>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 2: Academic */}
+            {step === 1 && (
+                <div className="space-y-4">
+                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
+                        ℹ️ Section will be auto-assigned by the director after registration closes, based on performance scores.
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <F field="previousSchool">
+                            <label className="field-label">Previous School *</label>
+                            <input className={`field ${errors.previousSchool ? 'border-red-400' : ''}`}
+                                value={form.previousSchool} onChange={e => set('previousSchool', e.target.value)} />
+                        </F>
+                        <F field="grade8Score">
+                            <label className="field-label">Grade 8 Exam Score (0–100) *</label>
+                            <input className={`field ${errors.grade8Score ? 'border-red-400' : ''}`}
+                                type="number" min={0} max={100} step={0.5}
+                                value={form.grade8Score} onChange={e => set('grade8Score', e.target.value)} />
+                        </F>
+                        {needsStream && (
+                            <F field="stream">
+                                <label className="field-label">Stream *</label>
+                                <select className={`field ${errors.stream ? 'border-red-400' : ''}`}
+                                    value={form.stream} onChange={e => set('stream', e.target.value)}>
+                                    <option value="">— Select stream —</option>
+                                    <option value="NATURAL_SCIENCE">Natural Science</option>
+                                    <option value="SOCIAL_SCIENCE">Social Science</option>
+                                </select>
+                            </F>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <F field="grade8CertificateUrl">
+                            <FileUploadField label="Grade 8 Certificate / Transcript *" required
+                                folder="certificates" value={form.grade8CertificateUrl}
+                                onChange={v => set('grade8CertificateUrl', v)} />
+                        </F>
+                        {enrollmentType === 'TRANSFER' && (
+                            <F field="releaseLetterUrl">
+                                <FileUploadField label="Official Release Letter *" required
+                                    folder="release-letters" value={form.releaseLetterUrl}
+                                    onChange={v => set('releaseLetterUrl', v)} />
+                            </F>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 3: Guardian */}
+            {step === 2 && (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <F field="parentName">
+                            <label className="field-label">Parent / Guardian Full Name *</label>
+                            <input className={`field ${errors.parentName ? 'border-red-400' : ''}`}
+                                value={form.parentName} onChange={e => set('parentName', e.target.value)} />
+                        </F>
+                        <F field="parentRelationship">
+                            <label className="field-label">Relationship *</label>
+                            <select className={`field ${errors.parentRelationship ? 'border-red-400' : ''}`}
+                                value={form.parentRelationship} onChange={e => set('parentRelationship', e.target.value)}>
+                                <option value="">— Select —</option>
+                                <option>Mother</option><option>Father</option>
+                                <option>Uncle</option><option>Aunt</option><option>Other</option>
+                            </select>
+                        </F>
+                        <F field="parentPhone">
+                            <label className="field-label">Phone Number * (+251 9XXXXXXXX or 7XXXXXXXX)</label>
+                            <EthiopianPhoneInput required
+                                value={form.parentPhone}
+                                onChange={v => set('parentPhone', v)} />
+                        </F>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 4: Payment */}
+            {step === 3 && (
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <F field="paymentMethod">
+                            <label className="field-label">Payment Method *</label>
+                            <select className={`field ${errors.paymentMethod ? 'border-red-400' : ''}`}
+                                value={form.paymentMethod} onChange={e => set('paymentMethod', e.target.value)}>
+                                <option value="">— Select —</option>
+                                {PAYMENT_METHODS.map(m => (
+                                    <option key={m.value} value={m.value}>{m.label}</option>
+                                ))}
+                            </select>
+                        </F>
+                        <F field="bankTransactionRef">
+                            <label className="field-label">Transaction / Receipt Reference No. *</label>
+                            <input className={`field ${errors.bankTransactionRef ? 'border-red-400' : ''}`}
+                                value={form.bankTransactionRef}
+                                placeholder="e.g. REC-2026-001234"
+                                onChange={e => set('bankTransactionRef', e.target.value)} />
+                        </F>
+                    </div>
+                    <F field="paymentReceiptUrl">
+                        <FileUploadField label="Payment Receipt *" required
+                            folder="payment-receipts" value={form.paymentReceiptUrl}
+                            onChange={v => set('paymentReceiptUrl', v)}
+                            accept="image/jpeg,image/png,application/pdf" />
+                    </F>
+
+                    {/* Summary */}
+                    <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm space-y-1">
+                        <p className="font-semibold text-slate-800 mb-2">Registration Summary</p>
+                        <p><span className="text-slate-500">Name:</span> {form.firstName} {form.fatherName} {form.grandfatherName}</p>
+                        <p><span className="text-slate-500">Type:</span> <strong>{enrollmentType}</strong></p>
+                        {form.stream && <p><span className="text-slate-500">Stream:</span> {form.stream.replace('_', ' ')}</p>}
+                        <p><span className="text-slate-500">Guardian:</span> {form.parentName} ({form.parentPhone})</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Navigation */}
+            <div className="flex justify-between pt-4 border-t border-slate-100">
+                <button type="button" className="btn-ghost"
+                    onClick={step === 0 ? onClose : () => { setStep(s => s - 1); setErrors({}) }}>
+                    {step === 0 ? 'Cancel' : '← Back'}
+                </button>
+                {step < 3 ? (
+                    <button type="button" className="btn-primary" onClick={handleNext}>
+                        Next →
+                    </button>
+                ) : (
+                    <button type="button" className="btn-primary"
+                        onClick={handleSubmit} disabled={saving}>
+                        {saving ? 'Saving…' : '💾 Save & Register'}
+                    </button>
+                )}
+            </div>
+        </div>
+    )
+}
     const [step, setStep] = useState(0)
     const [saving, setSaving] = useState(false)
 
