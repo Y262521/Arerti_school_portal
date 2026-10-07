@@ -45,20 +45,22 @@ public class TeacherService {
         if (userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
-        // Auto-generate employee ID, username, and password
         String employeeId = generateEmployeeId();
-        String username = employeeId.toLowerCase().replace("-", ""); // e.g. tch2026abc123
+        String username = employeeId.toLowerCase().replace("-", "");
         String plainPassword = generatePassword();
 
         if (userRepository.existsByUsername(username)) {
             username = username + Year.now().getValue();
         }
 
+        // Full name from parts
+        String fullName = req.firstName() + " " + req.fatherName();
+
         User user = User.builder()
                 .username(username)
                 .email(req.email())
                 .password(passwordEncoder.encode(plainPassword))
-                .fullName(req.fullName())
+                .fullName(fullName)
                 .phone(req.phone())
                 .role(Role.TEACHER)
                 .enabled(true)
@@ -69,9 +71,16 @@ public class TeacherService {
         Teacher teacher = Teacher.builder()
                 .user(user)
                 .employeeId(employeeId)
+                .firstName(req.firstName())
+                .fatherName(req.fatherName())
+                .grandfatherName(req.grandfatherName())
+                .gender(req.gender())
                 .qualification(req.qualification())
                 .specialization(req.specialization())
                 .hireDate(req.hireDate() != null ? req.hireDate() : LocalDate.now())
+                .photoUrl(req.photoUrl())
+                .qualificationCertUrl(req.qualificationCertUrl())
+                .idDocUrl(req.idDocUrl())
                 .build();
         teacherRepository.save(teacher);
 

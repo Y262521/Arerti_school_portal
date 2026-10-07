@@ -5,11 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "teachers")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Teacher {
 
     @Id
@@ -23,6 +19,20 @@ public class Teacher {
     @Column(name = "employee_id", length = 30, unique = true)
     private String employeeId;
 
+    // ── Personal info ──────────────────────────────────────────────────────────
+    @Column(name = "first_name", length = 80, columnDefinition = "VARCHAR(80) DEFAULT NULL")
+    private String firstName;
+
+    @Column(name = "father_name", length = 80, columnDefinition = "VARCHAR(80) DEFAULT NULL")
+    private String fatherName;
+
+    @Column(name = "grandfather_name", length = 80, columnDefinition = "VARCHAR(80) DEFAULT NULL")
+    private String grandfatherName;
+
+    @Column(length = 10, columnDefinition = "VARCHAR(10) DEFAULT NULL")
+    private String gender;
+
+    // ── Academic ────────────────────────────────────────────────────────────────
     @Column(length = 80)
     private String qualification;
 
@@ -31,4 +41,14 @@ public class Teacher {
 
     @Column(name = "hire_date")
     private java.time.LocalDate hireDate;
+
+    // ── Document URLs (Cloudinary) ─────────────────────────────────────────────
+    @Column(name = "photo_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
+    private String photoUrl;
+
+    @Column(name = "qualification_cert_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
+    private String qualificationCertUrl;
+
+    @Column(name = "id_doc_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
+    private String idDocUrl;
 }

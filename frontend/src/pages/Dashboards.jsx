@@ -1,116 +1,79 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 
-/** Tiny card used on every role dashboard. */
-function StatCard({ label, value, hint, color = 'brand' }) {
+function DashboardHeader({ title, subtitle }) {
   return (
-    <div className="card">
-      <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
-      <div className={`mt-1 text-3xl font-bold text-${color}`}>{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+    <div className="mb-6">
+      <h1 className="font-display text-2xl font-bold text-slate-900">{title}</h1>
+      {subtitle && <p className="text-slate-500 mt-1">{subtitle}</p>}
     </div>
   )
 }
 
-function DashboardHeader({ title, subtitle, cta }) {
+function NavCard({ to, labelKey, value, descKey, highlight }) {
+  const { t } = useLanguage()
   return (
-    <div className="flex items-end justify-between mb-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">{title}</h1>
-        {subtitle && <p className="text-slate-500 mt-1">{subtitle}</p>}
+    <Link to={to} className={`card hover:shadow-md transition cursor-pointer ${highlight ? 'border-brand/20 bg-brand/5' : ''}`}>
+      <div className={`text-xs uppercase tracking-wide font-semibold ${highlight ? 'text-brand' : 'text-slate-500'}`}>
+        {t(labelKey)}
       </div>
-      {cta}
-    </div>
+      <div className="mt-1 text-3xl font-bold text-brand">{value || '→'}</div>
+      <div className="mt-1 text-xs text-slate-500">{t(descKey)}</div>
+    </Link>
   )
 }
 
 export function AdminDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    api.get('/dashboard/stats')
-      .then(r => setStats(r.data))
-      .catch(() => { })
+    api.get('/dashboard/stats').then(r => setStats(r.data)).catch(() => { })
   }, [])
 
   return (
     <div>
       <DashboardHeader
-        title={`Welcome, ${user?.fullName}`}
-        subtitle="Director's overview of the school system"
+        title={`${t('welcomeAdmin')}, ${user?.fullName}`}
+        subtitle={t('directorOverview')}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to="/admin/students" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Students</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('students')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.studentCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">Manage →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('manageStudents')} →</div>
         </Link>
         <Link to="/admin/teachers" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Teachers</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('teachers')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.teacherCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">Manage →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('manageTeachers')} →</div>
         </Link>
         <Link to="/admin/classes" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Classes</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('classes')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.classCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">Manage →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('manageClasses')} →</div>
         </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Notices</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('noticeboard')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.noticeCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">Manage →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('manageNotices')} →</div>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-        <Link to="/admin/registration" className="card hover:shadow-md transition cursor-pointer border-brand/20 bg-brand/5">
-          <div className="text-xs uppercase tracking-wide text-brand font-semibold">Student Registration</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Open windows, assign teachers, enroll students</div>
-        </Link>
-        <Link to="/admin/grades" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Gradebook</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Enter & review grades</div>
-        </Link>
-        <Link to="/admin/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Attendance</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Mark & review attendance</div>
-        </Link>
-        <Link to="/admin/subjects" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Subjects</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Manage subjects & grades</div>
-        </Link>
-        <Link to="/admin/regrade-requests" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Regrade Requests</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Review mark correction requests</div>
-        </Link>
-        <Link to="/resources" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Resources</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Upload & manage study materials</div>
-        </Link>
-        <Link to="/admin/grade-entry" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Grade Entry</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Open grade entry window after exams</div>
-        </Link>
-        <Link to="/admin/user-lookup" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">User Lookup</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Find username, reset forgotten password</div>
-        </Link>
-        <Link to="/admin/audit-log" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Audit Log</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Review system activity</div>
-        </Link>
+        <NavCard to="/admin/registration" labelKey="studentRegistrationCard" descKey="studentRegistrationDesc" highlight />
+        <NavCard to="/admin/grades" labelKey="gradebookCard" descKey="gradebookDesc" />
+        <NavCard to="/admin/attendance" labelKey="attendanceCard" descKey="attendanceDesc" />
+        <NavCard to="/admin/subjects" labelKey="subjectsCard" descKey="subjectsDesc" />
+        <NavCard to="/admin/regrade-requests" labelKey="regradeCard" descKey="regradeDesc" />
+        <NavCard to="/resources" labelKey="resourcesCard" descKey="resourcesDesc" />
+        <NavCard to="/admin/grade-entry" labelKey="gradeEntryCard" descKey="gradeEntryDesc" />
+        <NavCard to="/admin/user-lookup" labelKey="userLookupCard" descKey="userLookupDesc" />
+        <NavCard to="/admin/audit-log" labelKey="auditLogCard" descKey="auditLogDesc" />
       </div>
     </div>
   )
@@ -118,6 +81,7 @@ export function AdminDashboard() {
 
 export function TeacherDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [notices, setNotices] = useState([])
 
   useEffect(() => {
@@ -126,22 +90,22 @@ export function TeacherDashboard() {
 
   return (
     <div>
-      <DashboardHeader title={`Hello, ${user?.fullName}`} subtitle="Teacher workspace" />
+      <DashboardHeader title={`${t('helloTeacher')}, ${user?.fullName}`} subtitle={t('teacherWorkspace')} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Link to="/teacher/grades" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Gradebook</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('gradebook')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Enter & manage grades</div>
+          <div className="mt-1 text-xs text-slate-500">{t('enterGrades')}</div>
         </Link>
         <Link to="/teacher/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Attendance</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('attendance')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Mark daily attendance</div>
+          <div className="mt-1 text-xs text-slate-500">{t('markAttendance')}</div>
         </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Notices</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{notices.length}</div>
-          <div className="mt-1 text-xs text-slate-500">View notice board</div>
+          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
         </Link>
       </div>
       {notices.length > 0 && (
@@ -163,11 +127,11 @@ export function TeacherDashboard() {
 
 export function StudentDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [report, setReport] = useState(null)
   const currentYear = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
   useEffect(() => {
-    // Use /students/me — the admin-only list endpoint is not accessible to STUDENT role
     api.get('/students/me').then(r => {
       const me = r.data
       if (me?.id) {
@@ -180,28 +144,28 @@ export function StudentDashboard() {
 
   return (
     <div>
-      <DashboardHeader title={`Hi, ${user?.fullName}`} subtitle="Your school snapshot" />
+      <DashboardHeader title={`Hi, ${user?.fullName}`} subtitle={t('yourSchoolSnapshot')} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Link to="/student/grades" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Average</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('average')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">
             {report?.average ? report.average.toFixed(1) : '—'}
           </div>
-          <div className="mt-1 text-xs text-slate-500">{report?.overallGrade || 'View grades →'}</div>
+          <div className="mt-1 text-xs text-slate-500">{report?.overallGrade || `${t('viewGradesArrow')} →`}</div>
         </Link>
         <Link to="/student/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Attendance</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('attendance')}</div>
           <div className={`mt-1 text-3xl font-bold ${report?.attendancePercent >= 75 ? 'text-green-600' : report ? 'text-red-600' : 'text-brand'}`}>
             {report ? `${report.attendancePercent}%` : '—'}
           </div>
           <div className="mt-1 text-xs text-slate-500">
-            {report ? `${report.presentDays}/${report.totalDays} days` : 'View attendance →'}
+            {report ? `${report.presentDays}/${report.totalDays} days` : `${t('viewAttendanceArrow')} →`}
           </div>
         </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Notices</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">View notice board</div>
+          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
         </Link>
       </div>
     </div>
@@ -210,6 +174,7 @@ export function StudentDashboard() {
 
 export function ParentDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [notices, setNotices] = useState([])
   const [children, setChildren] = useState([])
 
@@ -220,27 +185,27 @@ export function ParentDashboard() {
 
   return (
     <div>
-      <DashboardHeader title={`Welcome, ${user?.fullName}`} subtitle="Track your child's progress" />
+      <DashboardHeader title={`${t('welcomeAdmin')}, ${user?.fullName}`} subtitle={t('trackChildProgress')} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Link to="/parent/children" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Linked Children</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('linkedChildren')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{children.length}</div>
-          <div className="mt-1 text-xs text-slate-500">Manage →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('manageStudents')} →</div>
         </Link>
         <Link to="/parent/report-cards" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Report Cards</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('reportCards')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">View grades & attendance</div>
+          <div className="mt-1 text-xs text-slate-500">{t('viewGradesArrow')} &amp; {t('viewAttendanceArrow')}</div>
         </Link>
         <Link to="/resources" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Resources</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('resources')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">Browse study materials</div>
+          <div className="mt-1 text-xs text-slate-500">{t('resourcesDesc')}</div>
         </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">Notices</div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{notices.length}</div>
-          <div className="mt-1 text-xs text-slate-500">View notice board →</div>
+          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
         </Link>
       </div>
       {notices.length > 0 && (
@@ -258,8 +223,8 @@ export function ParentDashboard() {
       )}
       {children.length === 0 && (
         <div className="card mt-4 text-sm text-slate-600">
-          Link your account to your child via their <strong>Student UID</strong> (e.g. <code>STU-2026-001</code>) —
-          go to <Link to="/parent/children" className="text-brand hover:underline">My Children</Link> to get started.
+          Link your account to your child via their <strong>Student UID</strong> —
+          go to <Link to="/parent/children" className="text-brand hover:underline">{t('myChildren')}</Link> to get started.
         </div>
       )}
     </div>

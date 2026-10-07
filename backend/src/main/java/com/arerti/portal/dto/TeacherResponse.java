@@ -1,7 +1,6 @@
 package com.arerti.portal.dto;
 
 import com.arerti.portal.entity.Teacher;
-
 import java.time.LocalDate;
 
 public record TeacherResponse(
@@ -10,11 +9,18 @@ public record TeacherResponse(
         Long userId,
         String username,
         String fullName,
+        String firstName,
+        String fatherName,
+        String grandfatherName,
+        String gender,
         String email,
         String phone,
         String qualification,
         String specialization,
         LocalDate hireDate,
+        String photoUrl,
+        String qualificationCertUrl,
+        String idDocUrl,
         String generatedUsername,
         String generatedPassword
 ) {
@@ -22,8 +28,11 @@ public record TeacherResponse(
         return new TeacherResponse(
                 t.getId(), t.getEmployeeId(), t.getUser().getId(),
                 t.getUser().getUsername(), t.getUser().getFullName(),
+                t.getFirstName(), t.getFatherName(), t.getGrandfatherName(),
+                t.getGender(),
                 t.getUser().getEmail(), t.getUser().getPhone(),
                 t.getQualification(), t.getSpecialization(), t.getHireDate(),
+                t.getPhotoUrl(), t.getQualificationCertUrl(), t.getIdDocUrl(),
                 null, null
         );
     }
@@ -33,8 +42,11 @@ public record TeacherResponse(
         return new TeacherResponse(
                 t.getId(), t.getEmployeeId(), t.getUser().getId(),
                 t.getUser().getUsername(), t.getUser().getFullName(),
+                t.getFirstName(), t.getFatherName(), t.getGrandfatherName(),
+                t.getGender(),
                 t.getUser().getEmail(), t.getUser().getPhone(),
                 t.getQualification(), t.getSpecialization(), t.getHireDate(),
+                t.getPhotoUrl(), t.getQualificationCertUrl(), t.getIdDocUrl(),
                 genUsername, genPassword
         );
     }
