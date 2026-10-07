@@ -468,6 +468,7 @@ export default function DirectorRegistrationPage() {
 }
 
 function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemoveAssignment, active }) {
+    const { t } = useLanguage()
     const [showEnrollments, setShowEnrollments] = useState(false)
     const [enrollments, setEnrollments] = useState([])
     const [loadingEnroll, setLoadingEnroll] = useState(false)
