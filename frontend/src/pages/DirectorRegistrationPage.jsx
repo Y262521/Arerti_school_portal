@@ -282,12 +282,12 @@ export default function DirectorRegistrationPage() {
     const load = async () => {
         setLoading(true)
         try {
-            const [w, t] = await Promise.all([
+            const [wins, teachersList] = await Promise.all([
                 registrationService.getWindows(),
                 teacherService.getAll()
             ])
-            setWindows(w)
-            setTeachers(t)
+            setWindows(wins)
+            setTeachers(teachersList)
         } catch { toast.error('Failed to load') }
         finally { setLoading(false) }
     }
