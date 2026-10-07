@@ -42,7 +42,6 @@ public record FullEnrollRequest(
         // ── Parent/Guardian ────────────────────────────────────────────────
         @NotBlank String parentName,
         String parentRelationship,
-        @Pattern(regexp = "^(09|07)\\d{8}$", message = "Phone must start with 09 or 07 and be 10 digits")
         String parentPhone,
 
         // ── Payment ────────────────────────────────────────────────────────
