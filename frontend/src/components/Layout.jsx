@@ -2,50 +2,51 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 
+// Use translation keys instead of hardcoded labels
 const ROLE_LINKS = {
   ADMIN: [
-    { to: '/admin', label: 'Dashboard' },
-    { to: '/admin/registration', label: 'Registration' },
-    { to: '/admin/students', label: 'Students' },
-    { to: '/admin/teachers', label: 'Teachers' },
-    { to: '/admin/classes', label: 'Classes' },
-    { to: '/admin/subjects', label: 'Subjects' },
-    { to: '/admin/grades', label: 'Gradebook' },
-    { to: '/admin/attendance', label: 'Attendance' },
-    { to: '/admin/grade-entry', label: 'Grade Entry' },
-    { to: '/admin/regrade-requests', label: 'Regrade' },
-    { to: '/notices', label: 'Notice Board' },
-    { to: '/resources', label: 'Resources' },
-    { to: '/admin/user-lookup', label: 'User Lookup' },
-    { to: '/admin/audit-log', label: 'Audit Log' },
+    { to: '/admin', key: 'dashboard' },
+    { to: '/admin/registration', key: 'registration' },
+    { to: '/admin/students', key: 'students' },
+    { to: '/admin/teachers', key: 'teachers' },
+    { to: '/admin/classes', key: 'classes' },
+    { to: '/admin/subjects', key: 'subjects' },
+    { to: '/admin/grades', key: 'gradebook' },
+    { to: '/admin/attendance', key: 'attendance' },
+    { to: '/admin/grade-entry', key: 'gradeEntryWindow' },
+    { to: '/admin/regrade-requests', key: 'regrade' },
+    { to: '/notices', key: 'noticeboard' },
+    { to: '/resources', key: 'resources' },
+    { to: '/admin/user-lookup', key: 'userlookup' },
+    { to: '/admin/audit-log', key: 'auditlog' },
   ],
   TEACHER: [
-    { to: '/teacher', label: 'Dashboard' },
-    { to: '/teacher/registration', label: 'Registration' },
-    { to: '/teacher/grades', label: 'Gradebook' },
-    { to: '/teacher/attendance', label: 'Attendance' },
-    { to: '/notices', label: 'Notice Board' },
-    { to: '/resources', label: 'Resources' },
+    { to: '/teacher', key: 'dashboard' },
+    { to: '/teacher/registration', key: 'registration' },
+    { to: '/teacher/grades', key: 'gradebook' },
+    { to: '/teacher/attendance', key: 'attendance' },
+    { to: '/notices', key: 'noticeboard' },
+    { to: '/resources', key: 'resources' },
   ],
   STUDENT: [
-    { to: '/student', label: 'Dashboard' },
-    { to: '/student/grades', label: 'My Grades' },
-    { to: '/student/attendance', label: 'Attendance' },
-    { to: '/notices', label: 'Notices' },
-    { to: '/resources', label: 'Resources' },
+    { to: '/student', key: 'dashboard' },
+    { to: '/student/grades', key: 'myGrades' },
+    { to: '/student/attendance', key: 'myAttendance' },
+    { to: '/notices', key: 'notices' },
+    { to: '/resources', key: 'resources' },
   ],
   PARENT: [
-    { to: '/parent', label: 'Dashboard' },
-    { to: '/parent/children', label: 'My Children' },
-    { to: '/parent/report-cards', label: 'Report Cards' },
-    { to: '/notices', label: 'Notices' },
-    { to: '/resources', label: 'Resources' },
+    { to: '/parent', key: 'dashboard' },
+    { to: '/parent/children', key: 'myChildren' },
+    { to: '/parent/report-cards', key: 'reportCards' },
+    { to: '/notices', key: 'notices' },
+    { to: '/resources', key: 'resources' },
   ]
 }
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth()
-  const { lang, toggleLang } = useLanguage()
+  const { lang, toggleLang, t } = useLanguage()
   const navigate = useNavigate()
   const links = ROLE_LINKS[user?.role] || []
 
@@ -78,13 +79,12 @@ export default function Layout({ children }) {
                   }`
                 }
               >
-                {l.label}
+                {t(l.key)}
               </NavLink>
             ))}
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            {/* Language toggle */}
             <button
               onClick={toggleLang}
               className="text-xs font-semibold px-2 py-1 rounded border border-slate-200 hover:border-brand hover:text-brand transition"
@@ -94,13 +94,13 @@ export default function Layout({ children }) {
             </button>
             <div className="text-right hidden sm:block">
               <div className="text-sm font-semibold text-slate-700">{user?.fullName}</div>
-              <div className="text-xs text-slate-500">{user?.role === 'ADMIN' ? 'Director' : user?.role}</div>
+              <div className="text-xs text-slate-500">{t(user?.role) || user?.role}</div>
             </div>
             <Link to="/account" className="btn-ghost text-xs hidden sm:inline-flex">
-              Account
+              {t('account')}
             </Link>
             <button onClick={handleLogout} className="btn-ghost text-xs">
-              Logout
+              {t('logout')}
             </button>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function Layout({ children }) {
                   }`
                 }
               >
-                {l.label}
+                {t(l.key)}
               </NavLink>
             ))}
           </div>

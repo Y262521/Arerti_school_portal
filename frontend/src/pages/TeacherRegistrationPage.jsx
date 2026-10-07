@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from 'react'
+﻿import { useEffect, useState, useRef } from 'react'
 import { registrationService } from '../services/registrationService'
 import { classService } from '../services/classService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
-// ── Cloudinary file upload helper ─────────────────────────────────────────────
+// â”€â”€ Cloudinary file upload helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function FileUploadField({ label, required, folder, value, onChange, accept = 'image/*,.pdf' }) {
     const [uploading, setUploading] = useState(false)
     const ref = useRef()
@@ -30,7 +30,7 @@ function FileUploadField({ label, required, folder, value, onChange, accept = 'i
             <div className="flex gap-2 items-center">
                 <button type="button" className="btn-ghost text-xs py-1.5"
                     onClick={() => ref.current?.click()}>
-                    {uploading ? '⏳ Uploading…' : value ? '✅ Change file' : '📎 Upload file'}
+                    {uploading ? 'â³ Uploadingâ€¦' : value ? 'âœ… Change file' : 'ðŸ“Ž Upload file'}
                 </button>
                 {value && (
                     <a href={value} target="_blank" rel="noreferrer"
@@ -45,7 +45,7 @@ function FileUploadField({ label, required, folder, value, onChange, accept = 'i
     )
 }
 
-// ── Step progress indicator ───────────────────────────────────────────────────
+// â”€â”€ Step progress indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StepIndicator({ current, steps }) {
     return (
         <div className="flex items-center gap-0 mb-8">
@@ -53,7 +53,7 @@ function StepIndicator({ current, steps }) {
                 <div key={i} className="flex items-center flex-1 last:flex-none">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition
                         ${i < current ? 'bg-green-500 text-white' : i === current ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'}`}>
-                        {i < current ? '✓' : i + 1}
+                        {i < current ? 'âœ“' : i + 1}
                     </div>
                     <div className="ml-1.5 text-xs hidden sm:block">
                         <div className={`font-medium ${i === current ? 'text-brand' : i < current ? 'text-green-600' : 'text-slate-400'}`}>
@@ -69,7 +69,7 @@ function StepIndicator({ current, steps }) {
     )
 }
 
-// ── 4-Step Wizard for NEW / TRANSFER ─────────────────────────────────────────
+// â”€â”€ 4-Step Wizard for NEW / TRANSFER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WIZARD_STEPS = ['Personal Info', 'Academic', 'Guardian', 'Payment']
 
 const ETHIOPIAN_REGIONS = [
@@ -103,7 +103,7 @@ function EthiopianPhoneInput({ value, onChange, required }) {
         <div>
             <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-medium">
-                    🇪🇹 +251
+                    ðŸ‡ªðŸ‡¹ +251
                 </span>
                 <input
                     className={`field rounded-l-none flex-1 ${showError ? 'border-red-400' : ''}`}
@@ -149,7 +149,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
     const filteredSections = sections.filter(s => s.grade === grade)
     const needsStream = grade >= 11
 
-    // Validate current step — returns error messages
+    // Validate current step â€” returns error messages
     const validateStep = () => {
         const e = {}
         if (step === 0) {
@@ -259,7 +259,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                             <label className="field-label">Gender *</label>
                             <select className={`field ${errors.gender ? 'border-red-400' : ''}`}
                                 value={form.gender} onChange={e => set('gender', e.target.value)}>
-                                <option value="">— Select —</option>
+                                <option value="">â€” Select â€”</option>
                                 <option>Male</option><option>Female</option>
                             </select>
                         </F>
@@ -279,7 +279,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                             <label className="field-label">Region *</label>
                             <select className={`field ${errors.region ? 'border-red-400' : ''}`}
                                 value={form.region} onChange={e => set('region', e.target.value)}>
-                                <option value="">— Select —</option>
+                                <option value="">â€” Select â€”</option>
                                 {ETHIOPIAN_REGIONS.map(r => <option key={r}>{r}</option>)}
                             </select>
                         </F>
@@ -318,7 +318,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             {step === 1 && (
                 <div className="space-y-4">
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
-                        ℹ️ Section will be auto-assigned by the director after registration closes, based on performance scores.
+                        â„¹ï¸ Section will be auto-assigned by the director after registration closes, based on performance scores.
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <F field="previousSchool">
@@ -327,7 +327,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                                 value={form.previousSchool} onChange={e => set('previousSchool', e.target.value)} />
                         </F>
                         <F field="grade8Score">
-                            <label className="field-label">Grade 8 Exam Score (0–100) *</label>
+                            <label className="field-label">Grade 8 Exam Score (0â€“100) *</label>
                             <input className={`field ${errors.grade8Score ? 'border-red-400' : ''}`}
                                 type="number" min={0} max={100} step={0.5}
                                 value={form.grade8Score} onChange={e => set('grade8Score', e.target.value)} />
@@ -337,7 +337,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                                 <label className="field-label">Stream *</label>
                                 <select className={`field ${errors.stream ? 'border-red-400' : ''}`}
                                     value={form.stream} onChange={e => set('stream', e.target.value)}>
-                                    <option value="">— Select stream —</option>
+                                    <option value="">â€” Select stream â€”</option>
                                     <option value="NATURAL_SCIENCE">Natural Science</option>
                                     <option value="SOCIAL_SCIENCE">Social Science</option>
                                 </select>
@@ -374,7 +374,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                             <label className="field-label">Relationship *</label>
                             <select className={`field ${errors.parentRelationship ? 'border-red-400' : ''}`}
                                 value={form.parentRelationship} onChange={e => set('parentRelationship', e.target.value)}>
-                                <option value="">— Select —</option>
+                                <option value="">â€” Select â€”</option>
                                 <option>Mother</option><option>Father</option>
                                 <option>Uncle</option><option>Aunt</option><option>Other</option>
                             </select>
@@ -397,7 +397,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                             <label className="field-label">Payment Method *</label>
                             <select className={`field ${errors.paymentMethod ? 'border-red-400' : ''}`}
                                 value={form.paymentMethod} onChange={e => set('paymentMethod', e.target.value)}>
-                                <option value="">— Select —</option>
+                                <option value="">â€” Select â€”</option>
                                 {PAYMENT_METHODS.map(m => (
                                     <option key={m.value} value={m.value}>{m.label}</option>
                                 ))}
@@ -433,294 +433,25 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             <div className="flex justify-between pt-4 border-t border-slate-100">
                 <button type="button" className="btn-ghost"
                     onClick={step === 0 ? onClose : () => { setStep(s => s - 1); setErrors({}) }}>
-                    {step === 0 ? 'Cancel' : '← Back'}
+                    {step === 0 ? 'Cancel' : 'â† Back'}
                 </button>
                 {step < 3 ? (
                     <button type="button" className="btn-primary" onClick={handleNext}>
-                        Next →
+                        Next â†’
                     </button>
                 ) : (
                     <button type="button" className="btn-primary"
                         onClick={handleSubmit} disabled={saving}>
-                        {saving ? 'Saving…' : '💾 Save & Register'}
+                        {saving ? 'Savingâ€¦' : 'ðŸ’¾ Save & Register'}
                     </button>
                 )}
             </div>
         </div>
     )
 }
-    const [step, setStep] = useState(0)
-    const [saving, setSaving] = useState(false)
-
-    const [form, setForm] = useState({
-        // Personal
-        firstName: '', fatherName: '', grandfatherName: '',
-        gender: '', dateOfBirth: '',
-        region: '', city: '', kebele: '', houseNo: '',
-        photoUrl: '', idDocUrl: '',
-        email: '',
-        // Academic
-        grade8Score: '', previousSchool: '',
-        grade8CertificateUrl: '', releaseLetterUrl: '',
-        stream: '',
-        // Guardian
-        parentName: '', parentRelationship: '', parentPhone: '',
-        // Payment
-        paymentMethod: '', bankTransactionRef: '', paymentReceiptUrl: '',
-    })
-    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-    const filteredSections = sections.filter(s => s.grade === grade)
-    const needsStream = grade >= 11
-
-    const canNext = () => {
-        if (step === 0) return form.firstName && form.fatherName && form.grandfatherName
-            && form.gender && form.email
-        if (step === 1) return form.previousSchool
-            && (enrollmentType === 'TRANSFER' ? form.releaseLetterUrl : true)
-            && (!needsStream || form.stream)
-        if (step === 2) return form.parentName && form.parentPhone
-        return true
-    }
-
-    const handleSubmit = async () => {
-        if (!windowId) {
-            toast.error('No active registration window found. Please refresh the page.')
-            return
-        }
-        setSaving(true)
-        try {
-            const result = await registrationService.enrollFull(windowId, {
-                ...form,
-                sectionId: null,
-                targetGrade: grade,
-                academicYear: academicYear,
-                grade8Score: form.grade8Score ? Number(form.grade8Score) : null,
-                dateOfBirth: form.dateOfBirth || null,
-                enrollmentType,
-            })
-            onSuccess(result)
-        } catch (err) {
-            const msg = err.response?.data?.message || err.message || 'Enrollment failed'
-            toast.error(msg)
-            console.error('Enrollment error:', err.response?.status, err.response?.data)
-        } finally { setSaving(false) }
-    }
-
-    return (
-        <div className="space-y-6">
-            <StepIndicator current={step} steps={WIZARD_STEPS} />
-
-            {/* Step 1: Personal Info */}
-            {step === 0 && (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                        <div>
-                            <label className="field-label">First Name *</label>
-                            <input className="field" value={form.firstName}
-                                onChange={e => set('firstName', e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="field-label">Father's Name *</label>
-                            <input className="field" value={form.fatherName}
-                                onChange={e => set('fatherName', e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="field-label">Grandfather's Name *</label>
-                            <input className="field" value={form.grandfatherName}
-                                onChange={e => set('grandfatherName', e.target.value)} required />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                        <div>
-                            <label className="field-label">Gender *</label>
-                            <select className="field" value={form.gender}
-                                onChange={e => set('gender', e.target.value)} required>
-                                <option value="">—</option>
-                                <option>Male</option><option>Female</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="field-label">Date of Birth</label>
-                            <input className="field" type="date" value={form.dateOfBirth}
-                                onChange={e => set('dateOfBirth', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="field-label">Email *</label>
-                            <input className="field" type="email" value={form.email}
-                                onChange={e => set('email', e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="field-label">Region</label>
-                            <select className="field" value={form.region}
-                                onChange={e => set('region', e.target.value)}>
-                                <option value="">— Select —</option>
-                                {ETHIOPIAN_REGIONS.map(r => <option key={r}>{r}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="field-label">City / Woreda</label>
-                            <input className="field" value={form.city}
-                                onChange={e => set('city', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="field-label">Kebele</label>
-                            <input className="field" value={form.kebele}
-                                onChange={e => set('kebele', e.target.value)} />
-                        </div>
-                        <div>
-                            <label className="field-label">House No.</label>
-                            <input className="field" value={form.houseNo}
-                                onChange={e => set('houseNo', e.target.value)} />
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <FileUploadField label="Student Photo" folder="student-photos"
-                            value={form.photoUrl} onChange={v => set('photoUrl', v)}
-                            accept="image/jpeg,image/png" />
-                        <FileUploadField label="Resident ID / Birth Certificate"
-                            folder="id-docs" value={form.idDocUrl}
-                            onChange={v => set('idDocUrl', v)} />
-                    </div>
-                </div>
-            )}
-
-            {/* Step 2: Academic */}
-            {step === 1 && (
-                <div className="space-y-4">
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
-                        ℹ️ Section will be auto-assigned by the director after registration closes, based on performance scores.
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="field-label">Previous School *</label>
-                            <input className="field" value={form.previousSchool}
-                                onChange={e => set('previousSchool', e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="field-label">Grade 8 Exam Score (avg)</label>
-                            <input className="field" type="number" min={0} max={100}
-                                value={form.grade8Score}
-                                onChange={e => set('grade8Score', e.target.value)} />
-                        </div>
-                        {needsStream && (
-                            <div>
-                                <label className="field-label">Stream *</label>
-                                <select className="field" value={form.stream}
-                                    onChange={e => set('stream', e.target.value)} required>
-                                    <option value="">— Select stream —</option>
-                                    <option value="NATURAL_SCIENCE">Natural Science</option>
-                                    <option value="SOCIAL_SCIENCE">Social Science</option>
-                                </select>
-                            </div>
-                        )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <FileUploadField label="Grade 8 Certificate / Transcript"
-                            folder="certificates" value={form.grade8CertificateUrl}
-                            onChange={v => set('grade8CertificateUrl', v)} />
-                        {enrollmentType === 'TRANSFER' && (
-                            <FileUploadField label="Official Release Letter" required
-                                folder="release-letters" value={form.releaseLetterUrl}
-                                onChange={v => set('releaseLetterUrl', v)} />
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Step 3: Guardian */}
-            {step === 2 && (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="field-label">Parent / Guardian Full Name *</label>
-                            <input className="field" value={form.parentName}
-                                onChange={e => set('parentName', e.target.value)} required />
-                        </div>
-                        <div>
-                            <label className="field-label">Relationship</label>
-                            <select className="field" value={form.parentRelationship}
-                                onChange={e => set('parentRelationship', e.target.value)}>
-                                <option value="">— Select —</option>
-                                <option>Mother</option><option>Father</option>
-                                <option>Uncle</option><option>Aunt</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="field-label">Phone Number *</label>
-                            <input className="field" type="tel" value={form.parentPhone}
-                                placeholder="09... or 07..."
-                                pattern="^(09|07)\d{8}$"
-                                onChange={e => set('parentPhone', e.target.value)} required />
-                            <p className="text-xs text-slate-400 mt-0.5">Must start with 09 or 07 (10 digits)</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Step 4: Payment */}
-            {step === 3 && (
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="field-label">Payment Method *</label>
-                            <select className="field" value={form.paymentMethod}
-                                onChange={e => set('paymentMethod', e.target.value)} required>
-                                <option value="">— Select —</option>
-                                <option value="TELEBIRR">Telebirr</option>
-                                <option value="CBE">CBE (Commercial Bank)</option>
-                                <option value="BANK_TRANSFER">Bank Transfer</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="field-label">Transaction Reference No. *</label>
-                            <input className="field" value={form.bankTransactionRef}
-                                placeholder="e.g. TXN-2026-001234"
-                                onChange={e => set('bankTransactionRef', e.target.value)} required />
-                        </div>
-                    </div>
-                    <FileUploadField label="Payment Receipt Photo"
-                        folder="payment-receipts" value={form.paymentReceiptUrl}
-                        onChange={v => set('paymentReceiptUrl', v)}
-                        accept="image/jpeg,image/png,application/pdf" />
-
-                    {/* Summary */}
-                    <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm space-y-1">
-                        <p className="font-semibold text-slate-800 mb-2">Registration Summary</p>
-                        <p><span className="text-slate-500">Name:</span> {form.firstName} {form.fatherName} {form.grandfatherName}</p>
-                        <p><span className="text-slate-500">Type:</span> <span className="font-medium">{enrollmentType}</span></p>
-                        {form.stream && <p><span className="text-slate-500">Stream:</span> {form.stream.replace('_', ' ')}</p>}
-                        <p><span className="text-slate-500">Parent:</span> {form.parentName} ({form.parentPhone})</p>
-                    </div>
-                </div>
-            )}
-
-            {/* Navigation */}
-            <div className="flex justify-between pt-4 border-t border-slate-100">
-                <button type="button" className="btn-ghost"
-                    onClick={step === 0 ? onClose : () => setStep(s => s - 1)}>
-                    {step === 0 ? 'Cancel' : '← Back'}
-                </button>
-                {step < 3 ? (
-                    <button type="button" className="btn-primary"
-                        onClick={() => setStep(s => s + 1)}
-                        disabled={!canNext()}>
-                        Next →
-                    </button>
-                ) : (
-                    <button type="button" className="btn-primary"
-                        onClick={handleSubmit}
-                        disabled={saving || !form.paymentMethod || !form.bankTransactionRef}>
-                        {saving ? 'Enrolling…' : '✅ Complete Enrollment'}
-                    </button>
-                )}
-            </div>
-        </div>
-    )
 }
 
-// ── Credentials modal ─────────────────────────────────────────────────────────
+// â”€â”€ Credentials modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CredentialsModal({ student, onClose }) {
     const [copied, setCopied] = useState(false)
     const text = `Name: ${student.fullName}\nUID: ${student.studentUid}\nUsername: ${student.generatedUsername}\nPassword: ${student.generatedPassword}`
@@ -729,7 +460,7 @@ function CredentialsModal({ student, onClose }) {
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-                ✅ Student enrolled. Share these login credentials with the student.
+                âœ… Student enrolled. Share these login credentials with the student.
             </div>
             {student.photoUrl && (
                 <img src={student.photoUrl} alt="Student" className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 mx-auto" />
@@ -740,16 +471,16 @@ function CredentialsModal({ student, onClose }) {
                 <p><span className="text-slate-500">Username:</span> <strong>{student.generatedUsername}</strong></p>
                 <p><span className="text-slate-500">Password:</span> <strong>{student.generatedPassword}</strong></p>
             </div>
-            <p className="text-xs text-slate-500">⚠️ Password shown once only. Student must change on first login.</p>
+            <p className="text-xs text-slate-500">âš ï¸ Password shown once only. Student must change on first login.</p>
             <div className="flex justify-end gap-2">
-                <button className="btn-ghost" onClick={copy}>{copied ? '✓ Copied!' : 'Copy'}</button>
+                <button className="btn-ghost" onClick={copy}>{copied ? 'âœ“ Copied!' : 'Copy'}</button>
                 <button className="btn-primary" onClick={onClose}>Done</button>
             </div>
         </div>
     )
 }
 
-// ── Existing student quick enrollment (PROMOTED / REPEATER) ──────────────────
+// â”€â”€ Existing student quick enrollment (PROMOTED / REPEATER) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) {
     const [students, setStudents] = useState([])
     const [loading, setLoading] = useState(true)
@@ -807,22 +538,22 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
     const failed = filtered.filter(s => !s.passed && !s.alreadyEnrolled)
     const enrolled = filtered.filter(s => s.alreadyEnrolled)
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Loading…</div>
+    if (loading) return <div className="p-8 text-center text-slate-500">Loadingâ€¦</div>
 
     return (
         <div className="space-y-4">
-            <input className="field max-w-sm" placeholder="Search by name or UID…"
+            <input className="field max-w-sm" placeholder="Search by name or UIDâ€¦"
                 value={search} onChange={e => setSearch(e.target.value)} />
 
             <div className="flex gap-4 text-sm">
-                <span className="text-green-600 font-medium">✓ {enrolled.length} enrolled</span>
-                <span className="text-blue-600 font-medium">↑ {passed.filter(s => !s.alreadyEnrolled).length} passed</span>
-                <span className="text-red-500 font-medium">✗ {failed.length} failed</span>
+                <span className="text-green-600 font-medium">âœ“ {enrolled.length} enrolled</span>
+                <span className="text-blue-600 font-medium">â†‘ {passed.filter(s => !s.alreadyEnrolled).length} passed</span>
+                <span className="text-red-500 font-medium">âœ— {failed.length} failed</span>
             </div>
 
             {failed.length > 0 && (
                 <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-                    ❌ {failed.length} student(s) did not pass — they can be re-enrolled as <strong>Repeater</strong> in the same grade.
+                    âŒ {failed.length} student(s) did not pass â€” they can be re-enrolled as <strong>Repeater</strong> in the same grade.
                 </div>
             )}
 
@@ -838,14 +569,14 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                     {s.alreadyEnrolled
                                         ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Enrolled</span>
                                         : s.passed
-                                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Passed → Grade {grade}</span>
+                                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Passed â†’ Grade {grade}</span>
                                             : <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full" title={s.reason}>Repeater</span>
                                     }
                                 </div>
                                 <div className="text-xs text-slate-500 mt-0.5">
                                     Avg: <strong className={s.average >= 50 ? 'text-green-600' : 'text-red-600'}>
                                         {s.average.toFixed(1)}</strong>
-                                    &nbsp;· {s.failedSubjects} failed subject(s) · {s.reason}
+                                    &nbsp;Â· {s.failedSubjects} failed subject(s) Â· {s.reason}
                                 </div>
                             </div>
 
@@ -857,7 +588,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                             <select className="field text-xs py-1 w-32"
                                                 value={getField(s.studentId, 'stream')}
                                                 onChange={e => setField(s.studentId, 'stream', e.target.value)}>
-                                                <option value="">—</option>
+                                                <option value="">â€”</option>
                                                 <option value="NATURAL_SCIENCE">Natural Science</option>
                                                 <option value="SOCIAL_SCIENCE">Social Science</option>
                                             </select>
@@ -868,7 +599,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                         <select className="field text-xs py-1 w-28"
                                             value={getField(s.studentId, 'paymentMethod')}
                                             onChange={e => setField(s.studentId, 'paymentMethod', e.target.value)}>
-                                            <option value="">—</option>
+                                            <option value="">â€”</option>
                                             <option value="TELEBIRR">Telebirr</option>
                                             <option value="CBE">CBE</option>
                                             <option value="BANK_TRANSFER">Bank</option>
@@ -886,7 +617,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                             <button className="btn-primary text-xs py-1 px-2"
                                                 disabled={saving[s.studentId]}
                                                 onClick={() => handleEnroll(s, 'PROMOTED')}>
-                                                {saving[s.studentId] ? '…' : '↑ Promoted'}
+                                                {saving[s.studentId] ? 'â€¦' : 'â†‘ Promoted'}
                                             </button>
                                         )}
                                         <button className={`text-xs py-1 px-2 rounded border ${
@@ -894,7 +625,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                                      : 'btn-primary'}`}
                                             disabled={saving[s.studentId]}
                                             onClick={() => handleEnroll(s, 'REPEATER')}>
-                                            {saving[s.studentId] ? '…' : '↺ Repeater'}
+                                            {saving[s.studentId] ? 'â€¦' : 'â†º Repeater'}
                                         </button>
                                     </div>
                                 </div>
@@ -907,7 +638,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
     )
 }
 
-// ── Main TeacherRegistrationPage ──────────────────────────────────────────────
+// â”€â”€ Main TeacherRegistrationPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function TeacherRegistrationPage() {
     const [window_, setWindow_] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -932,11 +663,11 @@ export default function TeacherRegistrationPage() {
         .finally(() => setLoading(false))
     }, [])
 
-    if (loading) return <div className="card p-8 text-center text-slate-500">Loading…</div>
+    if (loading) return <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
 
     if (!window_) return (
         <div className="card p-12 text-center">
-            <div className="text-5xl mb-4">🔒</div>
+            <div className="text-5xl mb-4">ðŸ”’</div>
             <h2 className="font-semibold text-slate-700 text-lg">No Active Registration Window</h2>
             <p className="mt-2 text-sm text-slate-500">
                 There is no open registration window right now, or you are not assigned to one.
@@ -958,8 +689,8 @@ export default function TeacherRegistrationPage() {
             <div className="mb-6">
                 <h1 className="font-display text-2xl font-bold text-slate-900">Student Registration</h1>
                 <p className="text-slate-500 mt-1">
-                    Academic Year: <strong>{window_.academicYear}</strong> ·
-                    Window: <strong>{window_.startDate}</strong> → <strong>{window_.endDate}</strong>
+                    Academic Year: <strong>{window_.academicYear}</strong> Â·
+                    Window: <strong>{window_.startDate}</strong> â†’ <strong>{window_.endDate}</strong>
                 </p>
             </div>
 
@@ -985,13 +716,13 @@ export default function TeacherRegistrationPage() {
             {selectedGrade && !pathway && (
                 <div className="card mb-6">
                     <h2 className="font-semibold text-slate-800 mb-4">
-                        Grade {selectedGrade} — Select Registration Pathway
+                        Grade {selectedGrade} â€” Select Registration Pathway
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {selectedGrade === 9 && (
                             <button onClick={() => setPathway('new')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">🆕</div>
+                                <div className="text-2xl mb-2">ðŸ†•</div>
                                 <div className="font-semibold text-slate-900">New Entrant</div>
                                 <div className="text-xs text-slate-500 mt-1">Grade 8 graduate entering Grade 9 for the first time</div>
                             </button>
@@ -999,23 +730,23 @@ export default function TeacherRegistrationPage() {
                         {selectedGrade > 9 && (
                             <button onClick={() => setPathway('existing')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">✅</div>
+                                <div className="text-2xl mb-2">âœ…</div>
                                 <div className="font-semibold text-slate-900">Promoted / Repeater</div>
-                                <div className="text-xs text-slate-500 mt-1">Already in the system — promoted or repeating the same grade</div>
+                                <div className="text-xs text-slate-500 mt-1">Already in the system â€” promoted or repeating the same grade</div>
                             </button>
                         )}
                         <button onClick={() => setPathway('transfer')}
                             className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                            <div className="text-2xl mb-2">🔄</div>
+                            <div className="text-2xl mb-2">ðŸ”„</div>
                             <div className="font-semibold text-slate-900">Transfer Student</div>
-                            <div className="text-xs text-slate-500 mt-1">Joining from another school — requires release letter</div>
+                            <div className="text-xs text-slate-500 mt-1">Joining from another school â€” requires release letter</div>
                         </button>
                         {selectedGrade === 9 && (
                             <button onClick={() => setPathway('existing')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">↺</div>
+                                <div className="text-2xl mb-2">â†º</div>
                                 <div className="font-semibold text-slate-900">Repeater</div>
-                                <div className="text-xs text-slate-500 mt-1">Failed Grade 9 last year — re-enrolling in same grade</div>
+                                <div className="text-xs text-slate-500 mt-1">Failed Grade 9 last year â€” re-enrolling in same grade</div>
                             </button>
                         )}
                     </div>
@@ -1028,12 +759,12 @@ export default function TeacherRegistrationPage() {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="font-semibold text-slate-800">
-                                {pathway === 'new' ? '🆕 New Grade 9 Entrant' : '🔄 Transfer Student — Grade ' + selectedGrade}
+                                {pathway === 'new' ? 'ðŸ†• New Grade 9 Entrant' : 'ðŸ”„ Transfer Student â€” Grade ' + selectedGrade}
                             </h2>
                             <p className="text-xs text-slate-500 mt-0.5">4-step enrollment form</p>
                         </div>
                         <div className="flex gap-2">
-                            <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>← Back</button>
+                            <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>â† Back</button>
                             <button className="btn-primary"
                                 onClick={() => setWizardModal({ grade: selectedGrade, type: pathway === 'new' ? 'NEW' : 'TRANSFER' })}>
                                 + Register Student
@@ -1052,13 +783,13 @@ export default function TeacherRegistrationPage() {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="font-semibold text-slate-800">
-                                Grade {selectedGrade} — Existing Students
+                                Grade {selectedGrade} â€” Existing Students
                             </h2>
                             <p className="text-xs text-slate-500 mt-0.5">
                                 Students from Grade {selectedGrade === 9 ? 9 : selectedGrade - 1} ({selectedGrade === 9 ? newYear : prevYear})
                             </p>
                         </div>
-                        <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>← Back</button>
+                        <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>â† Back</button>
                     </div>
                     <ExistingStudentPanel
                         grade={selectedGrade}
@@ -1073,7 +804,7 @@ export default function TeacherRegistrationPage() {
             {/* 4-step wizard modal */}
             {wizardModal && (
                 <Modal
-                    title={`${wizardModal.type === 'NEW' ? 'New Grade 9 Student' : `Grade ${wizardModal.grade} Transfer`} — Enrollment`}
+                    title={`${wizardModal.type === 'NEW' ? 'New Grade 9 Student' : `Grade ${wizardModal.grade} Transfer`} â€” Enrollment`}
                     onClose={() => setWizardModal(null)}
                 >
                     <FullEnrollmentWizard
