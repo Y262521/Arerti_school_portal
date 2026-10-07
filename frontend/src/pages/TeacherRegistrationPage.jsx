@@ -4,7 +4,7 @@ import { classService } from '../services/classService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
-// â”€â”€ Cloudinary file upload helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// File upload field with Cloudinary direct upload
 function FileUploadField({ label, required, folder, value, onChange, accept = 'image/*,.pdf' }) {
     const [uploading, setUploading] = useState(false)
     const ref = useRef()
@@ -30,7 +30,7 @@ function FileUploadField({ label, required, folder, value, onChange, accept = 'i
             <div className="flex gap-2 items-center">
                 <button type="button" className="btn-ghost text-xs py-1.5"
                     onClick={() => ref.current?.click()}>
-                    {uploading ? 'â³ Uploadingâ€¦' : value ? 'âœ… Change file' : 'ðŸ“Ž Upload file'}
+                    {uploading ? 'Uploading...' : value ? 'Change file' : 'Upload file'}
                 </button>
                 {value && (
                     <a href={value} target="_blank" rel="noreferrer"
@@ -45,7 +45,7 @@ function FileUploadField({ label, required, folder, value, onChange, accept = 'i
     )
 }
 
-// â”€â”€ Step progress indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Step progress indicator
 function StepIndicator({ current, steps }) {
     return (
         <div className="flex items-center gap-0 mb-8">
@@ -53,7 +53,7 @@ function StepIndicator({ current, steps }) {
                 <div key={i} className="flex items-center flex-1 last:flex-none">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition
                         ${i < current ? 'bg-green-500 text-white' : i === current ? 'bg-brand text-white' : 'bg-slate-200 text-slate-500'}`}>
-                        {i < current ? 'âœ“' : i + 1}
+                        {i < current ? 'v' : i + 1}
                     </div>
                     <div className="ml-1.5 text-xs hidden sm:block">
                         <div className={`font-medium ${i === current ? 'text-brand' : i < current ? 'text-green-600' : 'text-slate-400'}`}>
@@ -69,7 +69,6 @@ function StepIndicator({ current, steps }) {
     )
 }
 
-// â”€â”€ 4-Step Wizard for NEW / TRANSFER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const WIZARD_STEPS = ['Personal Info', 'Academic', 'Guardian', 'Payment']
 
 const ETHIOPIAN_REGIONS = [
@@ -86,9 +85,9 @@ const PAYMENT_METHODS = [
     { value: 'OTHER', label: 'Other' },
 ]
 
-// Phone field with +251 prefix locked, 9 digits after (starts with 9 or 7)
+// Ethiopian phone input with +251 prefix locked
 function EthiopianPhoneInput({ value, onChange, required }) {
-    const digits = value.replace(/^\+251/, '')
+    const digits = (value || '').replace(/^\+251/, '')
 
     const handleChange = (e) => {
         let raw = e.target.value.replace(/\D/g, '')
@@ -103,7 +102,7 @@ function EthiopianPhoneInput({ value, onChange, required }) {
         <div>
             <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-slate-600 text-sm font-medium">
-                    ðŸ‡ªðŸ‡¹ +251
+                    +251
                 </span>
                 <input
                     className={`field rounded-l-none flex-1 ${showError ? 'border-red-400' : ''}`}
@@ -116,9 +115,7 @@ function EthiopianPhoneInput({ value, onChange, required }) {
                 />
             </div>
             {showError && (
-                <p className="text-xs text-red-500 mt-0.5">
-                    Must start with 9 or 7 and be exactly 9 digits
-                </p>
+                <p className="text-xs text-red-500 mt-0.5">Must start with 9 or 7 and be exactly 9 digits</p>
             )}
             {required && !digits && (
                 <p className="text-xs text-red-500 mt-0.5">Required</p>
@@ -127,6 +124,17 @@ function EthiopianPhoneInput({ value, onChange, required }) {
     )
 }
 
+// Error wrapper component
+function F({ field, errors, children }) {
+    return (
+        <div>
+            {children}
+            {errors[field] && <p className="text-xs text-red-500 mt-0.5">{errors[field]}</p>}
+        </div>
+    )
+}
+
+// 4-Step Wizard for NEW and TRANSFER students
 function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, academicYear, onSuccess, onClose }) {
     const [step, setStep] = useState(0)
     const [saving, setSaving] = useState(false)
@@ -146,10 +154,8 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
     })
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-    const filteredSections = sections.filter(s => s.grade === grade)
     const needsStream = grade >= 11
 
-    // Validate current step â€” returns error messages
     const validateStep = () => {
         const e = {}
         if (step === 0) {
@@ -167,7 +173,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
         }
         if (step === 1) {
             if (!form.previousSchool) e.previousSchool = 'Required'
-            if (!form.grade8Score && form.grade8Score !== 0) e.grade8Score = 'Required'
+            if (form.grade8Score === '') e.grade8Score = 'Required'
             else if (Number(form.grade8Score) < 0 || Number(form.grade8Score) > 100)
                 e.grade8Score = 'Must be between 0 and 100'
             if (!form.grade8CertificateUrl) e.grade8CertificateUrl = 'Grade 8 certificate is required'
@@ -178,7 +184,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
         if (step === 2) {
             if (!form.parentName) e.parentName = 'Required'
             if (!form.parentRelationship) e.parentRelationship = 'Required'
-            const digits = form.parentPhone.replace(/^\+251/, '')
+            const digits = (form.parentPhone || '').replace(/^\+251/, '')
             if (!digits) e.parentPhone = 'Required'
             else if (!/^(9|7)\d{8}$/.test(digits))
                 e.parentPhone = 'Must start with 9 or 7 and be 9 digits'
@@ -201,9 +207,8 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
         const e = validateStep()
         setErrors(e)
         if (Object.keys(e).length > 0) return
-
         if (!windowId) {
-            toast.error('No active registration window found. Please refresh the page.')
+            toast.error('No active registration window found.')
             return
         }
         setSaving(true)
@@ -223,13 +228,6 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
         } finally { setSaving(false) }
     }
 
-    const F = ({ field, children }) => (
-        <div>
-            {children}
-            {errors[field] && <p className="text-xs text-red-500 mt-0.5">{errors[field]}</p>}
-        </div>
-    )
-
     return (
         <div className="space-y-6">
             <StepIndicator current={step} steps={WIZARD_STEPS} />
@@ -238,57 +236,57 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             {step === 0 && (
                 <div className="space-y-4">
                     <div className="grid grid-cols-3 gap-3">
-                        <F field="firstName">
+                        <F field="firstName" errors={errors}>
                             <label className="field-label">First Name *</label>
                             <input className={`field ${errors.firstName ? 'border-red-400' : ''}`}
                                 value={form.firstName} onChange={e => set('firstName', e.target.value)} />
                         </F>
-                        <F field="fatherName">
+                        <F field="fatherName" errors={errors}>
                             <label className="field-label">Father's Name *</label>
                             <input className={`field ${errors.fatherName ? 'border-red-400' : ''}`}
                                 value={form.fatherName} onChange={e => set('fatherName', e.target.value)} />
                         </F>
-                        <F field="grandfatherName">
+                        <F field="grandfatherName" errors={errors}>
                             <label className="field-label">Grandfather's Name *</label>
                             <input className={`field ${errors.grandfatherName ? 'border-red-400' : ''}`}
                                 value={form.grandfatherName} onChange={e => set('grandfatherName', e.target.value)} />
                         </F>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
-                        <F field="gender">
+                        <F field="gender" errors={errors}>
                             <label className="field-label">Gender *</label>
                             <select className={`field ${errors.gender ? 'border-red-400' : ''}`}
                                 value={form.gender} onChange={e => set('gender', e.target.value)}>
-                                <option value="">â€” Select â€”</option>
+                                <option value="">-- Select --</option>
                                 <option>Male</option><option>Female</option>
                             </select>
                         </F>
-                        <F field="dateOfBirth">
+                        <F field="dateOfBirth" errors={errors}>
                             <label className="field-label">Date of Birth *</label>
                             <input className={`field ${errors.dateOfBirth ? 'border-red-400' : ''}`}
                                 type="date" value={form.dateOfBirth}
                                 onChange={e => set('dateOfBirth', e.target.value)} />
                         </F>
-                        <F field="email">
+                        <F field="email" errors={errors}>
                             <label className="field-label">Email *</label>
                             <input className={`field ${errors.email ? 'border-red-400' : ''}`}
                                 type="email" value={form.email}
                                 onChange={e => set('email', e.target.value)} />
                         </F>
-                        <F field="region">
+                        <F field="region" errors={errors}>
                             <label className="field-label">Region *</label>
                             <select className={`field ${errors.region ? 'border-red-400' : ''}`}
                                 value={form.region} onChange={e => set('region', e.target.value)}>
-                                <option value="">â€” Select â€”</option>
+                                <option value="">-- Select --</option>
                                 {ETHIOPIAN_REGIONS.map(r => <option key={r}>{r}</option>)}
                             </select>
                         </F>
-                        <F field="city">
+                        <F field="city" errors={errors}>
                             <label className="field-label">City / Woreda *</label>
                             <input className={`field ${errors.city ? 'border-red-400' : ''}`}
                                 value={form.city} onChange={e => set('city', e.target.value)} />
                         </F>
-                        <F field="kebele">
+                        <F field="kebele" errors={errors}>
                             <label className="field-label">Kebele *</label>
                             <input className={`field ${errors.kebele ? 'border-red-400' : ''}`}
                                 value={form.kebele} onChange={e => set('kebele', e.target.value)} />
@@ -300,12 +298,12 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <F field="photoUrl">
+                        <F field="photoUrl" errors={errors}>
                             <FileUploadField label="Student Photo *" required folder="student-photos"
                                 value={form.photoUrl} onChange={v => set('photoUrl', v)}
                                 accept="image/jpeg,image/png" />
                         </F>
-                        <F field="idDocUrl">
+                        <F field="idDocUrl" errors={errors}>
                             <FileUploadField label="Resident ID / Birth Certificate *" required
                                 folder="id-docs" value={form.idDocUrl}
                                 onChange={v => set('idDocUrl', v)} />
@@ -318,26 +316,26 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             {step === 1 && (
                 <div className="space-y-4">
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
-                        â„¹ï¸ Section will be auto-assigned by the director after registration closes, based on performance scores.
+                        Section will be auto-assigned by the director after registration closes.
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <F field="previousSchool">
+                        <F field="previousSchool" errors={errors}>
                             <label className="field-label">Previous School *</label>
                             <input className={`field ${errors.previousSchool ? 'border-red-400' : ''}`}
                                 value={form.previousSchool} onChange={e => set('previousSchool', e.target.value)} />
                         </F>
-                        <F field="grade8Score">
-                            <label className="field-label">Grade 8 Exam Score (0â€“100) *</label>
+                        <F field="grade8Score" errors={errors}>
+                            <label className="field-label">Grade 8 Exam Score (0-100) *</label>
                             <input className={`field ${errors.grade8Score ? 'border-red-400' : ''}`}
                                 type="number" min={0} max={100} step={0.5}
                                 value={form.grade8Score} onChange={e => set('grade8Score', e.target.value)} />
                         </F>
                         {needsStream && (
-                            <F field="stream">
+                            <F field="stream" errors={errors}>
                                 <label className="field-label">Stream *</label>
                                 <select className={`field ${errors.stream ? 'border-red-400' : ''}`}
                                     value={form.stream} onChange={e => set('stream', e.target.value)}>
-                                    <option value="">â€” Select stream â€”</option>
+                                    <option value="">-- Select stream --</option>
                                     <option value="NATURAL_SCIENCE">Natural Science</option>
                                     <option value="SOCIAL_SCIENCE">Social Science</option>
                                 </select>
@@ -345,13 +343,13 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                         )}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <F field="grade8CertificateUrl">
+                        <F field="grade8CertificateUrl" errors={errors}>
                             <FileUploadField label="Grade 8 Certificate / Transcript *" required
                                 folder="certificates" value={form.grade8CertificateUrl}
                                 onChange={v => set('grade8CertificateUrl', v)} />
                         </F>
                         {enrollmentType === 'TRANSFER' && (
-                            <F field="releaseLetterUrl">
+                            <F field="releaseLetterUrl" errors={errors}>
                                 <FileUploadField label="Official Release Letter *" required
                                     folder="release-letters" value={form.releaseLetterUrl}
                                     onChange={v => set('releaseLetterUrl', v)} />
@@ -365,22 +363,22 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             {step === 2 && (
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
-                        <F field="parentName">
+                        <F field="parentName" errors={errors}>
                             <label className="field-label">Parent / Guardian Full Name *</label>
                             <input className={`field ${errors.parentName ? 'border-red-400' : ''}`}
                                 value={form.parentName} onChange={e => set('parentName', e.target.value)} />
                         </F>
-                        <F field="parentRelationship">
+                        <F field="parentRelationship" errors={errors}>
                             <label className="field-label">Relationship *</label>
                             <select className={`field ${errors.parentRelationship ? 'border-red-400' : ''}`}
                                 value={form.parentRelationship} onChange={e => set('parentRelationship', e.target.value)}>
-                                <option value="">â€” Select â€”</option>
+                                <option value="">-- Select --</option>
                                 <option>Mother</option><option>Father</option>
                                 <option>Uncle</option><option>Aunt</option><option>Other</option>
                             </select>
                         </F>
-                        <F field="parentPhone">
-                            <label className="field-label">Phone Number * (+251 9XXXXXXXX or 7XXXXXXXX)</label>
+                        <F field="parentPhone" errors={errors}>
+                            <label className="field-label">Phone Number * (+251)</label>
                             <EthiopianPhoneInput required
                                 value={form.parentPhone}
                                 onChange={v => set('parentPhone', v)} />
@@ -393,17 +391,17 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             {step === 3 && (
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
-                        <F field="paymentMethod">
+                        <F field="paymentMethod" errors={errors}>
                             <label className="field-label">Payment Method *</label>
                             <select className={`field ${errors.paymentMethod ? 'border-red-400' : ''}`}
                                 value={form.paymentMethod} onChange={e => set('paymentMethod', e.target.value)}>
-                                <option value="">â€” Select â€”</option>
+                                <option value="">-- Select --</option>
                                 {PAYMENT_METHODS.map(m => (
                                     <option key={m.value} value={m.value}>{m.label}</option>
                                 ))}
                             </select>
                         </F>
-                        <F field="bankTransactionRef">
+                        <F field="bankTransactionRef" errors={errors}>
                             <label className="field-label">Transaction / Receipt Reference No. *</label>
                             <input className={`field ${errors.bankTransactionRef ? 'border-red-400' : ''}`}
                                 value={form.bankTransactionRef}
@@ -411,14 +409,12 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                                 onChange={e => set('bankTransactionRef', e.target.value)} />
                         </F>
                     </div>
-                    <F field="paymentReceiptUrl">
+                    <F field="paymentReceiptUrl" errors={errors}>
                         <FileUploadField label="Payment Receipt *" required
                             folder="payment-receipts" value={form.paymentReceiptUrl}
                             onChange={v => set('paymentReceiptUrl', v)}
                             accept="image/jpeg,image/png,application/pdf" />
                     </F>
-
-                    {/* Summary */}
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm space-y-1">
                         <p className="font-semibold text-slate-800 mb-2">Registration Summary</p>
                         <p><span className="text-slate-500">Name:</span> {form.firstName} {form.fatherName} {form.grandfatherName}</p>
@@ -433,25 +429,24 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             <div className="flex justify-between pt-4 border-t border-slate-100">
                 <button type="button" className="btn-ghost"
                     onClick={step === 0 ? onClose : () => { setStep(s => s - 1); setErrors({}) }}>
-                    {step === 0 ? 'Cancel' : 'â† Back'}
+                    {step === 0 ? 'Cancel' : 'Back'}
                 </button>
                 {step < 3 ? (
                     <button type="button" className="btn-primary" onClick={handleNext}>
-                        Next â†’
+                        Next
                     </button>
                 ) : (
                     <button type="button" className="btn-primary"
                         onClick={handleSubmit} disabled={saving}>
-                        {saving ? 'Savingâ€¦' : 'ðŸ’¾ Save & Register'}
+                        {saving ? 'Saving...' : 'Save & Register'}
                     </button>
                 )}
             </div>
         </div>
     )
 }
-}
 
-// â”€â”€ Credentials modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Credentials modal after registration
 function CredentialsModal({ student, onClose }) {
     const [copied, setCopied] = useState(false)
     const text = `Name: ${student.fullName}\nUID: ${student.studentUid}\nUsername: ${student.generatedUsername}\nPassword: ${student.generatedPassword}`
@@ -460,7 +455,7 @@ function CredentialsModal({ student, onClose }) {
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-                âœ… Student enrolled. Share these login credentials with the student.
+                Student registered. Share these login credentials with the student.
             </div>
             {student.photoUrl && (
                 <img src={student.photoUrl} alt="Student" className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 mx-auto" />
@@ -471,24 +466,23 @@ function CredentialsModal({ student, onClose }) {
                 <p><span className="text-slate-500">Username:</span> <strong>{student.generatedUsername}</strong></p>
                 <p><span className="text-slate-500">Password:</span> <strong>{student.generatedPassword}</strong></p>
             </div>
-            <p className="text-xs text-slate-500">âš ï¸ Password shown once only. Student must change on first login.</p>
+            <p className="text-xs text-slate-500">Password shown once only. Student must change on first login.</p>
             <div className="flex justify-end gap-2">
-                <button className="btn-ghost" onClick={copy}>{copied ? 'âœ“ Copied!' : 'Copy'}</button>
+                <button className="btn-ghost" onClick={copy}>{copied ? 'Copied!' : 'Copy'}</button>
                 <button className="btn-primary" onClick={onClose}>Done</button>
             </div>
         </div>
     )
 }
 
-// â”€â”€ Existing student quick enrollment (PROMOTED / REPEATER) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Existing student quick enrollment (PROMOTED / REPEATER)
 function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) {
     const [students, setStudents] = useState([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [saving, setSaving] = useState({})
-    const [forms, setForms] = useState({}) // per-student form state
+    const [forms, setForms] = useState({})
 
-    const targetSections = sections.filter(s => s.grade === grade)
     const needsStream = grade >= 11
 
     useEffect(() => {
@@ -513,7 +507,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
         try {
             await registrationService.enrollExisting(windowId, {
                 studentId: student.studentId,
-                newSectionId: null,      // section auto-assigned by director later
+                newSectionId: null,
                 enrollmentType: type,
                 stream: f.stream || null,
                 paymentMethod: f.paymentMethod,
@@ -534,26 +528,25 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
         s.studentUid.toLowerCase().includes(search.toLowerCase())
     )
 
-    const passed = filtered.filter(s => s.passed)
-    const failed = filtered.filter(s => !s.passed && !s.alreadyEnrolled)
     const enrolled = filtered.filter(s => s.alreadyEnrolled)
+    const failed = filtered.filter(s => !s.passed && !s.alreadyEnrolled)
 
-    if (loading) return <div className="p-8 text-center text-slate-500">Loadingâ€¦</div>
+    if (loading) return <div className="p-8 text-center text-slate-500">Loading...</div>
 
     return (
         <div className="space-y-4">
-            <input className="field max-w-sm" placeholder="Search by name or UIDâ€¦"
+            <input className="field max-w-sm" placeholder="Search by name or UID..."
                 value={search} onChange={e => setSearch(e.target.value)} />
 
             <div className="flex gap-4 text-sm">
-                <span className="text-green-600 font-medium">âœ“ {enrolled.length} enrolled</span>
-                <span className="text-blue-600 font-medium">â†‘ {passed.filter(s => !s.alreadyEnrolled).length} passed</span>
-                <span className="text-red-500 font-medium">âœ— {failed.length} failed</span>
+                <span className="text-green-600 font-medium">{enrolled.length} enrolled</span>
+                <span className="text-blue-600 font-medium">{filtered.filter(s => s.passed && !s.alreadyEnrolled).length} passed</span>
+                <span className="text-red-500 font-medium">{failed.length} failed</span>
             </div>
 
             {failed.length > 0 && (
                 <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-                    âŒ {failed.length} student(s) did not pass â€” they can be re-enrolled as <strong>Repeater</strong> in the same grade.
+                    {failed.length} student(s) did not pass - they can be re-enrolled as Repeater.
                 </div>
             )}
 
@@ -563,20 +556,20 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                         className={`card ${s.alreadyEnrolled ? 'bg-green-50 border-green-200' : ''}`}>
                         <div className="flex items-start gap-4 flex-wrap">
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-semibold text-slate-900">{s.studentName}</span>
                                     <span className="font-mono text-xs text-slate-400">{s.studentUid}</span>
                                     {s.alreadyEnrolled
                                         ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Enrolled</span>
                                         : s.passed
-                                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Passed â†’ Grade {grade}</span>
-                                            : <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full" title={s.reason}>Repeater</span>
+                                            ? <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Passed - Grade {grade}</span>
+                                            : <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Repeater</span>
                                     }
                                 </div>
                                 <div className="text-xs text-slate-500 mt-0.5">
-                                    Avg: <strong className={s.average >= 50 ? 'text-green-600' : 'text-red-600'}>
-                                        {s.average.toFixed(1)}</strong>
-                                    &nbsp;Â· {s.failedSubjects} failed subject(s) Â· {s.reason}
+                                    Avg: <strong className={s.annualAverage >= 50 ? 'text-green-600' : 'text-red-600'}>
+                                        {(s.annualAverage || s.average || 0).toFixed(1)}</strong>
+                                    {' '} - {s.reason}
                                 </div>
                             </div>
 
@@ -588,7 +581,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                             <select className="field text-xs py-1 w-32"
                                                 value={getField(s.studentId, 'stream')}
                                                 onChange={e => setField(s.studentId, 'stream', e.target.value)}>
-                                                <option value="">â€”</option>
+                                                <option value="">--</option>
                                                 <option value="NATURAL_SCIENCE">Natural Science</option>
                                                 <option value="SOCIAL_SCIENCE">Social Science</option>
                                             </select>
@@ -596,10 +589,11 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                     )}
                                     <div>
                                         <label className="field-label text-xs">Payment</label>
-                                        <select className="field text-xs py-1 w-28"
+                                        <select className="field text-xs py-1 w-32"
                                             value={getField(s.studentId, 'paymentMethod')}
                                             onChange={e => setField(s.studentId, 'paymentMethod', e.target.value)}>
-                                            <option value="">â€”</option>
+                                            <option value="">--</option>
+                                            <option value="FINANCE_OFFICE">Finance Office</option>
                                             <option value="TELEBIRR">Telebirr</option>
                                             <option value="CBE">CBE</option>
                                             <option value="BANK_TRANSFER">Bank</option>
@@ -608,7 +602,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                     <div>
                                         <label className="field-label text-xs">Ref No.</label>
                                         <input className="field text-xs py-1 w-32"
-                                            placeholder="TXN-..."
+                                            placeholder="REC-..."
                                             value={getField(s.studentId, 'bankTransactionRef')}
                                             onChange={e => setField(s.studentId, 'bankTransactionRef', e.target.value)} />
                                     </div>
@@ -617,15 +611,14 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                                             <button className="btn-primary text-xs py-1 px-2"
                                                 disabled={saving[s.studentId]}
                                                 onClick={() => handleEnroll(s, 'PROMOTED')}>
-                                                {saving[s.studentId] ? 'â€¦' : 'â†‘ Promoted'}
+                                                {saving[s.studentId] ? '...' : 'Promoted'}
                                             </button>
                                         )}
                                         <button className={`text-xs py-1 px-2 rounded border ${
-                                            s.passed ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
-                                                     : 'btn-primary'}`}
+                                            s.passed ? 'border-yellow-300 text-yellow-700' : 'btn-primary'}`}
                                             disabled={saving[s.studentId]}
                                             onClick={() => handleEnroll(s, 'REPEATER')}>
-                                            {saving[s.studentId] ? 'â€¦' : 'â†º Repeater'}
+                                            {saving[s.studentId] ? '...' : 'Repeater'}
                                         </button>
                                     </div>
                                 </div>
@@ -638,13 +631,13 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
     )
 }
 
-// â”€â”€ Main TeacherRegistrationPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Main TeacherRegistrationPage
 export default function TeacherRegistrationPage() {
     const [window_, setWindow_] = useState(null)
     const [loading, setLoading] = useState(true)
     const [sections, setSections] = useState([])
     const [selectedGrade, setSelectedGrade] = useState(null)
-    const [pathway, setPathway] = useState(null) // 'new' | 'transfer' | 'existing'
+    const [pathway, setPathway] = useState(null)
     const [wizardModal, setWizardModal] = useState(null)
     const [credentialsModal, setCredentialsModal] = useState(null)
 
@@ -663,11 +656,11 @@ export default function TeacherRegistrationPage() {
         .finally(() => setLoading(false))
     }, [])
 
-    if (loading) return <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+    if (loading) return <div className="card p-8 text-center text-slate-500">Loading...</div>
 
     if (!window_) return (
         <div className="card p-12 text-center">
-            <div className="text-5xl mb-4">ðŸ”’</div>
+            <div className="text-5xl mb-4">locked</div>
             <h2 className="font-semibold text-slate-700 text-lg">No Active Registration Window</h2>
             <p className="mt-2 text-sm text-slate-500">
                 There is no open registration window right now, or you are not assigned to one.
@@ -689,12 +682,13 @@ export default function TeacherRegistrationPage() {
             <div className="mb-6">
                 <h1 className="font-display text-2xl font-bold text-slate-900">Student Registration</h1>
                 <p className="text-slate-500 mt-1">
-                    Academic Year: <strong>{window_.academicYear}</strong> Â·
-                    Window: <strong>{window_.startDate}</strong> â†’ <strong>{window_.endDate}</strong>
+                    Academic Year: <strong>{window_.academicYear}</strong>
+                    {window_.startDatetime && (
+                        <span> &middot; {new Date(window_.startDatetime).toLocaleString()} - {new Date(window_.endDatetime).toLocaleString()}</span>
+                    )}
                 </p>
             </div>
 
-            {/* Grade selector */}
             <div className="card mb-6">
                 <h2 className="font-semibold text-slate-800 mb-3">Select Grade</h2>
                 <div className="flex gap-3 flex-wrap">
@@ -712,17 +706,16 @@ export default function TeacherRegistrationPage() {
                 </div>
             </div>
 
-            {/* Pathway selector */}
             {selectedGrade && !pathway && (
                 <div className="card mb-6">
                     <h2 className="font-semibold text-slate-800 mb-4">
-                        Grade {selectedGrade} â€” Select Registration Pathway
+                        Grade {selectedGrade} - Select Registration Pathway
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {selectedGrade === 9 && (
                             <button onClick={() => setPathway('new')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">ðŸ†•</div>
+                                <div className="text-2xl mb-2">NEW</div>
                                 <div className="font-semibold text-slate-900">New Entrant</div>
                                 <div className="text-xs text-slate-500 mt-1">Grade 8 graduate entering Grade 9 for the first time</div>
                             </button>
@@ -730,41 +723,40 @@ export default function TeacherRegistrationPage() {
                         {selectedGrade > 9 && (
                             <button onClick={() => setPathway('existing')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">âœ…</div>
+                                <div className="text-2xl mb-2">RE</div>
                                 <div className="font-semibold text-slate-900">Promoted / Repeater</div>
-                                <div className="text-xs text-slate-500 mt-1">Already in the system â€” promoted or repeating the same grade</div>
+                                <div className="text-xs text-slate-500 mt-1">Already in the system</div>
                             </button>
                         )}
                         <button onClick={() => setPathway('transfer')}
                             className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                            <div className="text-2xl mb-2">ðŸ”„</div>
+                            <div className="text-2xl mb-2">TR</div>
                             <div className="font-semibold text-slate-900">Transfer Student</div>
-                            <div className="text-xs text-slate-500 mt-1">Joining from another school â€” requires release letter</div>
+                            <div className="text-xs text-slate-500 mt-1">Joining from another school</div>
                         </button>
                         {selectedGrade === 9 && (
                             <button onClick={() => setPathway('existing')}
                                 className="card hover:shadow-md border-2 border-transparent hover:border-brand transition text-left cursor-pointer">
-                                <div className="text-2xl mb-2">â†º</div>
+                                <div className="text-2xl mb-2">RP</div>
                                 <div className="font-semibold text-slate-900">Repeater</div>
-                                <div className="text-xs text-slate-500 mt-1">Failed Grade 9 last year â€” re-enrolling in same grade</div>
+                                <div className="text-xs text-slate-500 mt-1">Failed last year, re-enrolling</div>
                             </button>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* New/Transfer pathway */}
             {selectedGrade && (pathway === 'new' || pathway === 'transfer') && (
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h2 className="font-semibold text-slate-800">
-                                {pathway === 'new' ? 'ðŸ†• New Grade 9 Entrant' : 'ðŸ”„ Transfer Student â€” Grade ' + selectedGrade}
+                                {pathway === 'new' ? 'New Grade 9 Entrant' : 'Transfer Student - Grade ' + selectedGrade}
                             </h2>
-                            <p className="text-xs text-slate-500 mt-0.5">4-step enrollment form</p>
+                            <p className="text-xs text-slate-500 mt-0.5">4-step registration form</p>
                         </div>
                         <div className="flex gap-2">
-                            <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>â† Back</button>
+                            <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>Back</button>
                             <button className="btn-primary"
                                 onClick={() => setWizardModal({ grade: selectedGrade, type: pathway === 'new' ? 'NEW' : 'TRANSFER' })}>
                                 + Register Student
@@ -772,24 +764,21 @@ export default function TeacherRegistrationPage() {
                         </div>
                     </div>
                     <div className="card p-8 text-center text-slate-500 text-sm">
-                        Click <strong>"Register Student"</strong> to open the 4-step enrollment wizard.
+                        Click <strong>"Register Student"</strong> to open the registration form.
                     </div>
                 </div>
             )}
 
-            {/* Existing student pathway */}
             {selectedGrade && pathway === 'existing' && (
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h2 className="font-semibold text-slate-800">
-                                Grade {selectedGrade} â€” Existing Students
-                            </h2>
+                            <h2 className="font-semibold text-slate-800">Grade {selectedGrade} - Existing Students</h2>
                             <p className="text-xs text-slate-500 mt-0.5">
-                                Students from Grade {selectedGrade === 9 ? 9 : selectedGrade - 1} ({selectedGrade === 9 ? newYear : prevYear})
+                                Students from Grade {selectedGrade === 9 ? 9 : selectedGrade - 1}
                             </p>
                         </div>
-                        <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>â† Back</button>
+                        <button className="btn-ghost text-xs" onClick={() => setPathway(null)}>Back</button>
                     </div>
                     <ExistingStudentPanel
                         grade={selectedGrade}
@@ -801,10 +790,9 @@ export default function TeacherRegistrationPage() {
                 </div>
             )}
 
-            {/* 4-step wizard modal */}
             {wizardModal && (
                 <Modal
-                    title={`${wizardModal.type === 'NEW' ? 'New Grade 9 Student' : `Grade ${wizardModal.grade} Transfer`} â€” Enrollment`}
+                    title={`${wizardModal.type === 'NEW' ? 'New Grade 9 Student' : `Grade ${wizardModal.grade} Transfer`} - Registration`}
                     onClose={() => setWizardModal(null)}
                 >
                     <FullEnrollmentWizard
@@ -819,7 +807,6 @@ export default function TeacherRegistrationPage() {
                 </Modal>
             )}
 
-            {/* Credentials modal */}
             {credentialsModal && (
                 <Modal title="Student Login Credentials" onClose={() => setCredentialsModal(null)}>
                     <CredentialsModal student={credentialsModal} onClose={() => setCredentialsModal(null)} />
