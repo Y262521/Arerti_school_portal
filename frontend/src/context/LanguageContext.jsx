@@ -23,6 +23,12 @@ const translations = {
     notices: 'Notices',
     myChildren: 'My Children',
     reportCards: 'Report Cards',
+    // ── Admin grouped nav labels ─────────────────────────────────────────────
+    navRegistration: 'Registration',
+    navAcademics: 'Academics',
+    navManagement: 'Management & Tools',
+    studentRegistration: 'Student Registration',
+    teacherRegistration: 'Teacher Registration',
 
     // ── Login ────────────────────────────────────────────────────────────────
     signIn: 'Sign in',
@@ -703,6 +709,12 @@ const translations = {
     notices: 'ማስታወቂያዎች',
     myChildren: 'ልጆቼ',
     reportCards: 'የሪፖርት ካርዶች',
+    // ── Admin grouped nav labels ─────────────────────────────────────────────
+    navRegistration: 'ምዝገባ',
+    navAcademics: 'አካዳሚክ',
+    navManagement: 'አስተዳደር',
+    studentRegistration: 'የተማሪ ምዝገባ',
+    teacherRegistration: 'የአስተማሪ ምዝገባ',
 
     // ── Login ────────────────────────────────────────────────────────────────
     signIn: 'ግባ',

@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { studentService } from '../services/studentService'
 import { classService } from '../services/classService'
+import { registrationService } from '../services/registrationService'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
+import StudentEnrollmentWizard from '../components/StudentEnrollmentWizard'
 import toast from 'react-hot-toast'
 
 const EMPTY = {
     email: '', fullName: '', phone: '',
     dateOfBirth: '', gender: '', parentName: '', parentPhone: '',
     enrollmentYear: new Date().getFullYear(), sectionId: ''
-}
-
-function CredentialsModal({ student, onClose }) {
+}function CredentialsModal({ student, onClose }) {
     const { t } = useLanguage()
     const [copied, setCopied] = useState(false)
     const text = `Student: ${student.fullName}\nUsername: ${student.generatedUsername}\nPassword: ${student.generatedPassword}\nLogin at: ${window.location.origin}`
@@ -117,42 +117,73 @@ function StudentForm({ initial, sections, onSubmit, onClose, loading, isEdit }) 
     )
 }
 
-// ── Student detail modal (shows ALL info) ──────────────────────────────────────
+// ── Student detail modal (shows ALL info including photo & documents) ─────────
 function StudentDetailModal({ student, sections, onClose, onEdit }) {
     const { t } = useLanguage()
     const section = sections.find(s => s.id === student.sectionId)
-    const fields = [
-        ['UID', student.studentUid],
-        [t('fullName'), student.fullName],
-        [t('email'), student.email],
-        [t('username'), student.username],
-        [t('phone'), student.phone],
-        [t('gender'), student.gender ? t(student.gender.toLowerCase()) || student.gender : '—'],
-        [t('dateOfBirth'), student.dateOfBirth || '—'],
-        [t('enrollmentYear'), student.enrollmentYear || '—'],
-        [t('classSection'), section ? `${t('grade')} ${section.grade} – ${section.section} (${section.academicYear})` : t('unassigned')],
-        [t('parentName'), student.parentName || '—'],
+
+    const infoFields = [
+        ['UID',              student.studentUid],
+        [t('fullName'),      student.fullName],
+        [t('email'),         student.email],
+        [t('username'),      student.username],
+        [t('phone'),         student.phone],
+        [t('gender'),        student.gender ? t(student.gender.toLowerCase()) || student.gender : '—'],
+        [t('dateOfBirth'),   student.dateOfBirth || '—'],
+        [t('enrollmentYear'),student.enrollmentYear || '—'],
+        [t('classSection'),  section ? `${t('grade')} ${section.grade} – ${section.section} (${section.academicYear})` : t('unassigned')],
+        [t('parentName'),    student.parentName || '—'],
         [t('guardianPhone'), student.parentPhone || '—'],
     ]
+
     return (
-        <div className="space-y-4">
-            <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-lg">
-                    {student.fullName?.charAt(0)}
-                </div>
+        <div className="space-y-5">
+            {/* Photo + name header */}
+            <div className="flex items-center gap-4">
+                {student.photoUrl ? (
+                    <img
+                        src={student.photoUrl}
+                        alt={student.fullName}
+                        className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 shrink-0"
+                        onError={e => { e.currentTarget.style.display = 'none' }}
+                    />
+                ) : (
+                    <div className="w-20 h-20 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-3xl shrink-0">
+                        {student.fullName?.charAt(0)}
+                    </div>
+                )}
                 <div>
-                    <div className="font-semibold text-slate-900">{student.fullName}</div>
+                    <div className="font-semibold text-slate-900 text-lg">{student.fullName}</div>
                     <div className="text-xs text-slate-400 font-mono">{student.studentUid}</div>
+                    {student.sectionLabel && (
+                        <div className="text-xs text-brand mt-0.5">{student.sectionLabel}</div>
+                    )}
                 </div>
             </div>
+
+            {/* Info fields */}
             <dl className="divide-y divide-slate-100">
-                {fields.map(([label, value]) => (
+                {infoFields.map(([label, value]) => (
                     <div key={label} className="flex justify-between py-2 text-sm">
-                        <dt className="text-slate-500">{label}</dt>
-                        <dd className="font-medium text-slate-900 text-right">{value || '—'}</dd>
+                        <dt className="text-slate-500 shrink-0 mr-4">{label}</dt>
+                        <dd className="font-medium text-slate-900 text-right break-all">{value || '—'}</dd>
                     </div>
                 ))}
             </dl>
+
+            {/* Documents */}
+            {student.photoUrl && (
+                <div className="pt-1 border-t border-slate-100">
+                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">{t('documentsSection')}</p>
+                    <div className="flex gap-3 flex-wrap">
+                        <a href={student.photoUrl} target="_blank" rel="noreferrer"
+                            className="flex items-center gap-1.5 text-xs text-brand hover:underline bg-brand/5 px-3 py-1.5 rounded-lg">
+                            📷 {t('studentPhoto')}
+                        </a>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
                 <button className="btn-ghost" onClick={onClose}>{t('close')}</button>
                 <button className="btn-primary" onClick={onEdit}>{t('edit')}</button>
@@ -166,8 +197,10 @@ export default function StudentsPage() {
     const [sections, setSections] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [modal, setModal] = useState(null)   // { mode: 'add'|'edit'|'detail', student? }
+    const [modal, setModal] = useState(null)   // { mode: 'add'|'edit'|'detail'|'enroll', student? }
     const [credentialsModal, setCredentialsModal] = useState(null)
+    const [enrollModal, setEnrollModal] = useState(false)   // full wizard
+    const [activeWindow, setActiveWindow] = useState(null)  // active registration window or null
     const [search, setSearch] = useState('')
     const [confirmDelete, setConfirmDelete] = useState(null)
     const { t } = useLanguage()
@@ -175,8 +208,15 @@ export default function StudentsPage() {
     const load = async () => {
         setLoading(true)
         try {
-            const [s, c] = await Promise.all([studentService.getAll(), classService.getAll()])
-            setStudents(s); setSections(c)
+            const [s, c, windows] = await Promise.all([
+                studentService.getAll(),
+                classService.getAll(),
+                registrationService.getWindows().catch(() => []),
+            ])
+            setStudents(s)
+            setSections(c)
+            const open = windows.find(w => w.status === 'OPEN')
+            setActiveWindow(open || null)
         } catch { toast.error(t('failedToLoad')) }
         finally { setLoading(false) }
     }
@@ -186,16 +226,9 @@ export default function StudentsPage() {
     const handleSave = async (payload) => {
         setSaving(true)
         try {
-            if (modal.mode === 'add') {
-                const newStudent = await studentService.create(payload)
-                toast.success(t('studentRegistered'))
-                setModal(null)
-                if (newStudent.generatedUsername) setCredentialsModal(newStudent)
-            } else {
-                await studentService.update(modal.student.id, payload)
-                toast.success(t('studentUpdated'))
-                setModal(null)
-            }
+            await studentService.update(modal.student.id, payload)
+            toast.success(t('studentUpdated'))
+            setModal(null)
             load()
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))
@@ -223,9 +256,6 @@ export default function StudentsPage() {
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('studentsPage')}</h1>
                     <p className="text-slate-500 mt-1">{students.length} {t('enrolled')}</p>
                 </div>
-                <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>
-                    + {t('addStudent')}
-                </button>
             </div>
 
             <div className="mb-4">
@@ -294,20 +324,20 @@ export default function StudentsPage() {
                 </Modal>
             )}
 
-            {/* Add/Edit modal */}
-            {(modal?.mode === 'add' || modal?.mode === 'edit') && (
-                <Modal title={modal.mode === 'add' ? t('addStudent') : t('editStudent')} onClose={() => setModal(null)}>
+            {/* Edit modal (simple form for quick edits) */}
+            {modal?.mode === 'edit' && (
+                <Modal title={t('editStudent')} onClose={() => setModal(null)}>
                     <StudentForm
-                        initial={modal.mode === 'edit' ? {
+                        initial={{
                             email: modal.student.email, fullName: modal.student.fullName,
                             phone: modal.student.phone || '', dateOfBirth: modal.student.dateOfBirth || '',
                             gender: modal.student.gender || '', parentName: modal.student.parentName || '',
                             parentPhone: modal.student.parentPhone || '',
                             enrollmentYear: modal.student.enrollmentYear || new Date().getFullYear(),
                             sectionId: modal.student.sectionId || '',
-                        } : EMPTY}
+                        }}
                         sections={sections} onSubmit={handleSave}
-                        onClose={() => setModal(null)} loading={saving} isEdit={modal.mode === 'edit'}
+                        onClose={() => setModal(null)} loading={saving} isEdit={true}
                     />
                 </Modal>
             )}
@@ -329,6 +359,17 @@ export default function StudentsPage() {
                         <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>
                         <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>{t('delete')}</button>
                     </div>
+                </Modal>
+            )}
+
+            {/* Full enrollment wizard modal */}
+            {enrollModal && activeWindow && (
+                <Modal title={`${t('addStudent')} — ${activeWindow.academicYear}`} onClose={() => setEnrollModal(false)} size="lg">
+                    <StudentEnrollmentWizard
+                        windowData={activeWindow}
+                        onSuccess={() => { load() }}
+                        onClose={() => setEnrollModal(false)}
+                    />
                 </Modal>
             )}
         </div>

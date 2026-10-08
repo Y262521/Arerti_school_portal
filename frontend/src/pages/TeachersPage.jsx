@@ -69,55 +69,108 @@ function CredentialsModal({ teacher, onClose }) {
     )
 }
 
-// ── Teacher detail modal (shows ALL fields) ────────────────────────────────────
+// ── Teacher detail modal (shows ALL fields + photo + documents) ──────────────
 function TeacherDetailModal({ teacher, onClose, onEdit }) {
     const { t } = useLanguage()
-    const fields = [
-        ['Employee ID', teacher.employeeId],
-        [t('firstName'), teacher.firstName],
-        [t('fatherName'), teacher.fatherName],
-        [t('grandfatherName'), teacher.grandfatherName],
-        [t('fullName'), teacher.fullName],
-        [t('gender'), teacher.gender ? t(teacher.gender.toLowerCase()) || teacher.gender : '—'],
-        [t('email'), teacher.email],
-        [t('username'), teacher.username],
-        [t('phone'), teacher.phone],
-        [t('region'), teacher.region],
-        [t('city'), teacher.city],
-        [t('kebele'), teacher.kebele],
-        [t('houseNo'), teacher.houseNo],
-        [t('qualification'), teacher.qualification],
-        [t('specialization'), teacher.specialization],
-        [t('hireDate'), teacher.hireDate],
+
+    const infoFields = [
+        ['Employee ID',          teacher.employeeId],
+        [t('firstName'),         teacher.firstName],
+        [t('fatherName'),        teacher.fatherName],
+        [t('grandfatherName'),   teacher.grandfatherName],
+        [t('gender'),            teacher.gender ? t(teacher.gender.toLowerCase()) || teacher.gender : '—'],
+        [t('dateOfBirth'),       teacher.dateOfBirth || '—'],
+        [t('email'),             teacher.email],
+        [t('username'),          teacher.username],
+        [t('phone'),             teacher.phone],
+        [t('region'),            teacher.region],
+        [t('city'),              teacher.city],
+        [t('kebele'),            teacher.kebele],
+        [t('houseNo'),           teacher.houseNo],
+        [t('qualification'),     teacher.qualification],
+        [t('specialization'),    teacher.specialization],
+        [t('hireDate'),          teacher.hireDate],
     ]
+
+    // Helper: renders a document — inline image if image URL, else a link button
+    const DocItem = ({ url, icon, label }) => {
+        if (!url) return null
+        const isImage = /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url) || url.includes('cloudinary')
+        return (
+            <div className="space-y-1">
+                <p className="text-xs text-slate-500 font-medium">{icon} {label}</p>
+                {isImage ? (
+                    <a href={url} target="_blank" rel="noreferrer" className="block">
+                        <img
+                            src={url}
+                            alt={label}
+                            className="h-28 w-auto max-w-[180px] rounded-lg border border-slate-200 object-cover hover:opacity-80 transition"
+                            onError={e => {
+                                e.currentTarget.style.display = 'none'
+                                e.currentTarget.nextSibling?.classList?.remove('hidden')
+                            }}
+                        />
+                        <span className="hidden text-xs text-brand hover:underline">🔗 {t('view')}</span>
+                    </a>
+                ) : (
+                    <a href={url} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-brand hover:underline bg-brand/5 px-3 py-1.5 rounded-lg">
+                        📄 {t('view')}
+                    </a>
+                )}
+            </div>
+        )
+    }
+
+    const hasDocuments = teacher.photoUrl || teacher.qualificationCertUrl || teacher.idDocUrl
+
     return (
-        <div className="space-y-4">
-            <div className="flex items-center gap-3">
-                {teacher.photoUrl
-                    ? <img src={teacher.photoUrl} alt={teacher.fullName} className="w-16 h-16 rounded-full object-cover border-2 border-slate-200" />
-                    : <div className="w-16 h-16 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-2xl">{teacher.fullName?.charAt(0)}</div>
-                }
+        <div className="space-y-5">
+            {/* Photo + name header */}
+            <div className="flex items-center gap-4">
+                {teacher.photoUrl ? (
+                    <img
+                        src={teacher.photoUrl}
+                        alt={teacher.fullName}
+                        className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 shrink-0"
+                        onError={e => { e.currentTarget.style.display = 'none' }}
+                    />
+                ) : (
+                    <div className="w-20 h-20 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-3xl shrink-0">
+                        {teacher.fullName?.charAt(0)}
+                    </div>
+                )}
                 <div>
                     <div className="font-semibold text-slate-900 text-lg">{teacher.fullName}</div>
                     <div className="text-xs text-slate-400 font-mono">{teacher.employeeId}</div>
+                    {teacher.specialization && (
+                        <div className="text-xs text-slate-500 mt-0.5">{teacher.specialization}</div>
+                    )}
                 </div>
             </div>
-            <dl className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                {fields.map(([label, value]) => value ? (
+
+            {/* Info fields — scrollable */}
+            <dl className="divide-y divide-slate-100 max-h-72 overflow-y-auto pr-1">
+                {infoFields.map(([label, value]) => value ? (
                     <div key={label} className="flex justify-between py-2 text-sm">
-                        <dt className="text-slate-500">{label}</dt>
-                        <dd className="font-medium text-slate-900 text-right max-w-xs truncate">{value}</dd>
+                        <dt className="text-slate-500 shrink-0 mr-4">{label}</dt>
+                        <dd className="font-medium text-slate-900 text-right break-all">{value}</dd>
                     </div>
                 ) : null)}
             </dl>
-            {/* Document links */}
-            {(teacher.photoUrl || teacher.qualificationCertUrl || teacher.idDocUrl) && (
-                <div className="flex gap-3 flex-wrap pt-1">
-                    {teacher.photoUrl && <a href={teacher.photoUrl} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">📷 {t('teacherPhoto')}</a>}
-                    {teacher.qualificationCertUrl && <a href={teacher.qualificationCertUrl} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">📄 {t('qualificationCert')}</a>}
-                    {teacher.idDocUrl && <a href={teacher.idDocUrl} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">🪪 {t('idDocument')}</a>}
+
+            {/* Documents section */}
+            {hasDocuments && (
+                <div className="pt-1 border-t border-slate-100">
+                    <p className="text-xs uppercase tracking-wide text-slate-400 mb-3">{t('documentsSection')}</p>
+                    <div className="flex gap-5 flex-wrap">
+                        <DocItem url={teacher.photoUrl}              icon="📷" label={t('teacherPhoto')} />
+                        <DocItem url={teacher.qualificationCertUrl}  icon="📄" label={t('qualificationCert')} />
+                        <DocItem url={teacher.idDocUrl}              icon="🪪" label={t('idDocument')} />
+                    </div>
                 </div>
             )}
+
             <div className="flex justify-end gap-2 pt-2">
                 <button className="btn-ghost" onClick={onClose}>{t('close')}</button>
                 <button className="btn-primary" onClick={onEdit}>{t('edit')}</button>
@@ -269,7 +322,6 @@ export default function TeachersPage() {
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('teachersPage')}</h1>
                     <p className="text-slate-500 mt-1">{teachers.length} {t('staffMembers')}</p>
                 </div>
-                <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>+ {t('addTeacher')}</button>
             </div>
 
             <div className="mb-4">

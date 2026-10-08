@@ -19,6 +19,7 @@ public record StudentResponse(
         Integer enrollmentYear,
         Long sectionId,
         String sectionLabel,
+        String photoUrl,          // Cloudinary URL from enrollment wizard
         // Only set on creation — contains the auto-generated plain-text credentials for admin to share
         String generatedUsername,
         String generatedPassword
@@ -39,6 +40,7 @@ public record StudentResponse(
                 s.getEnrollmentYear(),
                 s.getSectionId(),
                 sectionLabel,
+                s.getPhotoUrl(),
                 null,   // only set on creation
                 null
         );
@@ -62,6 +64,7 @@ public record StudentResponse(
                 s.getEnrollmentYear(),
                 s.getSectionId(),
                 sectionLabel,
+                s.getPhotoUrl(),
                 genUsername,
                 genPassword
         );
