@@ -13,8 +13,8 @@ const ADMIN_GROUPS = [
   {
     key: 'navRegistration',
     items: [
-      { to: '/admin/registration', key: 'studentRegistration' },
-      { to: '/admin/teachers',     key: 'teacherRegistration' },
+      { to: '/admin/registration',        key: 'studentRegistration' },
+      { to: '/admin/teacher-registration', key: 'teacherRegistration' },
     ],
   },
   {

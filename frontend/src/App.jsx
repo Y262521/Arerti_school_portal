@@ -25,6 +25,7 @@ import MyAttendancePage from './pages/MyAttendancePage'
 import RegradeRequestsPage from './pages/RegradeRequestsPage'
 import DirectorRegistrationPage from './pages/DirectorRegistrationPage'
 import TeacherRegistrationPage from './pages/TeacherRegistrationPage'
+import AdminTeacherRegistrationPage from './pages/AdminTeacherRegistrationPage'
 import UserLookupPage from './pages/UserLookupPage'
 import GradeEntryWindowPage from './pages/GradeEntryWindowPage'
 
@@ -137,6 +138,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <Layout><DirectorRegistrationPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/teacher-registration"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><AdminTeacherRegistrationPage /></Layout>
           </ProtectedRoute>
         }
       />
