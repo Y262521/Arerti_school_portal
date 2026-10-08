@@ -15,6 +15,7 @@ function formatSize(bytes) {
 }
 
 function UploadForm({ onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [audience, setAudience] = useState('GENERAL')
@@ -23,7 +24,7 @@ function UploadForm({ onSubmit, onClose, loading }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        if (!file) { toast.error('Please choose a file'); return }
+        if (!file) { toast.error(t('choosefile')); return }
         const fd = new FormData()
         fd.append('file', file)
         fd.append('title', title)
@@ -36,27 +37,27 @@ function UploadForm({ onSubmit, onClose, loading }) {
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-                <label className="field-label">Title *</label>
+                <label className="field-label">{t('titleLabel')} *</label>
                 <input className="field" value={title} onChange={e => setTitle(e.target.value)} required />
             </div>
             <div>
-                <label className="field-label">Description</label>
+                <label className="field-label">{t('descriptionLabel')}</label>
                 <textarea className="field min-h-[80px]" value={description} onChange={e => setDescription(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="field-label">Audience</label>
+                    <label className="field-label">{t('audienceLabel')}</label>
                     <select className="field" value={audience} onChange={e => setAudience(e.target.value)}>
                         {AUDIENCE_OPTS.map(a => <option key={a}>{a}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Subject</label>
+                    <label className="field-label">{t('subjectLabel')}</label>
                     <input className="field" value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. Mathematics" />
                 </div>
             </div>
             <div>
-                <label className="field-label">File *</label>
+                <label className="field-label">{t('fileLabel')} *</label>
                 <input
                     className="field"
                     type="file"
@@ -64,12 +65,12 @@ function UploadForm({ onSubmit, onClose, loading }) {
                     onChange={e => setFile(e.target.files?.[0] || null)}
                     required
                 />
-                <p className="text-xs text-slate-400 mt-1">Max 25 MB.</p>
+                <p className="text-xs text-slate-400 mt-1">{t('maxFileSize')}</p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Uploadingâ€¦' : 'Upload'}
+                    {loading ? t('uploading') : t('uploadResource')}
                 </button>
             </div>
         </form>
@@ -90,7 +91,7 @@ export default function ResourcesPage() {
     const load = async () => {
         setLoading(true)
         try { setResources(await resourceService.getAll()) }
-        catch { toast.error('Failed to load resources') }
+        catch { toast.error(t('failedToLoadResources')) }
         finally { setLoading(false) }
     }
 
@@ -100,10 +101,10 @@ export default function ResourcesPage() {
         setUploading(true)
         try {
             await resourceService.upload(formData)
-            toast.success('Resource uploaded')
+            toast.success(t('resourceUploaded'))
             setModal(false); load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Upload failed')
+            toast.error(err.response?.data?.message || t('uploadFailed'))
         } finally { setUploading(false) }
     }
 
@@ -112,16 +113,16 @@ export default function ResourcesPage() {
         try {
             await resourceService.download(resource)
         } catch {
-            toast.error('Download failed')
+            toast.error(t('downloadFailed'))
         } finally { setDownloadingId(null) }
     }
 
     const handleDelete = async (id) => {
         try {
             await resourceService.remove(id)
-            toast.success('Resource deleted')
+            toast.success(t('resourceDeleted'))
             setConfirmDelete(null); load()
-        } catch { toast.error('Delete failed') }
+        } catch { toast.error(t('deleteFailed')) }
     }
 
     return (
@@ -129,19 +130,19 @@ export default function ResourcesPage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('resourcesPage')}</h1>
-                    <p className="text-slate-500 mt-1">{resources.length} files</p>
+                    <p className="text-slate-500 mt-1">{resources.length} {t('files')}</p>
                 </div>
                 {canUpload && (
                     <button className="btn-primary" onClick={() => setModal(true)}>
-                        + Upload Resource
+                        + {t('uploadResource')}
                     </button>
                 )}
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : resources.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">No resources yet.</div>
+                <div className="card p-8 text-center text-slate-500">{t('noResources')}</div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {resources.map(r => (
@@ -149,7 +150,7 @@ export default function ResourcesPage() {
                             <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
                                     <h3 className="font-semibold text-slate-900 truncate">{r.title}</h3>
-                                    <p className="text-xs text-slate-400 mt-0.5">{r.fileName} Â· {formatSize(r.sizeBytes)}</p>
+                                    <p className="text-xs text-slate-400 mt-0.5">{r.fileName} · {formatSize(r.sizeBytes)}</p>
                                 </div>
                                 <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
                                     {r.audience}
@@ -159,10 +160,10 @@ export default function ResourcesPage() {
                                 <p className="text-sm text-slate-600 mt-2 line-clamp-2">{r.description}</p>
                             )}
                             {r.subject && (
-                                <p className="text-xs text-slate-400 mt-1">Subject: {r.subject}</p>
+                                <p className="text-xs text-slate-400 mt-1">{t('subjectLabel')}: {r.subject}</p>
                             )}
                             <p className="text-xs text-slate-400 mt-2">
-                                By {r.uploadedBy} Â· {new Date(r.createdAt).toLocaleDateString()}
+                                {t('by')} {r.uploadedBy} · {new Date(r.createdAt).toLocaleDateString()}
                             </p>
                             <div className="flex gap-3 mt-3 pt-3 border-t border-slate-100">
                                 <button
@@ -170,12 +171,12 @@ export default function ResourcesPage() {
                                     disabled={downloadingId === r.id}
                                     onClick={() => handleDownload(r)}
                                 >
-                                    {downloadingId === r.id ? 'Downloadingâ€¦' : 'Download'}
+                                    {downloadingId === r.id ? t('downloading') : t('download')}
                                 </button>
                                 {(user?.role === 'ADMIN' || r.uploadedBy === user?.username) && (
                                     <button className="text-xs text-red-500 hover:underline"
                                         onClick={() => setConfirmDelete(r)}>
-                                        Delete
+                                        {t('delete')}
                                     </button>
                                 )}
                             </div>
@@ -185,17 +186,17 @@ export default function ResourcesPage() {
             )}
 
             {modal && (
-                <Modal title="Upload Resource" onClose={() => setModal(false)}>
+                <Modal title={t('uploadResource')} onClose={() => setModal(false)}>
                     <UploadForm onSubmit={handleUpload} onClose={() => setModal(false)} loading={uploading} />
                 </Modal>
             )}
 
             {confirmDelete && (
-                <Modal title="Confirm Delete" onClose={() => setConfirmDelete(null)}>
-                    <p className="text-slate-700">Delete resource <strong>"{confirmDelete.title}"</strong>?</p>
+                <Modal title={t('confirmDelete')} onClose={() => setConfirmDelete(null)}>
+                    <p className="text-slate-700">{t('deleteResourceConfirm')} <strong>"{confirmDelete.title}"</strong>?</p>
                     <div className="flex justify-end gap-2 mt-4">
-                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>Cancel</button>
-                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>Delete</button>
+                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>
+                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>{t('delete')}</button>
                     </div>
                 </Modal>
             )}

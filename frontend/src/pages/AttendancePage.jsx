@@ -28,16 +28,15 @@ export default function AttendancePage() {
     const [saving, setSaving] = useState({})
 
     useEffect(() => {
-        // Admin sees all classes; teacher sees only their homeroom classes
         const loader = isAdmin ? classService.getAll() : classService.getMyClasses()
         loader
             .then(data => {
                 setSections(data)
                 if (!isAdmin && data.length === 0) {
-                    toast('You are not assigned as a homeroom teacher to any class.', { icon: 'â„¹ï¸' })
+                    toast(t('noHomeroomAssigned'), { icon: 'ℹ️' })
                 }
             })
-            .catch(() => toast.error('Failed to load classes'))
+            .catch(() => toast.error(t('failedToLoadClasses')))
     }, [isAdmin])
 
     useEffect(() => {
@@ -49,7 +48,7 @@ export default function AttendancePage() {
         ]).then(([allStudents, recs]) => {
             setStudents(allStudents.filter(s => String(s.sectionId) === String(sectionId)))
             setRecords(recs)
-        }).catch(() => toast.error('Failed to load attendance'))
+        }).catch(() => toast.error(t('failedToLoadAttendance')))
             .finally(() => setLoading(false))
     }, [sectionId, date])
 
@@ -63,7 +62,7 @@ export default function AttendancePage() {
                 const idx = prev.findIndex(r => r.studentId === studentId)
                 return idx >= 0 ? prev.map((r, i) => i === idx ? rec : r) : [...prev, rec]
             })
-        } catch { toast.error('Failed to save attendance') }
+        } catch { toast.error(t('failedToSaveAttendance')) }
         finally { setSaving(s => ({ ...s, [studentId]: false })) }
     }
 
@@ -71,7 +70,7 @@ export default function AttendancePage() {
         for (const student of students) {
             await handleMark(student.id, status)
         }
-        toast.success(`All marked as ${status}`)
+        toast.success(`${t('allMarkedAs')} ${status}`)
     }
 
     const present = records.filter(r => r.status === 'PRESENT').length
@@ -83,7 +82,7 @@ export default function AttendancePage() {
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('attendancePage')}</h1>
                     <p className="text-slate-500 mt-1">
-                        {isAdmin ? 'Mark daily attendance by class' : 'Mark attendance for your homeroom class'}
+                        {isAdmin ? t('attendanceSubtitleAdmin') : t('attendanceSubtitleTeacher')}
                     </p>
                 </div>
             </div>
@@ -91,25 +90,25 @@ export default function AttendancePage() {
             {/* Filters */}
             <div className="card mb-6 flex flex-wrap gap-4 items-end">
                 <div>
-                    <label className="field-label">Class / Section</label>
+                    <label className="field-label">{t('classSection')}</label>
                     <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
-                        <option value="">â€” Select class â€”</option>
+                        <option value="">— {t('selectClass')} —</option>
                         {sections.map(s => (
-                            <option key={s.id} value={s.id}>Grade {s.grade} â€“ {s.section} ({s.academicYear})</option>
+                            <option key={s.id} value={s.id}>Grade {s.grade} – {s.section} ({s.academicYear})</option>
                         ))}
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Date</label>
+                    <label className="field-label">{t('dateLabel')}</label>
                     <input className="field" type="date" value={date} onChange={e => setDate(e.target.value)} />
                 </div>
                 {sectionId && total > 0 && (
                     <div className="flex gap-2 ml-auto">
                         <button className="text-xs btn-ghost py-1.5 px-3" onClick={() => markAll('PRESENT')}>
-                            âœ“ Mark All Present
+                            ✓ {t('markAllPresent')}
                         </button>
                         <button className="text-xs btn-ghost py-1.5 px-3 border-red-200 text-red-600" onClick={() => markAll('ABSENT')}>
-                            âœ— Mark All Absent
+                            ✗ {t('markAllAbsent')}
                         </button>
                     </div>
                 )}
@@ -117,11 +116,11 @@ export default function AttendancePage() {
 
             {sectionId && total > 0 && (
                 <div className="mb-4 flex gap-4 text-sm">
-                    <span className="text-green-600 font-medium">{present} Present</span>
-                    <span className="text-red-600 font-medium">{total - present} Absent/Other</span>
-                    <span className="text-slate-500">Total: {total}</span>
+                    <span className="text-green-600 font-medium">{present} {t('present')}</span>
+                    <span className="text-red-600 font-medium">{total - present} {t('absentOther')}</span>
+                    <span className="text-slate-500">{t('total')}: {total}</span>
                     <span className="text-slate-500">
-                        {total > 0 ? Math.round((present / total) * 100) : 0}% attendance
+                        {total > 0 ? Math.round((present / total) * 100) : 0}% {t('attendanceRate')}
                     </span>
                 </div>
             )}
@@ -129,22 +128,22 @@ export default function AttendancePage() {
             {!sectionId ? (
                 <div className="card p-8 text-center text-slate-500">
                     {sections.length === 0 && !isAdmin
-                        ? 'âš ï¸ You are not assigned as a homeroom teacher to any class. Contact the director.'
-                        : 'Select a class to mark attendance.'}
+                        ? t('notHomeroomTeacher')
+                        : t('selectClassToMark')}
                 </div>
             ) : loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : students.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">No students in this section.</div>
+                <div className="card p-8 text-center text-slate-500">{t('noStudentsInSection')}</div>
             ) : (
                 <div className="card overflow-x-auto p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                                <th className="px-4 py-3 text-left">Student</th>
+                                <th className="px-4 py-3 text-left">{t('student')}</th>
                                 <th className="px-4 py-3 text-left">UID</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center">Actions</th>
+                                <th className="px-4 py-3 text-center">{t('statusLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -161,7 +160,7 @@ export default function AttendancePage() {
                                                     {status}
                                                 </span>
                                             ) : (
-                                                <span className="text-xs text-slate-300">â€”</span>
+                                                <span className="text-xs text-slate-300">—</span>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-center">

@@ -13,8 +13,9 @@ const EMPTY = {
     homeroomTeacherId: '', maxCapacity: 40, stream: ''
 }
 
-// â”€â”€ Class create/edit form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Class create/edit form ────────────────────────────────────────────────────
 function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
     const [form, setForm] = useState(initial)
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -33,66 +34,67 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
         <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="field-label">Grade *</label>
+                    <label className="field-label">{t('grade')} *</label>
                     <select className="field" value={form.grade} onChange={e => set('grade', e.target.value)} required>
                         {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Section *</label>
+                    <label className="field-label">{t('section')} *</label>
                     <input className="field" value={form.section}
                         onChange={e => set('section', e.target.value.toUpperCase())}
                         maxLength={5} required placeholder="A" />
                 </div>
                 <div>
-                    <label className="field-label">Academic Year *</label>
+                    <label className="field-label">{t('academicYear')} *</label>
                     <input className="field" value={form.academicYear}
                         onChange={e => set('academicYear', e.target.value)}
                         placeholder="2025/2026" required />
                 </div>
                 <div>
-                    <label className="field-label">Max Capacity</label>
+                    <label className="field-label">{t('maxCapacity')}</label>
                     <input className="field" type="number" value={form.maxCapacity}
                         onChange={e => set('maxCapacity', e.target.value)} min={1} max={100} />
                 </div>
             </div>
             <div>
-                <label className="field-label">Homeroom Teacher</label>
+                <label className="field-label">{t('homeroomTeacher')}</label>
                 <select className="field" value={form.homeroomTeacherId}
                     onChange={e => set('homeroomTeacherId', e.target.value)}>
-                    <option value="">â€” None â€”</option>
+                    <option value="">— {t('noneLabel')} —</option>
                     {teachers.map(t => (
                         <option key={t.id} value={t.id}>{t.fullName} ({t.employeeId})</option>
                     ))}
                 </select>
                 <p className="text-xs text-slate-400 mt-1">
-                    The homeroom teacher is the only teacher who can mark attendance for this class.
+                    {t('homeroomNote')}
                 </p>
             </div>
             {Number(form.grade) >= 11 && (
                 <div>
-                    <label className="field-label">Stream * (required for Grade 11-12)</label>
+                    <label className="field-label">{t('stream')} * ({t('requiredForGrade1112')})</label>
                     <select className="field" value={form.stream}
                         onChange={e => set('stream', e.target.value)}
                         required={Number(form.grade) >= 11}>
-                        <option value="">â€” Select stream â€”</option>
-                        <option value="NATURAL_SCIENCE">Natural Science / á‰°áˆáŒ¥áˆ® áˆ³á‹­áŠ•áˆµ</option>
-                        <option value="SOCIAL_SCIENCE">Social Science / áˆ›áˆ…á‰ áˆ«á‹Š áˆ³á‹­áŠ•áˆµ</option>
+                        <option value="">— {t('selectStream')} —</option>
+                        <option value="NATURAL_SCIENCE">{t('naturalScience')}</option>
+                        <option value="SOCIAL_SCIENCE">{t('socialScience')}</option>
                     </select>
                 </div>
             )}
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Savingâ€¦' : 'Save'}
+                    {loading ? t('saving') : t('save')}
                 </button>
             </div>
         </form>
     )
 }
 
-// â”€â”€ Subject-teacher assignment panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Subject-teacher assignment panel ─────────────────────────────────────────
 function AssignmentsPanel({ cls, teachers, onClose }) {
+    const { t } = useLanguage()
     const [assignments, setAssignments] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(null)
@@ -101,7 +103,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         setLoading(true)
         classService.getAssignments(cls.id)
             .then(setAssignments)
-            .catch(() => toast.error('Failed to load assignments'))
+            .catch(() => toast.error(t('failedToLoadAssignments')))
             .finally(() => setLoading(false))
     }
 
@@ -114,10 +116,10 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 subjectId,
                 teacherId: teacherId ? Number(teacherId) : null
             })
-            toast.success('Teacher assigned')
+            toast.success(t('teacherAssigned'))
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to assign teacher')
+            toast.error(err.response?.data?.message || t('failedToAssignTeacher'))
         } finally { setSaving(null) }
     }
 
@@ -125,7 +127,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         try {
             const curriculum = await curriculumService.get(cls.grade)
             if (curriculum.length === 0) {
-                toast.error(`No curriculum defined for Grade ${cls.grade}. Set it up first via ðŸ“š Grade Curriculum.`)
+                toast.error(`${t('noCurriculumForGrade')} ${cls.grade}.`)
                 return
             }
             let applied = 0
@@ -133,11 +135,11 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 try {
                     await classService.assignTeacher(cls.id, { subjectId: c.subjectId, teacherId: null })
                     applied++
-                } catch { /* already assigned â€” skip */ }
+                } catch { /* already assigned — skip */ }
             }
-            toast.success(`${applied} subject(s) applied from Grade ${cls.grade} curriculum`)
+            toast.success(`${applied} ${t('subjectsAppliedFromCurriculum')} ${cls.grade}`)
             load()
-        } catch { toast.error('Failed to apply curriculum') }
+        } catch { toast.error(t('failedToApplyCurriculum')) }
     }
 
     const unassigned = assignments.filter(a => !a.teacherId).length
@@ -147,26 +149,24 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
             <div className="flex items-center justify-between">
                 <div>
                     <p className="text-sm text-slate-600">
-                        Grade {cls.grade} â€“ Section {cls.section} Â· {cls.academicYear}
+                        Grade {cls.grade} – Section {cls.section} · {cls.academicYear}
                         {cls.stream && <span className="ml-2 text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">{cls.stream.replace('_', ' ')}</span>}
                     </p>
                     {unassigned > 0 && (
                         <p className="text-xs text-orange-600 font-medium mt-1">
-                            âš ï¸ {unassigned} subject{unassigned > 1 ? 's' : ''} still need a teacher assigned
+                            ⚠️ {unassigned} {t('subjectsNeedTeacher')}
                         </p>
                     )}
                 </div>
             </div>
 
             {loading ? (
-                <div className="text-center text-slate-500 py-6">Loadingâ€¦</div>
+                <div className="text-center text-slate-500 py-6">{t('loading')}</div>
             ) : assignments.length === 0 ? (
                 <div className="text-center text-slate-500 py-6 space-y-2">
-                    <p>No subjects assigned yet.</p>
+                    <p>{t('noSubjectsAssigned')}</p>
                     <p className="text-xs text-slate-400">
-                        Curriculum is applied automatically when the class is created.
-                        If subjects are missing, check that the Grade {cls.grade}
-                        {cls.stream ? ` (${cls.stream.replace('_', ' ')})` : ''} curriculum is configured.
+                        {t('curriculumAutoApplied')}
                     </p>
                 </div>
             ) : (
@@ -183,13 +183,13 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                                 disabled={saving === a.subjectId}
                                 onChange={e => handleAssign(a.subjectId, e.target.value || null)}
                             >
-                                <option value="">â€” Assign teacher â€”</option>
+                                <option value="">— {t('assignTeacher')} —</option>
                                 {teachers.map(t => (
                                     <option key={t.id} value={t.id}>{t.fullName}</option>
                                 ))}
                             </select>
                             {a.teacherId
-                                ? <span className="text-green-600 text-lg" title="Assigned">âœ“</span>
+                                ? <span className="text-green-600 text-lg" title="Assigned">✓</span>
                                 : <span className="text-orange-400 text-lg" title="Unassigned">!</span>}
                         </div>
                     ))}
@@ -197,14 +197,15 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
             )}
 
             <div className="flex justify-end pt-2">
-                <button className="btn-ghost" onClick={onClose}>Close</button>
+                <button className="btn-ghost" onClick={onClose}>{t('close')}</button>
             </div>
         </div>
     )
 }
 
-// â”€â”€ Grade curriculum manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Grade curriculum manager ──────────────────────────────────────────────────
 function CurriculumPanel({ onClose }) {
+    const { t } = useLanguage()
     const [grade, setGrade] = useState(9)
     const [stream, setStream] = useState('')
     const [curriculum, setCurriculum] = useState([])
@@ -220,7 +221,7 @@ function CurriculumPanel({ onClose }) {
         const effectiveStream = needsStream ? stream : null
         Promise.all([curriculumService.get(grade, effectiveStream), subjectService.getAll()])
             .then(([c, s]) => { setCurriculum(c); setAllSubjects(s) })
-            .catch(() => toast.error('Failed to load curriculum'))
+            .catch(() => toast.error(t('failedToLoadCurriculum')))
             .finally(() => setLoading(false))
     }
 
@@ -231,47 +232,46 @@ function CurriculumPanel({ onClose }) {
 
     const handleAdd = async () => {
         if (!selectedSubject) return
-        if (needsStream && !stream) { toast.error('Select a stream first'); return }
+        if (needsStream && !stream) { toast.error(t('selectStreamFirst')); return }
         setAdding(true)
         try {
             await curriculumService.addSubject(grade, selectedSubject, needsStream ? stream : null)
-            toast.success('Subject added to curriculum')
+            toast.success(t('subjectAddedToCurriculum'))
             setSelectedSubject('')
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to add')
+            toast.error(err.response?.data?.message || t('failedToAdd'))
         } finally { setAdding(false) }
     }
 
     const handleRemove = async (subjectId) => {
         try {
             await curriculumService.removeSubject(grade, subjectId, needsStream ? stream : null)
-            toast.success('Subject removed from curriculum')
+            toast.success(t('subjectRemovedFromCurriculum'))
             load()
-        } catch { toast.error('Failed to remove') }
+        } catch { toast.error(t('failedToRemove')) }
     }
 
     return (
         <div className="space-y-4">
             <p className="text-sm text-slate-500">
-                Define which subjects are automatically assigned when a new class is created.
-                Curriculum is applied automatically â€” no manual button needed.
+                {t('curriculumDescription')}
             </p>
 
             <div className="flex gap-3 items-center flex-wrap">
                 <div>
-                    <label className="field-label mb-0">Grade:</label>
+                    <label className="field-label mb-0">{t('grade')}:</label>
                     <select className="field w-32" value={grade} onChange={e => { setGrade(Number(e.target.value)); setStream('') }}>
                         {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
                     </select>
                 </div>
                 {needsStream && (
                     <div>
-                        <label className="field-label mb-0">Stream: *</label>
+                        <label className="field-label mb-0">{t('stream')}: *</label>
                         <select className="field w-44" value={stream} onChange={e => setStream(e.target.value)}>
-                            <option value="">â€” Select stream â€”</option>
-                            <option value="NATURAL_SCIENCE">Natural Science</option>
-                            <option value="SOCIAL_SCIENCE">Social Science</option>
+                            <option value="">— {t('selectStream')} —</option>
+                            <option value="NATURAL_SCIENCE">{t('naturalScience')}</option>
+                            <option value="SOCIAL_SCIENCE">{t('socialScience')}</option>
                         </select>
                     </div>
                 )}
@@ -279,16 +279,16 @@ function CurriculumPanel({ onClose }) {
 
             {needsStream && !stream ? (
                 <div className="card p-6 text-center text-slate-400 text-sm">
-                    Select a stream to view and edit the Grade {grade} curriculum.
+                    {t('selectStreamToView')} {grade} {t('curriculum')}.
                 </div>
             ) : loading ? (
-                <div className="text-center text-slate-500 py-4">Loadingâ€¦</div>
+                <div className="text-center text-slate-500 py-4">{t('loading')}</div>
             ) : (
                 <>
                     <div className="space-y-1">
                         {curriculum.length === 0 ? (
                             <p className="text-slate-400 text-sm py-2">
-                                No subjects in Grade {grade} {stream ? stream.replace('_', ' ') : ''} curriculum yet.
+                                {t('noSubjectsInCurriculum')} {grade} {stream ? stream.replace('_', ' ') : ''}.
                             </p>
                         ) : curriculum.map((c, i) => (
                             <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 border border-slate-100">
@@ -299,7 +299,7 @@ function CurriculumPanel({ onClose }) {
                                 </div>
                                 <button className="text-xs text-red-400 hover:text-red-600"
                                     onClick={() => handleRemove(c.subjectId)}>
-                                    Remove
+                                    {t('remove')}
                                 </button>
                             </div>
                         ))}
@@ -308,28 +308,29 @@ function CurriculumPanel({ onClose }) {
                     <div className="flex gap-2 pt-2">
                         <select className="field flex-1" value={selectedSubject}
                             onChange={e => setSelectedSubject(e.target.value)}>
-                            <option value="">â€” Add subject to curriculum â€”</option>
+                            <option value="">— {t('addSubjectToCurriculum')} —</option>
                             {available.map(s => (
                                 <option key={s.id} value={s.id}>{s.name}{s.code ? ` (${s.code})` : ''}</option>
                             ))}
                         </select>
                         <button className="btn-primary px-4" onClick={handleAdd}
                             disabled={!selectedSubject || adding}>
-                            {adding ? 'â€¦' : 'Add'}
+                            {adding ? '…' : t('add')}
                         </button>
                     </div>
                 </>
             )}
 
             <div className="flex justify-end pt-2">
-                <button className="btn-ghost" onClick={onClose}>Close</button>
+                <button className="btn-ghost" onClick={onClose}>{t('close')}</button>
             </div>
         </div>
     )
 }
 
-// â”€â”€ End Term modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── End Term modal ────────────────────────────────────────────────────────────
 function EndTermModal({ onClose }) {
+    const { t } = useLanguage()
     const [year, setYear] = useState(CURRENT_YEAR)
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(null)
@@ -339,41 +340,41 @@ function EndTermModal({ onClose }) {
         try {
             const r = await classService.endTerm(year)
             setResult(r)
-            toast.success('Term ended successfully')
+            toast.success(t('termEndedSuccess'))
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to end term')
+            toast.error(err.response?.data?.message || t('failedToEndTerm'))
         } finally { setLoading(false) }
     }
 
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 text-sm text-orange-800">
-                <strong>âš ï¸ End of Academic Year Action</strong>
+                <strong>⚠️ {t('endOfYearAction')}</strong>
                 <ul className="mt-2 space-y-1 list-disc list-inside">
-                    <li>All subject-teacher assignments for the year will be <strong>archived</strong></li>
-                    <li>All students will be <strong>unassigned</strong> from their current classes</li>
-                    <li>Class records, subjects, and assignment history are <strong>preserved</strong></li>
-                    <li>You will need to reassign students to their new classes manually</li>
+                    <li>{t('endTermNote1')}</li>
+                    <li>{t('endTermNote2')}</li>
+                    <li>{t('endTermNote3')}</li>
+                    <li>{t('endTermNote4')}</li>
                 </ul>
             </div>
 
             {result ? (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-800 space-y-1">
-                    <p>âœ… Term ended for <strong>{year}</strong></p>
-                    <p>ðŸ“¦ {result.archivedAssignments} subject assignments archived</p>
-                    <p>ðŸ‘¥ {result.studentsUnassigned} students unassigned from classes</p>
+                    <p>✅ {t('termEndedFor')} <strong>{year}</strong></p>
+                    <p>📦 {result.archivedAssignments} {t('subjectAssignmentsArchived')}</p>
+                    <p>👥 {result.studentsUnassigned} {t('studentsUnassigned')}</p>
                 </div>
             ) : (
                 <>
                     <div>
-                        <label className="field-label">Academic Year to End *</label>
+                        <label className="field-label">{t('academicYearToEnd')} *</label>
                         <input className="field" value={year} onChange={e => setYear(e.target.value)}
                             placeholder="2025/2026" />
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
-                        <button className="btn-ghost" onClick={onClose}>Cancel</button>
+                        <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                         <button className="btn-danger" onClick={handleEndTerm} disabled={loading || !year}>
-                            {loading ? 'Processingâ€¦' : 'âš ï¸ End Term'}
+                            {loading ? t('processing') : `⚠️ ${t('endTerm')}`}
                         </button>
                     </div>
                 </>
@@ -381,31 +382,31 @@ function EndTermModal({ onClose }) {
 
             {result && (
                 <div className="flex justify-end">
-                    <button className="btn-primary" onClick={onClose}>Done</button>
+                    <button className="btn-primary" onClick={onClose}>{t('done')}</button>
                 </div>
             )}
         </div>
     )
 }
 
-// â”€â”€ Main ClassesPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Main ClassesPage ──────────────────────────────────────────────────────────
 export default function ClassesPage() {
     const { t } = useLanguage()
     const [classes, setClasses] = useState([])
     const [teachers, setTeachers] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [modal, setModal] = useState(null) // null | { type: 'add'|'edit'|'assignments'|'curriculum'|'endterm', cls? }
+    const [modal, setModal] = useState(null)
     const [confirmDelete, setConfirmDelete] = useState(null)
 
     const load = async () => {
         setLoading(true)
         try {
-            const [c, t] = await Promise.all([classService.getAll(), teacherService.getAll()])
+            const [c, trs] = await Promise.all([classService.getAll(), teacherService.getAll()])
             setClasses(c)
-            setTeachers(t)
+            setTeachers(trs)
         } catch {
-            toast.error('Failed to load classes')
+            toast.error(t('failedToLoadClasses'))
         } finally {
             setLoading(false)
         }
@@ -418,15 +419,15 @@ export default function ClassesPage() {
         try {
             if (modal.type === 'add') {
                 await classService.create(payload)
-                toast.success('Class created â€” curriculum auto-applied from grade template')
+                toast.success(t('classCreated'))
             } else {
                 await classService.update(modal.cls.id, payload)
-                toast.success('Class updated')
+                toast.success(t('classUpdated'))
             }
             setModal(null)
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Save failed')
+            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally {
             setSaving(false)
         }
@@ -435,11 +436,11 @@ export default function ClassesPage() {
     const handleDelete = async (id) => {
         try {
             await classService.remove(id)
-            toast.success('Class deleted')
+            toast.success(t('classDeleted'))
             setConfirmDelete(null)
             load()
         } catch {
-            toast.error('Delete failed')
+            toast.error(t('deleteFailed'))
         }
     }
 
@@ -455,27 +456,27 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('classesPage')}</h1>
-                    <p className="text-slate-500 mt-1">{classes.length} sections configured</p>
+                    <p className="text-slate-500 mt-1">{classes.length} {t('sectionsConfigured')}</p>
                 </div>
                 <div className="flex gap-2">
                     <button className="btn-ghost text-sm" onClick={() => setModal({ type: 'curriculum' })}>
-                        ðŸ“š Grade Curriculum
+                        📚 {t('gradeCurriculum')}
                     </button>
                     <button className="btn-ghost text-sm border-orange-200 text-orange-600 hover:border-orange-400"
                         onClick={() => setModal({ type: 'endterm' })}>
-                        ðŸ”„ End Term
+                        🔄 {t('endTerm')}
                     </button>
                     <button className="btn-primary" onClick={() => setModal({ type: 'add' })}>
-                        + Add Class
+                        + {t('addClass')}
                     </button>
                 </div>
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : classes.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
-                    No classes yet. Add your first class to get started.
+                    {t('noClassesYet')}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -493,31 +494,36 @@ export default function ClassesPage() {
                                                 <div className="text-xs text-slate-500">{cls.academicYear}</div>
                                             </div>
                                             <span className="text-xs bg-brand/10 text-brand font-medium px-2 py-0.5 rounded-full">
-                                                {cls.studentCount} / {cls.maxCapacity ?? 'âˆž'}
+                                                {cls.studentCount} / {cls.maxCapacity ?? '∞'}
                                             </span>
                                         </div>
                                         <div className="text-sm text-slate-600">
-                                            <span className="text-slate-400">Homeroom: </span>
-                                            {cls.homeroomTeacherName || 'â€”'}
+                                            <span className="text-slate-400">{t('homeroomTeacher')}: </span>
+                                            {cls.homeroomTeacherName || '—'}
                                         </div>
+                                        {cls.stream && (
+                                            <div className="text-xs bg-brand/5 text-brand px-2 py-0.5 rounded-full w-fit">
+                                                {cls.stream.replace('_', ' ')}
+                                            </div>
+                                        )}
                                         <div className="flex gap-2 mt-auto pt-2 border-t border-slate-100 flex-wrap">
                                             <button
                                                 className="text-xs text-brand hover:underline font-medium"
                                                 onClick={() => setModal({ type: 'assignments', cls })}
                                             >
-                                                Subject Assignments
+                                                {t('subjectAssignments')}
                                             </button>
                                             <button
                                                 className="text-xs text-slate-500 hover:underline"
                                                 onClick={() => setModal({ type: 'edit', cls })}
                                             >
-                                                Edit
+                                                {t('edit')}
                                             </button>
                                             <button
                                                 className="text-xs text-red-500 hover:underline"
                                                 onClick={() => setConfirmDelete(cls)}
                                             >
-                                                Delete
+                                                {t('delete')}
                                             </button>
                                         </div>
                                     </div>
@@ -531,7 +537,7 @@ export default function ClassesPage() {
             {/* Add / Edit class */}
             {(modal?.type === 'add' || modal?.type === 'edit') && (
                 <Modal
-                    title={modal.type === 'add' ? 'Add Class' : 'Edit Class'}
+                    title={modal.type === 'add' ? t('addClass') : t('editClass')}
                     onClose={() => setModal(null)}
                 >
                     <ClassForm
@@ -554,7 +560,7 @@ export default function ClassesPage() {
             {/* Subject-teacher assignments */}
             {modal?.type === 'assignments' && (
                 <Modal
-                    title={`Subject Assignments â€” Grade ${modal.cls.grade}${modal.cls.section}`}
+                    title={`${t('subjectAssignments')} – Grade ${modal.cls.grade}${modal.cls.section}`}
                     onClose={() => { setModal(null); load() }}
                 >
                     <AssignmentsPanel
@@ -567,28 +573,27 @@ export default function ClassesPage() {
 
             {/* Grade curriculum manager */}
             {modal?.type === 'curriculum' && (
-                <Modal title="Grade Curriculum" onClose={() => setModal(null)}>
+                <Modal title={t('gradeCurriculum')} onClose={() => setModal(null)}>
                     <CurriculumPanel onClose={() => setModal(null)} />
                 </Modal>
             )}
 
             {/* End Term */}
             {modal?.type === 'endterm' && (
-                <Modal title="End Academic Year Term" onClose={() => setModal(null)}>
+                <Modal title={t('endAcademicYearTerm')} onClose={() => setModal(null)}>
                     <EndTermModal onClose={() => { setModal(null); load() }} />
                 </Modal>
             )}
 
             {/* Delete confirm */}
             {confirmDelete && (
-                <Modal title="Confirm Delete" onClose={() => setConfirmDelete(null)}>
+                <Modal title={t('confirmDelete')} onClose={() => setConfirmDelete(null)}>
                     <p className="text-slate-700">
-                        Delete <strong>Grade {confirmDelete.grade} â€“ Section {confirmDelete.section}</strong>?
-                        Students assigned to this class will become unassigned.
+                        {t('deleteClassConfirm')} <strong>Grade {confirmDelete.grade} – Section {confirmDelete.section}</strong>?
                     </p>
                     <div className="flex justify-end gap-2 mt-4">
-                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>Cancel</button>
-                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>Delete</button>
+                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>
+                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>{t('delete')}</button>
                     </div>
                 </Modal>
             )}

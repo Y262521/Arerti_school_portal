@@ -5,13 +5,14 @@ import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
 function LinkForm({ onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
     const [studentUid, setStudentUid] = useState('')
     const [relationship, setRelationship] = useState('')
 
     return (
         <form onSubmit={e => { e.preventDefault(); onSubmit({ studentUid, relationship }) }} className="space-y-3">
             <div>
-                <label className="field-label">Student UID *</label>
+                <label className="field-label">{t('studentUidLabel')} *</label>
                 <input
                     className="field"
                     placeholder="e.g. STU-2026-001"
@@ -20,11 +21,11 @@ function LinkForm({ onSubmit, onClose, loading }) {
                     required
                 />
                 <p className="text-xs text-slate-400 mt-1">
-                    Get this ID from the school office or your child's enrollment letter.
+                    {t('studentUidHint')}
                 </p>
             </div>
             <div>
-                <label className="field-label">Relationship</label>
+                <label className="field-label">{t('relationship')}</label>
                 <input
                     className="field"
                     placeholder="e.g. Mother, Father, Guardian"
@@ -33,9 +34,9 @@ function LinkForm({ onSubmit, onClose, loading }) {
                 />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Linkingâ€¦' : 'Link Child'}
+                    {loading ? t('linking') : t('linkChild')}
                 </button>
             </div>
         </form>
@@ -53,7 +54,7 @@ export default function ParentChildrenPage() {
     const load = async () => {
         setLoading(true)
         try { setChildren(await parentService.getChildren()) }
-        catch { toast.error('Failed to load linked children') }
+        catch { toast.error(t('failedToLoadChildren')) }
         finally { setLoading(false) }
     }
 
@@ -63,19 +64,19 @@ export default function ParentChildrenPage() {
         setLinking(true)
         try {
             await parentService.link(payload)
-            toast.success('Child linked')
+            toast.success(t('childLinked'))
             setModal(false); load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Could not link â€” check the Student UID')
+            toast.error(err.response?.data?.message || t('linkFailed'))
         } finally { setLinking(false) }
     }
 
     const handleUnlink = async (linkId) => {
         try {
             await parentService.unlink(linkId)
-            toast.success('Child unlinked')
+            toast.success(t('childUnlinked'))
             setConfirmUnlink(null); load()
-        } catch { toast.error('Unlink failed') }
+        } catch { toast.error(t('unlinkFailed')) }
     }
 
     return (
@@ -83,18 +84,18 @@ export default function ParentChildrenPage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('myChildrenPage')}</h1>
-                    <p className="text-slate-500 mt-1">{children.length} linked</p>
+                    <p className="text-slate-500 mt-1">{children.length} {t('linkedChildren')}</p>
                 </div>
                 <button className="btn-primary" onClick={() => setModal(true)}>
-                    + Link a Child
+                    + {t('linkAChild')}
                 </button>
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : children.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
-                    No children linked yet. Use the Student UID given to you by the school office to link your child.
+                    {t('noChildrenLinked')}
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -106,12 +107,12 @@ export default function ParentChildrenPage() {
                                 <p className="text-sm text-slate-600 mt-1">{c.sectionLabel}</p>
                             )}
                             {c.relationship && (
-                                <p className="text-xs text-slate-400 mt-1">Relationship: {c.relationship}</p>
+                                <p className="text-xs text-slate-400 mt-1">{t('relationship')}: {c.relationship}</p>
                             )}
                             <div className="flex gap-3 mt-3 pt-3 border-t border-slate-100">
                                 <button className="text-xs text-red-500 hover:underline"
                                     onClick={() => setConfirmUnlink(c)}>
-                                    Unlink
+                                    {t('unlink')}
                                 </button>
                             </div>
                         </div>
@@ -120,19 +121,19 @@ export default function ParentChildrenPage() {
             )}
 
             {modal && (
-                <Modal title="Link a Child" onClose={() => setModal(false)}>
+                <Modal title={t('linkAChild')} onClose={() => setModal(false)}>
                     <LinkForm onSubmit={handleLink} onClose={() => setModal(false)} loading={linking} />
                 </Modal>
             )}
 
             {confirmUnlink && (
-                <Modal title="Confirm Unlink" onClose={() => setConfirmUnlink(null)}>
+                <Modal title={t('confirmUnlink')} onClose={() => setConfirmUnlink(null)}>
                     <p className="text-slate-700">
-                        Unlink <strong>{confirmUnlink.studentFullName}</strong> ({confirmUnlink.studentUid}) from your account?
+                        {t('unlinkConfirm')} <strong>{confirmUnlink.studentFullName}</strong> ({confirmUnlink.studentUid})?
                     </p>
                     <div className="flex justify-end gap-2 mt-4">
-                        <button className="btn-ghost" onClick={() => setConfirmUnlink(null)}>Cancel</button>
-                        <button className="btn-danger" onClick={() => handleUnlink(confirmUnlink.linkId)}>Unlink</button>
+                        <button className="btn-ghost" onClick={() => setConfirmUnlink(null)}>{t('cancel')}</button>
+                        <button className="btn-danger" onClick={() => handleUnlink(confirmUnlink.linkId)}>{t('unlink')}</button>
                     </div>
                 </Modal>
             )}

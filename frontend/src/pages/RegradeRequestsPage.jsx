@@ -12,6 +12,7 @@ const STATUS_BADGE = {
 }
 
 function ResolveModal({ request, onResolve, onClose }) {
+    const { t } = useLanguage()
     const [note, setNote] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -26,30 +27,30 @@ function ResolveModal({ request, onResolve, onClose }) {
     return (
         <div className="space-y-4">
             <div className="text-sm text-slate-700 space-y-1">
-                <p><span className="text-slate-500">Teacher:</span> <strong>{request.teacherName}</strong> ({request.teacherEmployeeId})</p>
-                <p><span className="text-slate-500">Student:</span> <strong>{request.studentName}</strong> <span className="text-xs text-slate-400">({request.studentUid})</span></p>
-                <p><span className="text-slate-500">Subject:</span> {request.subjectName}</p>
-                <p><span className="text-slate-500">Class:</span> {request.sectionLabel}</p>
-                <p><span className="text-slate-500">Term:</span> {request.term} Â· {request.academicYear}</p>
+                <p><span className="text-slate-500">{t('teacherLabel')}:</span> <strong>{request.teacherName}</strong> ({request.teacherEmployeeId})</p>
+                <p><span className="text-slate-500">{t('student')}:</span> <strong>{request.studentName}</strong> <span className="text-xs text-slate-400">({request.studentUid})</span></p>
+                <p><span className="text-slate-500">{t('subjectLabel')}:</span> {request.subjectName}</p>
+                <p><span className="text-slate-500">{t('classLabel')}:</span> {request.sectionLabel}</p>
+                <p><span className="text-slate-500">{t('semester')}:</span> {request.term} · {request.academicYear}</p>
                 {request.reason && (
-                    <p><span className="text-slate-500">Reason:</span> {request.reason}</p>
+                    <p><span className="text-slate-500">{t('reasonLabel')}:</span> {request.reason}</p>
                 )}
             </div>
             <div>
-                <label className="field-label">Note to Teacher (optional)</label>
+                <label className="field-label">{t('noteToTeacher')}</label>
                 <textarea className="field" rows={2} value={note}
                     onChange={e => setNote(e.target.value)}
-                    placeholder="Add a note for the teacherâ€¦" />
+                    placeholder={`${t('addNoteForTeacher')}…`} />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-                <button className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button className="btn-danger" disabled={loading}
                     onClick={() => handle(false)}>
-                    {loading ? 'â€¦' : 'âœ— Reject'}
+                    {loading ? '…' : `✗ ${t('reject')}`}
                 </button>
                 <button className="btn-primary" disabled={loading}
                     onClick={() => handle(true)}>
-                    {loading ? 'â€¦' : 'âœ“ Approve'}
+                    {loading ? '…' : `✓ ${t('approve')}`}
                 </button>
             </div>
         </div>
@@ -67,7 +68,7 @@ export default function RegradeRequestsPage() {
         setLoading(true)
         regradeService.getAll()
             .then(setRequests)
-            .catch(() => toast.error('Failed to load regrade requests'))
+            .catch(() => toast.error(t('failedToLoadRegrade')))
             .finally(() => setLoading(false))
     }
 
@@ -77,14 +78,14 @@ export default function RegradeRequestsPage() {
         try {
             if (approve) {
                 await regradeService.approve(id, note)
-                toast.success('Regrade request approved')
+                toast.success(t('regradeApproved'))
             } else {
                 await regradeService.reject(id, note)
-                toast.success('Regrade request rejected')
+                toast.success(t('regradeRejected'))
             }
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to resolve')
+            toast.error(err.response?.data?.message || t('resolveFailed'))
         }
     }
 
@@ -96,8 +97,8 @@ export default function RegradeRequestsPage() {
             <div className="mb-6">
                 <h1 className="font-display text-2xl font-bold text-slate-900">{t('regradeCard')}</h1>
                 <p className="text-slate-500 mt-1">
-                    Review and approve homeroom teacher requests to edit locked marks
-                    {pendingCount > 0 && <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>}
+                    {t('regradeSubtitle')}
+                    {pendingCount > 0 && <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} {t('pending')}</span>}
                 </p>
             </div>
 
@@ -111,29 +112,29 @@ export default function RegradeRequestsPage() {
                             filter === s ? 'bg-brand text-white border-brand' : 'border-slate-200 text-slate-600 hover:border-brand'
                         }`}
                     >
-                        {s === 'ALL' ? `All (${requests.length})` : `${s} (${requests.filter(r => r.status === s).length})`}
+                        {s === 'ALL' ? `${t('all')} (${requests.length})` : `${s} (${requests.filter(r => r.status === s).length})`}
                     </button>
                 ))}
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : filtered.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">No {filter.toLowerCase()} requests.</div>
+                <div className="card p-8 text-center text-slate-500">{t('noRequests')} {filter.toLowerCase()}.</div>
             ) : (
                 <div className="card overflow-x-auto p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                                <th className="px-4 py-3 text-left">Teacher</th>
-                                <th className="px-4 py-3 text-left">Subject</th>
-                                <th className="px-4 py-3 text-left">Student</th>
-                                <th className="px-4 py-3 text-left">Class</th>
-                                <th className="px-4 py-3 text-center">Term</th>
-                                <th className="px-4 py-3 text-left">Reason</th>
-                                <th className="px-4 py-3 text-center">Status</th>
-                                <th className="px-4 py-3 text-center">Date</th>
-                                <th className="px-4 py-3 text-right">Action</th>
+                                <th className="px-4 py-3 text-left">{t('teacherLabel')}</th>
+                                <th className="px-4 py-3 text-left">{t('subjectLabel')}</th>
+                                <th className="px-4 py-3 text-left">{t('student')}</th>
+                                <th className="px-4 py-3 text-left">{t('classLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('semester')}</th>
+                                <th className="px-4 py-3 text-left">{t('reasonLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('statusLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('dateLabel')}</th>
+                                <th className="px-4 py-3 text-right">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -150,10 +151,10 @@ export default function RegradeRequestsPage() {
                                     </td>
                                     <td className="px-4 py-3 text-slate-700">{r.sectionLabel}</td>
                                     <td className="px-4 py-3 text-center text-slate-600">
-                                        Sem {r.term} Â· {r.academicYear}
+                                        Sem {r.term} · {r.academicYear}
                                     </td>
                                     <td className="px-4 py-3 text-slate-500 text-xs max-w-xs truncate">
-                                        {r.reason || 'â€”'}
+                                        {r.reason || '—'}
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[r.status]}`}>
@@ -169,12 +170,12 @@ export default function RegradeRequestsPage() {
                                                 className="text-xs text-brand hover:underline font-medium"
                                                 onClick={() => setResolveModal(r)}
                                             >
-                                                Review
+                                                {t('review')}
                                             </button>
                                         )}
                                         {r.status !== 'PENDING' && r.adminNote && (
                                             <span className="text-xs text-slate-400" title={r.adminNote}>
-                                                Note â„¹ï¸
+                                                {t('noteLabel')} ℹ️
                                             </span>
                                         )}
                                     </td>
@@ -186,7 +187,7 @@ export default function RegradeRequestsPage() {
             )}
 
             {resolveModal && (
-                <Modal title="Review Regrade Request" onClose={() => setResolveModal(null)}>
+                <Modal title={t('reviewRegradeRequest')} onClose={() => setResolveModal(null)}>
                     <ResolveModal
                         request={resolveModal}
                         onResolve={handleResolve}

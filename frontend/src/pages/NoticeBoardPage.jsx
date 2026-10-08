@@ -17,29 +17,30 @@ const PRIORITY_OPTS = ['LOW', 'MEDIUM', 'HIGH']
 const EMPTY = { title: '', body: '', audience: 'GENERAL', priority: 'MEDIUM', pinned: false }
 
 function NoticeForm({ initial, onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
     const [form, setForm] = useState(initial)
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
     return (
         <form onSubmit={e => { e.preventDefault(); onSubmit(form) }} className="space-y-3">
             <div>
-                <label className="field-label">Title *</label>
+                <label className="field-label">{t('titleLabel')} *</label>
                 <input className="field" value={form.title} onChange={e => set('title', e.target.value)} required />
             </div>
             <div>
-                <label className="field-label">Body *</label>
+                <label className="field-label">{t('bodyLabel')} *</label>
                 <textarea className="field min-h-[120px]" value={form.body}
                     onChange={e => set('body', e.target.value)} required />
             </div>
             <div className="grid grid-cols-2 gap-3">
                 <div>
-                    <label className="field-label">Audience</label>
+                    <label className="field-label">{t('audienceLabel')}</label>
                     <select className="field" value={form.audience} onChange={e => set('audience', e.target.value)}>
                         {AUDIENCE_OPTS.map(a => <option key={a}>{a}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Priority</label>
+                    <label className="field-label">{t('priorityLabel')}</label>
                     <select className="field" value={form.priority} onChange={e => set('priority', e.target.value)}>
                         {PRIORITY_OPTS.map(p => <option key={p}>{p}</option>)}
                     </select>
@@ -47,12 +48,12 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                 <input type="checkbox" checked={form.pinned} onChange={e => set('pinned', e.target.checked)} />
-                Pin this notice to the top
+                {t('pinNotice')}
             </label>
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Savingâ€¦' : 'Save'}
+                    {loading ? t('saving') : t('save')}
                 </button>
             </div>
         </form>
@@ -73,7 +74,7 @@ export default function NoticeBoardPage() {
     const load = async () => {
         setLoading(true)
         try { setNotices(await noticeService.getAll()) }
-        catch { toast.error('Failed to load notices') }
+        catch { toast.error(t('failedToLoadNotices')) }
         finally { setLoading(false) }
     }
 
@@ -84,23 +85,23 @@ export default function NoticeBoardPage() {
         try {
             if (modal.mode === 'add') {
                 await noticeService.create(payload)
-                toast.success('Notice posted')
+                toast.success(t('noticePosted'))
             } else {
                 await noticeService.update(modal.notice.id, payload)
-                toast.success('Notice updated')
+                toast.success(t('noticeUpdated'))
             }
             setModal(null); load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Save failed')
+            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
     const handleDelete = async (id) => {
         try {
             await noticeService.remove(id)
-            toast.success('Notice deleted')
+            toast.success(t('noticeDeleted'))
             setConfirmDelete(null); load()
-        } catch { toast.error('Delete failed') }
+        } catch { toast.error(t('deleteFailed')) }
     }
 
     return (
@@ -108,19 +109,19 @@ export default function NoticeBoardPage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('noticeBoardPage')}</h1>
-                    <p className="text-slate-500 mt-1">{notices.length} notices</p>
+                    <p className="text-slate-500 mt-1">{notices.length} {t('noticesCount')}</p>
                 </div>
                 {isAdmin && (
                     <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>
-                        + Post Notice
+                        + {t('postNotice')}
                     </button>
                 )}
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : notices.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">No notices yet.</div>
+                <div className="card p-8 text-center text-slate-500">{t('noNotices')}</div>
             ) : (
                 <div className="space-y-4">
                     {notices.map(n => (
@@ -131,7 +132,7 @@ export default function NoticeBoardPage() {
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        {n.pinned && <span className="text-brand text-xs font-bold">ðŸ“Œ Pinned</span>}
+                                        {n.pinned && <span className="text-brand text-xs font-bold">📌 {t('pinned')}</span>}
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[n.priority] || PRIORITY_BADGE.LOW}`}>
                                             {n.priority}
                                         </span>
@@ -141,10 +142,10 @@ export default function NoticeBoardPage() {
                                     </div>
                                     <h3 className="font-semibold text-slate-900 mt-1">{n.title}</h3>
                                     <p className="text-xs text-slate-400 mt-0.5">
-                                        By {n.postedBy} Â· {new Date(n.createdAt).toLocaleDateString()}
+                                        {t('by')} {n.postedBy} · {new Date(n.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <span className="text-slate-400 text-lg">{expanded === n.id ? 'â–²' : 'â–¼'}</span>
+                                <span className="text-slate-400 text-lg">{expanded === n.id ? '▲' : '▼'}</span>
                             </div>
 
                             {expanded === n.id && (
@@ -154,11 +155,11 @@ export default function NoticeBoardPage() {
                                         <div className="flex gap-3 mt-4">
                                             <button className="text-xs text-brand hover:underline"
                                                 onClick={e => { e.stopPropagation(); setModal({ mode: 'edit', notice: n }) }}>
-                                                Edit
+                                                {t('edit')}
                                             </button>
                                             <button className="text-xs text-red-500 hover:underline"
                                                 onClick={e => { e.stopPropagation(); setConfirmDelete(n) }}>
-                                                Delete
+                                                {t('delete')}
                                             </button>
                                         </div>
                                     )}
@@ -170,7 +171,7 @@ export default function NoticeBoardPage() {
             )}
 
             {modal && (
-                <Modal title={modal.mode === 'add' ? 'Post Notice' : 'Edit Notice'} onClose={() => setModal(null)}>
+                <Modal title={modal.mode === 'add' ? t('postNotice') : t('editNotice')} onClose={() => setModal(null)}>
                     <NoticeForm
                         initial={modal.mode === 'edit' ? {
                             title: modal.notice.title, body: modal.notice.body,
@@ -183,11 +184,11 @@ export default function NoticeBoardPage() {
             )}
 
             {confirmDelete && (
-                <Modal title="Confirm Delete" onClose={() => setConfirmDelete(null)}>
-                    <p className="text-slate-700">Delete notice <strong>"{confirmDelete.title}"</strong>?</p>
+                <Modal title={t('confirmDelete')} onClose={() => setConfirmDelete(null)}>
+                    <p className="text-slate-700">{t('deleteNoticeConfirm')} <strong>"{confirmDelete.title}"</strong>?</p>
                     <div className="flex justify-end gap-2 mt-4">
-                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>Cancel</button>
-                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>Delete</button>
+                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>
+                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>{t('delete')}</button>
                     </div>
                 </Modal>
             )}

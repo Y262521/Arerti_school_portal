@@ -8,14 +8,13 @@ import toast from 'react-hot-toast'
 const currentYear = new Date().getFullYear()
 const CURRENT_YEAR = `${currentYear}/${currentYear + 1}`
 
-// Generate dropdown options: 5 past years + current + next
 const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => {
     const y = currentYear - 3 + i
     return `${y}/${y + 1}`
 })
 
 const GRADE_COLOR = (g) => {
-    if (!g || g === 'â€”') return 'text-slate-400'
+    if (!g || g === '—') return 'text-slate-400'
     if (g.startsWith('A')) return 'text-green-600'
     if (g.startsWith('B')) return 'text-blue-600'
     if (g.startsWith('C')) return 'text-yellow-600'
@@ -36,7 +35,7 @@ export default function MyGradesPage() {
         studentService.getMe()
             .then(setStudent)
             .catch((err) => {
-                if (err.response?.status !== 404) toast.error('Failed to load student data')
+                if (err.response?.status !== 404) toast.error(t('failedToLoadStudent'))
                 setStudent(null)
             })
             .finally(() => setLoading(false))
@@ -51,10 +50,10 @@ export default function MyGradesPage() {
             .finally(() => setLoading(false))
     }, [student, term, academicYear])
 
-    if (loading) return <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
+    if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
     if (!student) return (
         <div className="card p-8 text-center text-slate-500">
-            Your student profile is not set up yet. Contact the administrator.
+            {t('studentProfileNotSetup')}
         </div>
     )
 
@@ -63,18 +62,18 @@ export default function MyGradesPage() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('myGradesPage')}</h1>
-                    <p className="text-slate-500 mt-1">{student.studentUid} Â· {student.sectionLabel || 'No class assigned'}</p>
+                    <p className="text-slate-500 mt-1">{student.studentUid} · {student.sectionLabel || t('noClassAssigned')}</p>
                 </div>
                 <div className="flex gap-3 items-end">
                     <div>
-                        <label className="field-label">Semester</label>
+                        <label className="field-label">{t('semester')}</label>
                         <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
-                            <option value={1}>Semester 1</option>
-                            <option value={2}>Semester 2</option>
+                            <option value={1}>{t('semester')} 1</option>
+                            <option value={2}>{t('semester')} 2</option>
                         </select>
                     </div>
                     <div>
-                        <label className="field-label">Year</label>
+                        <label className="field-label">{t('year')}</label>
                         <select className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)}>
                             {YEAR_OPTIONS.map(y => (
                                 <option key={y} value={y}>{y}</option>
@@ -88,25 +87,25 @@ export default function MyGradesPage() {
             {report && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                     <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">Average</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('average')}</div>
                         <div className={`text-3xl font-bold mt-1 ${GRADE_COLOR(report.overallGrade)}`}>
-                            {report.average ? report.average.toFixed(1) : 'â€”'}
+                            {report.average ? report.average.toFixed(1) : '—'}
                         </div>
                         <div className={`text-sm font-semibold ${GRADE_COLOR(report.overallGrade)}`}>{report.overallGrade}</div>
                     </div>
                     <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">Subjects</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('subjectsLabel')}</div>
                         <div className="text-3xl font-bold text-brand mt-1">{report.grades.length}</div>
                     </div>
                     <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">Attendance</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('attendance')}</div>
                         <div className={`text-3xl font-bold mt-1 ${report.attendancePercent >= 75 ? 'text-green-600' : 'text-red-600'}`}>
                             {report.attendancePercent}%
                         </div>
-                        <div className="text-xs text-slate-400">{report.presentDays}/{report.totalDays} days</div>
+                        <div className="text-xs text-slate-400">{report.presentDays}/{report.totalDays} {t('daysLabel')}</div>
                     </div>
                     <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">Semester</div>
+                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('semester')}</div>
                         <div className="text-3xl font-bold text-brand mt-1">{term}</div>
                         <div className="text-xs text-slate-400">{academicYear}</div>
                     </div>
@@ -116,17 +115,17 @@ export default function MyGradesPage() {
             {/* Grade table */}
             {!report || report.grades.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
-                    No grades recorded for Semester {term}, {academicYear} yet.
+                    {t('noGradesForSemester')} {term}, {academicYear}.
                 </div>
             ) : (
                 <div className="card overflow-x-auto p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                                <th className="px-4 py-3 text-left">Subject</th>
-                                <th className="px-4 py-3 text-center">Score</th>
-                                <th className="px-4 py-3 text-center">Grade</th>
-                                <th className="px-4 py-3 text-left">Comment</th>
+                                <th className="px-4 py-3 text-left">{t('subjectLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('scoreLabel')}</th>
+                                <th className="px-4 py-3 text-center">{t('gradeLabel')}</th>
+                                <th className="px-4 py-3 text-left">{t('commentLabel')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,15 +134,15 @@ export default function MyGradesPage() {
                                     <td className="px-4 py-3 font-medium text-slate-900">{g.subjectName}</td>
                                     <td className="px-4 py-3 text-center">{g.score}/100</td>
                                     <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(g.grade)}`}>{g.grade}</td>
-                                    <td className="px-4 py-3 text-slate-500 text-xs">{g.comment || 'â€”'}</td>
+                                    <td className="px-4 py-3 text-slate-500 text-xs">{g.comment || '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
                         <tfoot>
                             <tr className="bg-slate-50 font-semibold">
-                                <td className="px-4 py-3 text-slate-700">Overall Average</td>
+                                <td className="px-4 py-3 text-slate-700">{t('overallAverage')}</td>
                                 <td className={`px-4 py-3 text-center ${GRADE_COLOR(report.overallGrade)}`}>
-                                    {report.average ? report.average.toFixed(1) : 'â€”'}/100
+                                    {report.average ? report.average.toFixed(1) : '—'}/100
                                 </td>
                                 <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(report.overallGrade)}`}>
                                     {report.overallGrade}
