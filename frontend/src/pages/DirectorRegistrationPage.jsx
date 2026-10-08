@@ -1,13 +1,9 @@
-﻿import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { teacherService } from '../services/teacherService'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
-import StudentEnrollmentWizard, {
-    FileUploadField, StepBar, EthiopianPhoneInput,
-    FullEnrollmentWizard, ExistingStudentPanel,
-    ETHIOPIAN_REGIONS, PAYMENT_METHODS, RELATIONSHIP_OPTS
-} from '../components/StudentEnrollmentWizard'
+import StudentEnrollmentWizard from '../components/StudentEnrollmentWizard'
 import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
@@ -160,8 +156,8 @@ function AssignTeacherForm({ windowId, teachers, existingAssignments, onSuccess,
             <div><label className="field-label">{t('teacherLabel')} *</label>
                 <select className="field" value={teacherId} onChange={e => setTeacherId(e.target.value)} required>
                     <option value="">— {t('selectTeacher')} —</option>
-                    {teachers.map(t => (
-                        <option key={t.id} value={t.id}>{t.fullName} ({t.employeeId}){assignedIds.has(t.id) ? ' ✓' : ''}</option>
+                    {teachers.map(tr => (
+                        <option key={tr.id} value={tr.id}>{tr.fullName} ({tr.employeeId}){assignedIds.has(tr.id) ? ' ✓' : ''}</option>
                     ))}
                 </select></div>
             <div><label className="field-label">{t('allowedGrades')} *</label>

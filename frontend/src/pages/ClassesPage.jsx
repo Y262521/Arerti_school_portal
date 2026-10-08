@@ -62,8 +62,8 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                 <select className="field" value={form.homeroomTeacherId}
                     onChange={e => set('homeroomTeacherId', e.target.value)}>
                     <option value="">— {t('noneLabel')} —</option>
-                    {teachers.map(t => (
-                        <option key={t.id} value={t.id}>{t.fullName} ({t.employeeId})</option>
+                    {teachers.map(tr => (
+                        <option key={tr.id} value={tr.id}>{tr.fullName} ({tr.employeeId})</option>
                     ))}
                 </select>
                 <p className="text-xs text-slate-400 mt-1">
@@ -185,8 +185,8 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                                 onChange={e => handleAssign(a.subjectId, e.target.value || null)}
                             >
                                 <option value="">— {t('assignTeacher')} —</option>
-                                {teachers.map(t => (
-                                    <option key={t.id} value={t.id}>{t.fullName}</option>
+                                {teachers.map(tr => (
+                                    <option key={tr.id} value={tr.id}>{tr.fullName}</option>
                                 ))}
                             </select>
                             {a.teacherId
