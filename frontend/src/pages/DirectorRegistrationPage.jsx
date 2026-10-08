@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { teacherService } from '../services/teacherService'
 import { classService } from '../services/classService'
@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
-// ── Postpone modal ────────────────────────────────────────────────────────────
+// â”€â”€ Postpone modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostponeModal({ windowId, currentEnd, onSuccess, onClose }) {
     const { t } = useLanguage()
     const [newEnd, setNewEnd] = useState('')
@@ -51,14 +51,14 @@ function PostponeModal({ windowId, currentEnd, onSuccess, onClose }) {
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading || !newEnd}>
-                    {loading ? 'Postponing…' : t('postponeRegistration')}
+                    {loading ? 'Postponingâ€¦' : t('postponeRegistration')}
                 </button>
             </div>
         </form>
     )
 }
 
-// ── Auto-Assign Modal ─────────────────────────────────────────────────────────
+// â”€â”€ Auto-Assign Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AutoAssignModal({ onClose }) {
     const [grade, setGrade] = useState(9)
     const [academicYear, setAcademicYear] = useState(CURRENT_YEAR)
@@ -79,17 +79,17 @@ function AutoAssignModal({ onClose }) {
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-800">
-                <strong>🔀 Auto-Assign Students to Sections</strong>
+                <strong>ðŸ”€ Auto-Assign Students to Sections</strong>
                 <p className="mt-1 text-xs">
                     Students are sorted by their previous grade's performance score, then
-                    distributed evenly across sections using round-robin (best → A, 2nd best → B, etc.)
+                    distributed evenly across sections using round-robin (best â†’ A, 2nd best â†’ B, etc.)
                     so every section gets a balanced mix of high, mid, and low performers.
                 </p>
             </div>
 
             {result ? (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm space-y-2">
-                    <p className="text-green-800 font-semibold">✅ {result.message}</p>
+                    <p className="text-green-800 font-semibold">âœ… {result.message}</p>
                     <p className="text-green-700">Total students: {result.totalStudents}</p>
                     <p className="text-green-700">Assigned: {result.assignedStudents}</p>
                     {result.sectionCounts && (
@@ -123,13 +123,13 @@ function AutoAssignModal({ onClose }) {
                         </div>
                     </div>
                     <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
-                        ⚠️ Make sure sections for Grade {grade} exist before running this.
+                        âš ï¸ Make sure sections for Grade {grade} exist before running this.
                         Go to <strong>Classes</strong> to create sections first.
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
                         <button className="btn-ghost" onClick={onClose}>Cancel</button>
                         <button className="btn-primary" onClick={handleAssign} disabled={loading}>
-                            {loading ? '⏳ Assigning…' : '🔀 Run Auto-Assign'}
+                            {loading ? 'â³ Assigningâ€¦' : 'ðŸ”€ Run Auto-Assign'}
                         </button>
                     </div>
                 </div>
@@ -198,7 +198,7 @@ function OpenWindowForm({ onSubmit, onClose, loading }) {
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Opening…' : t('openRegistration')}
+                    {loading ? 'Openingâ€¦' : t('openRegistration')}
                 </button>
             </div>
         </form>
@@ -236,11 +236,11 @@ function AssignTeacherForm({ windowId, teachers, existingAssignments, onSuccess,
                 <label className="field-label">Teacher *</label>
                 <select className="field" value={teacherId}
                     onChange={e => setTeacherId(e.target.value)} required>
-                    <option value="">— Select teacher —</option>
+                    <option value="">â€” Select teacher â€”</option>
                     {teachers.map(t => (
                         <option key={t.id} value={t.id}>
                             {t.fullName} ({t.employeeId})
-                            {assignedTeacherIds.has(t.id) ? ' ✓ already assigned' : ''}
+                            {assignedTeacherIds.has(t.id) ? ' âœ“ already assigned' : ''}
                         </option>
                     ))}
                 </select>
@@ -260,7 +260,7 @@ function AssignTeacherForm({ windowId, teachers, existingAssignments, onSuccess,
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading || !teacherId}>
-                    {loading ? 'Assigning…' : 'Assign Teacher'}
+                    {loading ? 'Assigningâ€¦' : 'Assign Teacher'}
                 </button>
             </div>
         </form>
@@ -330,7 +330,7 @@ export default function DirectorRegistrationPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Student Registration</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('studentRegistration')}</h1>
                     <p className="text-slate-500 mt-1">Manage registration windows and teacher assignments</p>
                 </div>
                 <button className="btn-primary" onClick={() => setOpenModal(true)}>
@@ -339,12 +339,12 @@ export default function DirectorRegistrationPage() {
                 <button
                     className="btn-ghost text-sm border-brand text-brand hover:bg-brand/5"
                     onClick={() => setAutoAssignModal(true)}>
-                    🔀 Auto-Assign Students
+                    ðŸ”€ Auto-Assign Students
                 </button>
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : (
                 <div className="space-y-6">
                     {/* Active windows */}
@@ -411,7 +411,7 @@ export default function DirectorRegistrationPage() {
             {/* Assign teacher modal */}
             {assignModal && (
                 <Modal
-                    title={`Assign Teacher — ${assignModal.academicYear}`}
+                    title={`Assign Teacher â€” ${assignModal.academicYear}`}
                     onClose={() => setAssignModal(null)}
                 >
                     <AssignTeacherForm
@@ -448,7 +448,7 @@ export default function DirectorRegistrationPage() {
                 <Modal title="Close Registration Window" onClose={() => setConfirmClose(null)}>
                     <div className="space-y-4">
                         <div className="rounded-lg bg-orange-50 border border-orange-200 p-3 text-sm text-orange-800">
-                            ⚠️ Closing this window will immediately prevent teachers from registering students.
+                            âš ï¸ Closing this window will immediately prevent teachers from registering students.
                             This cannot be undone.
                         </div>
                         <p className="text-sm text-slate-700">
@@ -498,13 +498,13 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemo
                             active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
                         }`}>{active ? t('registrationOpened') : t('registrationClosed')}</span>
                         <span className="font-semibold text-slate-900">{w.academicYear}</span>
-                        {w.active && <span className="text-xs text-green-600 font-medium">● Live now</span>}
+                        {w.active && <span className="text-xs text-green-600 font-medium">â— Live now</span>}
                     </div>
                     <p className="text-sm text-slate-500 mt-1">
                         {w.startDatetime ? new Date(w.startDatetime).toLocaleString() : w.startDate}
-                        {' → '}
+                        {' â†’ '}
                         {w.endDatetime ? new Date(w.endDatetime).toLocaleString() : w.endDate}
-                        {w.postponeCount > 0 && <span className="ml-2 text-blue-500 text-xs">⏰ Postponed {w.postponeCount}x</span>}
+                        {w.postponeCount > 0 && <span className="ml-2 text-blue-500 text-xs">â° Postponed {w.postponeCount}x</span>}
                         {w.note && <span className="ml-2 italic text-xs">"{w.note}"</span>}
                     </p>
                     <p className="text-xs text-slate-400">Opened by: {w.openedBy}</p>
@@ -512,12 +512,12 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemo
                 {active && (
                     <div className="flex gap-2 flex-wrap">
                         <button className="btn-ghost text-xs" onClick={loadEnrollments} disabled={loadingEnroll}>
-                            {loadingEnroll ? '…' : '📋 Enrollments'}
+                            {loadingEnroll ? 'â€¦' : 'ðŸ“‹ Enrollments'}
                         </button>
                         <button className="btn-ghost text-xs" onClick={onAssign}>+ Assign Teacher</button>
                         <button className="btn-ghost text-xs border-blue-200 text-blue-600 hover:border-blue-400"
                             onClick={onPostpone}>
-                            ⏰ Postpone
+                            â° Postpone
                         </button>
                         <button className="btn-ghost text-xs border-red-200 text-red-600" onClick={onClose}>
                             Close Registration
@@ -571,7 +571,7 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemo
                     ) : Object.entries(byTeacher).map(([teacher, recs]) => (
                         <div key={teacher} className="mb-3">
                             <p className="text-xs font-medium text-slate-600 mb-1">
-                                👤 {teacher} — {recs.length} student(s) registered
+                                ðŸ‘¤ {teacher} â€” {recs.length} student(s) registered
                             </p>
                             <div className="space-y-1 pl-3">
                                 {recs.map(r => (
@@ -586,7 +586,7 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onRemo
                                         }`}>{r.enrollmentType}</span>
                                         {r.stream && (
                                             <span className="text-slate-400">
-                                                {r.stream === 'NATURAL_SCIENCE' ? '🔬 Natural' : '📚 Social'}
+                                                {r.stream === 'NATURAL_SCIENCE' ? 'ðŸ”¬ Natural' : 'ðŸ“š Social'}
                                             </span>
                                         )}
                                         <span className="text-slate-400 ml-auto">

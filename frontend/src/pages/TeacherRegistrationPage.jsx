@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState, useRef } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { registrationService } from '../services/registrationService'
 import { classService } from '../services/classService'
 import Modal from '../components/Modal'
@@ -633,6 +634,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
 
 // Main TeacherRegistrationPage
 export default function TeacherRegistrationPage() {
+    const { t } = useLanguage()
     const [window_, setWindow_] = useState(null)
     const [loading, setLoading] = useState(true)
     const [sections, setSections] = useState([])

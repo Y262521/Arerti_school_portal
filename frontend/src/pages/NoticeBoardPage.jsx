@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { noticeService } from '../services/noticeService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
@@ -51,7 +52,7 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Saving…' : 'Save'}
+                    {loading ? 'Savingâ€¦' : 'Save'}
                 </button>
             </div>
         </form>
@@ -60,6 +61,7 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
 
 export default function NoticeBoardPage() {
     const { user } = useAuth()
+    const { t } = useLanguage()
     const isAdmin = user?.role === 'ADMIN'
     const [notices, setNotices] = useState([])
     const [loading, setLoading] = useState(true)
@@ -105,7 +107,7 @@ export default function NoticeBoardPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Notice Board</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('noticeBoardPage')}</h1>
                     <p className="text-slate-500 mt-1">{notices.length} notices</p>
                 </div>
                 {isAdmin && (
@@ -116,7 +118,7 @@ export default function NoticeBoardPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : notices.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">No notices yet.</div>
             ) : (
@@ -129,7 +131,7 @@ export default function NoticeBoardPage() {
                             <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        {n.pinned && <span className="text-brand text-xs font-bold">📌 Pinned</span>}
+                                        {n.pinned && <span className="text-brand text-xs font-bold">ðŸ“Œ Pinned</span>}
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[n.priority] || PRIORITY_BADGE.LOW}`}>
                                             {n.priority}
                                         </span>
@@ -139,10 +141,10 @@ export default function NoticeBoardPage() {
                                     </div>
                                     <h3 className="font-semibold text-slate-900 mt-1">{n.title}</h3>
                                     <p className="text-xs text-slate-400 mt-0.5">
-                                        By {n.postedBy} · {new Date(n.createdAt).toLocaleDateString()}
+                                        By {n.postedBy} Â· {new Date(n.createdAt).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <span className="text-slate-400 text-lg">{expanded === n.id ? '▲' : '▼'}</span>
+                                <span className="text-slate-400 text-lg">{expanded === n.id ? 'â–²' : 'â–¼'}</span>
                             </div>
 
                             {expanded === n.id && (

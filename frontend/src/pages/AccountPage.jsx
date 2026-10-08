@@ -1,4 +1,5 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import toast from 'react-hot-toast'
@@ -12,6 +13,7 @@ const ROLE_LABELS = {
 
 export default function AccountPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
 
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [saving, setSaving] = useState(false)
@@ -45,7 +47,7 @@ export default function AccountPage() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-slate-900">My Account</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('accountPage')}</h1>
         <p className="text-slate-500 mt-1">View your profile and manage your password</p>
       </div>
 
@@ -133,7 +135,7 @@ export default function AccountPage() {
 
           <div className="flex justify-end pt-2">
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Saving…' : 'Update Password'}
+              {saving ? 'Savingâ€¦' : 'Update Password'}
             </button>
           </div>
         </form>

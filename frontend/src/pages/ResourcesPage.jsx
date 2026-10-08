@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { resourceService } from '../services/resourceService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
@@ -68,7 +69,7 @@ function UploadForm({ onSubmit, onClose, loading }) {
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Uploading…' : 'Upload'}
+                    {loading ? 'Uploadingâ€¦' : 'Upload'}
                 </button>
             </div>
         </form>
@@ -77,6 +78,7 @@ function UploadForm({ onSubmit, onClose, loading }) {
 
 export default function ResourcesPage() {
     const { user } = useAuth()
+    const { t } = useLanguage()
     const canUpload = user?.role === 'ADMIN' || user?.role === 'TEACHER'
     const [resources, setResources] = useState([])
     const [loading, setLoading] = useState(true)
@@ -126,7 +128,7 @@ export default function ResourcesPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Resources</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('resourcesPage')}</h1>
                     <p className="text-slate-500 mt-1">{resources.length} files</p>
                 </div>
                 {canUpload && (
@@ -137,7 +139,7 @@ export default function ResourcesPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : resources.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">No resources yet.</div>
             ) : (
@@ -147,7 +149,7 @@ export default function ResourcesPage() {
                             <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
                                     <h3 className="font-semibold text-slate-900 truncate">{r.title}</h3>
-                                    <p className="text-xs text-slate-400 mt-0.5">{r.fileName} · {formatSize(r.sizeBytes)}</p>
+                                    <p className="text-xs text-slate-400 mt-0.5">{r.fileName} Â· {formatSize(r.sizeBytes)}</p>
                                 </div>
                                 <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
                                     {r.audience}
@@ -160,7 +162,7 @@ export default function ResourcesPage() {
                                 <p className="text-xs text-slate-400 mt-1">Subject: {r.subject}</p>
                             )}
                             <p className="text-xs text-slate-400 mt-2">
-                                By {r.uploadedBy} · {new Date(r.createdAt).toLocaleDateString()}
+                                By {r.uploadedBy} Â· {new Date(r.createdAt).toLocaleDateString()}
                             </p>
                             <div className="flex gap-3 mt-3 pt-3 border-t border-slate-100">
                                 <button
@@ -168,7 +170,7 @@ export default function ResourcesPage() {
                                     disabled={downloadingId === r.id}
                                     onClick={() => handleDownload(r)}
                                 >
-                                    {downloadingId === r.id ? 'Downloading…' : 'Download'}
+                                    {downloadingId === r.id ? 'Downloadingâ€¦' : 'Download'}
                                 </button>
                                 {(user?.role === 'ADMIN' || r.uploadedBy === user?.username) && (
                                     <button className="text-xs text-red-500 hover:underline"

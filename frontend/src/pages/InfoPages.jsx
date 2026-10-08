@@ -1,4 +1,4 @@
-export function ForbiddenPage() {
+﻿export function ForbiddenPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="card max-w-md text-center">

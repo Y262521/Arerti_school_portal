@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { parentService } from '../services/parentService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -34,7 +35,7 @@ function LinkForm({ onSubmit, onClose, loading }) {
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Linking…' : 'Link Child'}
+                    {loading ? 'Linkingâ€¦' : 'Link Child'}
                 </button>
             </div>
         </form>
@@ -42,6 +43,7 @@ function LinkForm({ onSubmit, onClose, loading }) {
 }
 
 export default function ParentChildrenPage() {
+    const { t } = useLanguage()
     const [children, setChildren] = useState([])
     const [loading, setLoading] = useState(true)
     const [linking, setLinking] = useState(false)
@@ -64,7 +66,7 @@ export default function ParentChildrenPage() {
             toast.success('Child linked')
             setModal(false); load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Could not link — check the Student UID')
+            toast.error(err.response?.data?.message || 'Could not link â€” check the Student UID')
         } finally { setLinking(false) }
     }
 
@@ -80,7 +82,7 @@ export default function ParentChildrenPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">My Children</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('myChildrenPage')}</h1>
                     <p className="text-slate-500 mt-1">{children.length} linked</p>
                 </div>
                 <button className="btn-primary" onClick={() => setModal(true)}>
@@ -89,7 +91,7 @@ export default function ParentChildrenPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : children.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
                     No children linked yet. Use the Student UID given to you by the school office to link your child.

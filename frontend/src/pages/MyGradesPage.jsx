@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { gradeService, reportCardService } from '../services/gradeService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
@@ -14,7 +15,7 @@ const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => {
 })
 
 const GRADE_COLOR = (g) => {
-    if (!g || g === '—') return 'text-slate-400'
+    if (!g || g === 'â€”') return 'text-slate-400'
     if (g.startsWith('A')) return 'text-green-600'
     if (g.startsWith('B')) return 'text-blue-600'
     if (g.startsWith('C')) return 'text-yellow-600'
@@ -24,6 +25,7 @@ const GRADE_COLOR = (g) => {
 
 export default function MyGradesPage() {
     const { user } = useAuth()
+    const { t } = useLanguage()
     const [student, setStudent] = useState(null)
     const [report, setReport] = useState(null)
     const [term, setTerm] = useState(1)
@@ -49,7 +51,7 @@ export default function MyGradesPage() {
             .finally(() => setLoading(false))
     }, [student, term, academicYear])
 
-    if (loading) return <div className="card p-8 text-center text-slate-500">Loading…</div>
+    if (loading) return <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
     if (!student) return (
         <div className="card p-8 text-center text-slate-500">
             Your student profile is not set up yet. Contact the administrator.
@@ -60,8 +62,8 @@ export default function MyGradesPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">My Grades</h1>
-                    <p className="text-slate-500 mt-1">{student.studentUid} · {student.sectionLabel || 'No class assigned'}</p>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('myGradesPage')}</h1>
+                    <p className="text-slate-500 mt-1">{student.studentUid} Â· {student.sectionLabel || 'No class assigned'}</p>
                 </div>
                 <div className="flex gap-3 items-end">
                     <div>
@@ -88,7 +90,7 @@ export default function MyGradesPage() {
                     <div className="card text-center">
                         <div className="text-xs text-slate-500 uppercase tracking-wide">Average</div>
                         <div className={`text-3xl font-bold mt-1 ${GRADE_COLOR(report.overallGrade)}`}>
-                            {report.average ? report.average.toFixed(1) : '—'}
+                            {report.average ? report.average.toFixed(1) : 'â€”'}
                         </div>
                         <div className={`text-sm font-semibold ${GRADE_COLOR(report.overallGrade)}`}>{report.overallGrade}</div>
                     </div>
@@ -133,7 +135,7 @@ export default function MyGradesPage() {
                                     <td className="px-4 py-3 font-medium text-slate-900">{g.subjectName}</td>
                                     <td className="px-4 py-3 text-center">{g.score}/100</td>
                                     <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(g.grade)}`}>{g.grade}</td>
-                                    <td className="px-4 py-3 text-slate-500 text-xs">{g.comment || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-500 text-xs">{g.comment || 'â€”'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -141,7 +143,7 @@ export default function MyGradesPage() {
                             <tr className="bg-slate-50 font-semibold">
                                 <td className="px-4 py-3 text-slate-700">Overall Average</td>
                                 <td className={`px-4 py-3 text-center ${GRADE_COLOR(report.overallGrade)}`}>
-                                    {report.average ? report.average.toFixed(1) : '—'}/100
+                                    {report.average ? report.average.toFixed(1) : 'â€”'}/100
                                 </td>
                                 <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(report.overallGrade)}`}>
                                     {report.overallGrade}

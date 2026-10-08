@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { regradeService } from '../services/gradeService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -29,7 +30,7 @@ function ResolveModal({ request, onResolve, onClose }) {
                 <p><span className="text-slate-500">Student:</span> <strong>{request.studentName}</strong> <span className="text-xs text-slate-400">({request.studentUid})</span></p>
                 <p><span className="text-slate-500">Subject:</span> {request.subjectName}</p>
                 <p><span className="text-slate-500">Class:</span> {request.sectionLabel}</p>
-                <p><span className="text-slate-500">Term:</span> {request.term} · {request.academicYear}</p>
+                <p><span className="text-slate-500">Term:</span> {request.term} Â· {request.academicYear}</p>
                 {request.reason && (
                     <p><span className="text-slate-500">Reason:</span> {request.reason}</p>
                 )}
@@ -38,17 +39,17 @@ function ResolveModal({ request, onResolve, onClose }) {
                 <label className="field-label">Note to Teacher (optional)</label>
                 <textarea className="field" rows={2} value={note}
                     onChange={e => setNote(e.target.value)}
-                    placeholder="Add a note for the teacher…" />
+                    placeholder="Add a note for the teacherâ€¦" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
                 <button className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button className="btn-danger" disabled={loading}
                     onClick={() => handle(false)}>
-                    {loading ? '…' : '✗ Reject'}
+                    {loading ? 'â€¦' : 'âœ— Reject'}
                 </button>
                 <button className="btn-primary" disabled={loading}
                     onClick={() => handle(true)}>
-                    {loading ? '…' : '✓ Approve'}
+                    {loading ? 'â€¦' : 'âœ“ Approve'}
                 </button>
             </div>
         </div>
@@ -56,6 +57,7 @@ function ResolveModal({ request, onResolve, onClose }) {
 }
 
 export default function RegradeRequestsPage() {
+    const { t } = useLanguage()
     const [requests, setRequests] = useState([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('PENDING')
@@ -92,7 +94,7 @@ export default function RegradeRequestsPage() {
     return (
         <div>
             <div className="mb-6">
-                <h1 className="font-display text-2xl font-bold text-slate-900">Regrade Requests</h1>
+                <h1 className="font-display text-2xl font-bold text-slate-900">{t('regradeCard')}</h1>
                 <p className="text-slate-500 mt-1">
                     Review and approve homeroom teacher requests to edit locked marks
                     {pendingCount > 0 && <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>}
@@ -115,7 +117,7 @@ export default function RegradeRequestsPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : filtered.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">No {filter.toLowerCase()} requests.</div>
             ) : (
@@ -148,10 +150,10 @@ export default function RegradeRequestsPage() {
                                     </td>
                                     <td className="px-4 py-3 text-slate-700">{r.sectionLabel}</td>
                                     <td className="px-4 py-3 text-center text-slate-600">
-                                        Sem {r.term} · {r.academicYear}
+                                        Sem {r.term} Â· {r.academicYear}
                                     </td>
                                     <td className="px-4 py-3 text-slate-500 text-xs max-w-xs truncate">
-                                        {r.reason || '—'}
+                                        {r.reason || 'â€”'}
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[r.status]}`}>
@@ -172,7 +174,7 @@ export default function RegradeRequestsPage() {
                                         )}
                                         {r.status !== 'PENDING' && r.adminNote && (
                                             <span className="text-xs text-slate-400" title={r.adminNote}>
-                                                Note ℹ️
+                                                Note â„¹ï¸
                                             </span>
                                         )}
                                     </td>

@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [bootstrapping, setBootstrapping] = useState(true)
 
   useEffect(() => { setBootstrapping(false) }, [])
-
   const login = useCallback(async (username, password) => {
     const data = await authService.login(username, password)
     setUser({ username: data.username, fullName: data.fullName, role: data.role })

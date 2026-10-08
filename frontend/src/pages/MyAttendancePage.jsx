@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { attendanceService } from '../services/attendanceService'
 import { studentService } from '../services/studentService'
 import toast from 'react-hot-toast'
@@ -13,6 +14,7 @@ const STATUS_STYLES = {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 export default function MyAttendancePage() {
+  const { t } = useLanguage()
   const [student, setStudent] = useState(null)
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
@@ -39,7 +41,7 @@ export default function MyAttendancePage() {
   const excused = records.filter(r => r.status === 'EXCUSED').length
   const pct     = total > 0 ? Math.round((present / total) * 100) : 0
 
-  if (loading) return <div className="card p-8 text-center text-slate-500">Loading…</div>
+  if (loading) return <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
 
   if (!student) return (
     <div className="card p-8 text-center text-slate-500">
@@ -50,9 +52,9 @@ export default function MyAttendancePage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-slate-900">My Attendance</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('myAttendancePage')}</h1>
         <p className="text-slate-500 mt-1">
-          {student.studentUid} · {student.sectionLabel || 'No class assigned'}
+          {student.studentUid} Â· {student.sectionLabel || 'No class assigned'}
         </p>
       </div>
 
@@ -84,7 +86,7 @@ export default function MyAttendancePage() {
       {/* Attendance warning */}
       {total > 0 && pct < 75 && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          ⚠️ Your attendance is below 75%. Please speak with your teacher or guardian.
+          âš ï¸ Your attendance is below 75%. Please speak with your teacher or guardian.
         </div>
       )}
 
@@ -135,8 +137,8 @@ export default function MyAttendancePage() {
                         {rec.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{rec.note || '—'}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{rec.markedBy || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">{rec.note || 'â€”'}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">{rec.markedBy || 'â€”'}</td>
                   </tr>
                 )
               })}

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { attendanceService } from '../services/attendanceService'
 import { classService } from '../services/classService'
 import { studentService } from '../services/studentService'
@@ -16,6 +17,7 @@ const STATUSES = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED']
 
 export default function AttendancePage() {
     const { user } = useAuth()
+    const { t } = useLanguage()
     const isAdmin = user?.role === 'ADMIN'
     const [sections, setSections] = useState([])
     const [students, setStudents] = useState([])
@@ -32,7 +34,7 @@ export default function AttendancePage() {
             .then(data => {
                 setSections(data)
                 if (!isAdmin && data.length === 0) {
-                    toast('You are not assigned as a homeroom teacher to any class.', { icon: 'ℹ️' })
+                    toast('You are not assigned as a homeroom teacher to any class.', { icon: 'â„¹ï¸' })
                 }
             })
             .catch(() => toast.error('Failed to load classes'))
@@ -79,7 +81,7 @@ export default function AttendancePage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Attendance</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('attendancePage')}</h1>
                     <p className="text-slate-500 mt-1">
                         {isAdmin ? 'Mark daily attendance by class' : 'Mark attendance for your homeroom class'}
                     </p>
@@ -91,9 +93,9 @@ export default function AttendancePage() {
                 <div>
                     <label className="field-label">Class / Section</label>
                     <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
-                        <option value="">— Select class —</option>
+                        <option value="">â€” Select class â€”</option>
                         {sections.map(s => (
-                            <option key={s.id} value={s.id}>Grade {s.grade} – {s.section} ({s.academicYear})</option>
+                            <option key={s.id} value={s.id}>Grade {s.grade} â€“ {s.section} ({s.academicYear})</option>
                         ))}
                     </select>
                 </div>
@@ -104,10 +106,10 @@ export default function AttendancePage() {
                 {sectionId && total > 0 && (
                     <div className="flex gap-2 ml-auto">
                         <button className="text-xs btn-ghost py-1.5 px-3" onClick={() => markAll('PRESENT')}>
-                            ✓ Mark All Present
+                            âœ“ Mark All Present
                         </button>
                         <button className="text-xs btn-ghost py-1.5 px-3 border-red-200 text-red-600" onClick={() => markAll('ABSENT')}>
-                            ✗ Mark All Absent
+                            âœ— Mark All Absent
                         </button>
                     </div>
                 )}
@@ -127,11 +129,11 @@ export default function AttendancePage() {
             {!sectionId ? (
                 <div className="card p-8 text-center text-slate-500">
                     {sections.length === 0 && !isAdmin
-                        ? '⚠️ You are not assigned as a homeroom teacher to any class. Contact the director.'
+                        ? 'âš ï¸ You are not assigned as a homeroom teacher to any class. Contact the director.'
                         : 'Select a class to mark attendance.'}
                 </div>
             ) : loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : students.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">No students in this section.</div>
             ) : (
@@ -159,7 +161,7 @@ export default function AttendancePage() {
                                                     {status}
                                                 </span>
                                             ) : (
-                                                <span className="text-xs text-slate-300">—</span>
+                                                <span className="text-xs text-slate-300">â€”</span>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-center">

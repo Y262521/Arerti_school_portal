@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { studentService } from '../services/studentService'
 import { classService } from '../services/classService'
+import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 
@@ -144,6 +145,7 @@ export default function StudentsPage() {
     const [credentialsModal, setCredentialsModal] = useState(null)
     const [search, setSearch] = useState('')
     const [confirmDelete, setConfirmDelete] = useState(null)
+    const { t } = useLanguage()
 
     const load = async () => {
         setLoading(true)
@@ -205,11 +207,11 @@ export default function StudentsPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Students</h1>
-                    <p className="text-slate-500 mt-1">{students.length} enrolled</p>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('studentsPage')}</h1>
+                    <p className="text-slate-500 mt-1">{students.length} {t('enrolled')}</p>
                 </div>
                 <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>
-                    + Add Student
+                    + {t('addStudent')}
                 </button>
             </div>
 

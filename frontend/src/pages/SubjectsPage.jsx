@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { subjectService } from '../services/gradeService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -44,7 +45,7 @@ function SubjectForm({ initial, onSubmit, onClose, loading }) {
       <div className="flex justify-end gap-2 pt-2">
         <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
         <button type="submit" className="btn-primary" disabled={loading}>
-          {loading ? 'Saving…' : 'Save'}
+          {loading ? 'Savingâ€¦' : 'Save'}
         </button>
       </div>
     </form>
@@ -52,6 +53,7 @@ function SubjectForm({ initial, onSubmit, onClose, loading }) {
 }
 
 export default function SubjectsPage() {
+  const { t } = useLanguage()
   const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -103,7 +105,7 @@ export default function SubjectsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Subjects</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">{t('subjectsPage')}</h1>
           <p className="text-slate-500 mt-1">{subjects.length} subjects defined</p>
         </div>
         <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>
@@ -114,7 +116,7 @@ export default function SubjectsPage() {
       <div className="mb-4">
         <input
           className="field max-w-sm"
-          placeholder="Search by name or code…"
+          placeholder="Search by name or codeâ€¦"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -122,7 +124,7 @@ export default function SubjectsPage() {
 
       <div className="card overflow-x-auto p-0">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading…</div>
+          <div className="p-8 text-center text-slate-500">Loadingâ€¦</div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-slate-500">No subjects found.</div>
         ) : (
@@ -139,7 +141,7 @@ export default function SubjectsPage() {
               {filtered.map(s => (
                 <tr key={s.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                   <td className="px-4 py-3 font-medium text-slate-900">{s.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-brand">{s.code || '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-brand">{s.code || 'â€”'}</td>
                   <td className="px-4 py-3 text-slate-600">
                     {s.applicableGrades
                       ? s.applicableGrades.split(',').map(g => g.trim()).filter(Boolean).map(g => (
@@ -147,7 +149,7 @@ export default function SubjectsPage() {
                             Gr {g}
                           </span>
                         ))
-                      : '—'}
+                      : 'â€”'}
                   </td>
                   <td className="px-4 py-3 text-right space-x-3">
                     <button

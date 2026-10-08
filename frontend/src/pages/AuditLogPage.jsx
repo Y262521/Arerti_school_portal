@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { auditService } from '../services/auditService'
 import toast from 'react-hot-toast'
 
@@ -18,6 +19,7 @@ const ACTION_BADGE = {
 }
 
 export default function AuditLogPage() {
+    const { t } = useLanguage()
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(0)
@@ -38,7 +40,7 @@ export default function AuditLogPage() {
         <div>
             <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Audit Log</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('auditLogPage')}</h1>
                     <p className="text-slate-500 mt-1">
                         {data ? `${data.totalElements} events` : 'System activity trail'}
                     </p>
@@ -49,7 +51,7 @@ export default function AuditLogPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : !data || data.content.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">No audit events yet.</div>
             ) : (
@@ -93,11 +95,11 @@ export default function AuditLogPage() {
             {data && data.totalPages > 1 && (
                 <div className="flex justify-center items-center gap-3 mt-4">
                     <button className="btn-ghost text-xs" disabled={data.first} onClick={() => goPage(page - 1)}>
-                        ← Prev
+                        â† Prev
                     </button>
                     <span className="text-xs text-slate-500">Page {page + 1} of {data.totalPages}</span>
                     <button className="btn-ghost text-xs" disabled={data.last} onClick={() => goPage(page + 1)}>
-                        Next →
+                        Next â†’
                     </button>
                 </div>
             )}

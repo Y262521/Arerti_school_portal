@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { classService, curriculumService } from '../services/classService'
 import { teacherService } from '../services/teacherService'
 import { subjectService } from '../services/gradeService'
@@ -12,7 +13,7 @@ const EMPTY = {
     homeroomTeacherId: '', maxCapacity: 40, stream: ''
 }
 
-// ── Class create/edit form ────────────────────────────────────────────────────
+// â”€â”€ Class create/edit form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
     const [form, setForm] = useState(initial)
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -59,7 +60,7 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                 <label className="field-label">Homeroom Teacher</label>
                 <select className="field" value={form.homeroomTeacherId}
                     onChange={e => set('homeroomTeacherId', e.target.value)}>
-                    <option value="">— None —</option>
+                    <option value="">â€” None â€”</option>
                     {teachers.map(t => (
                         <option key={t.id} value={t.id}>{t.fullName} ({t.employeeId})</option>
                     ))}
@@ -74,23 +75,23 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                     <select className="field" value={form.stream}
                         onChange={e => set('stream', e.target.value)}
                         required={Number(form.grade) >= 11}>
-                        <option value="">— Select stream —</option>
-                        <option value="NATURAL_SCIENCE">Natural Science / ተፈጥሮ ሳይንስ</option>
-                        <option value="SOCIAL_SCIENCE">Social Science / ማህበራዊ ሳይንስ</option>
+                        <option value="">â€” Select stream â€”</option>
+                        <option value="NATURAL_SCIENCE">Natural Science / á‰°áˆáŒ¥áˆ® áˆ³á‹­áŠ•áˆµ</option>
+                        <option value="SOCIAL_SCIENCE">Social Science / áˆ›áˆ…á‰ áˆ«á‹Š áˆ³á‹­áŠ•áˆµ</option>
                     </select>
                 </div>
             )}
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Saving…' : 'Save'}
+                    {loading ? 'Savingâ€¦' : 'Save'}
                 </button>
             </div>
         </form>
     )
 }
 
-// ── Subject-teacher assignment panel ─────────────────────────────────────────
+// â”€â”€ Subject-teacher assignment panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AssignmentsPanel({ cls, teachers, onClose }) {
     const [assignments, setAssignments] = useState([])
     const [loading, setLoading] = useState(true)
@@ -124,7 +125,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         try {
             const curriculum = await curriculumService.get(cls.grade)
             if (curriculum.length === 0) {
-                toast.error(`No curriculum defined for Grade ${cls.grade}. Set it up first via 📚 Grade Curriculum.`)
+                toast.error(`No curriculum defined for Grade ${cls.grade}. Set it up first via ðŸ“š Grade Curriculum.`)
                 return
             }
             let applied = 0
@@ -132,7 +133,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 try {
                     await classService.assignTeacher(cls.id, { subjectId: c.subjectId, teacherId: null })
                     applied++
-                } catch { /* already assigned — skip */ }
+                } catch { /* already assigned â€” skip */ }
             }
             toast.success(`${applied} subject(s) applied from Grade ${cls.grade} curriculum`)
             load()
@@ -146,19 +147,19 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
             <div className="flex items-center justify-between">
                 <div>
                     <p className="text-sm text-slate-600">
-                        Grade {cls.grade} – Section {cls.section} · {cls.academicYear}
+                        Grade {cls.grade} â€“ Section {cls.section} Â· {cls.academicYear}
                         {cls.stream && <span className="ml-2 text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">{cls.stream.replace('_', ' ')}</span>}
                     </p>
                     {unassigned > 0 && (
                         <p className="text-xs text-orange-600 font-medium mt-1">
-                            ⚠️ {unassigned} subject{unassigned > 1 ? 's' : ''} still need a teacher assigned
+                            âš ï¸ {unassigned} subject{unassigned > 1 ? 's' : ''} still need a teacher assigned
                         </p>
                     )}
                 </div>
             </div>
 
             {loading ? (
-                <div className="text-center text-slate-500 py-6">Loading…</div>
+                <div className="text-center text-slate-500 py-6">Loadingâ€¦</div>
             ) : assignments.length === 0 ? (
                 <div className="text-center text-slate-500 py-6 space-y-2">
                     <p>No subjects assigned yet.</p>
@@ -182,13 +183,13 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                                 disabled={saving === a.subjectId}
                                 onChange={e => handleAssign(a.subjectId, e.target.value || null)}
                             >
-                                <option value="">— Assign teacher —</option>
+                                <option value="">â€” Assign teacher â€”</option>
                                 {teachers.map(t => (
                                     <option key={t.id} value={t.id}>{t.fullName}</option>
                                 ))}
                             </select>
                             {a.teacherId
-                                ? <span className="text-green-600 text-lg" title="Assigned">✓</span>
+                                ? <span className="text-green-600 text-lg" title="Assigned">âœ“</span>
                                 : <span className="text-orange-400 text-lg" title="Unassigned">!</span>}
                         </div>
                     ))}
@@ -202,7 +203,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
     )
 }
 
-// ── Grade curriculum manager ──────────────────────────────────────────────────
+// â”€â”€ Grade curriculum manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CurriculumPanel({ onClose }) {
     const [grade, setGrade] = useState(9)
     const [stream, setStream] = useState('')
@@ -254,7 +255,7 @@ function CurriculumPanel({ onClose }) {
         <div className="space-y-4">
             <p className="text-sm text-slate-500">
                 Define which subjects are automatically assigned when a new class is created.
-                Curriculum is applied automatically — no manual button needed.
+                Curriculum is applied automatically â€” no manual button needed.
             </p>
 
             <div className="flex gap-3 items-center flex-wrap">
@@ -268,7 +269,7 @@ function CurriculumPanel({ onClose }) {
                     <div>
                         <label className="field-label mb-0">Stream: *</label>
                         <select className="field w-44" value={stream} onChange={e => setStream(e.target.value)}>
-                            <option value="">— Select stream —</option>
+                            <option value="">â€” Select stream â€”</option>
                             <option value="NATURAL_SCIENCE">Natural Science</option>
                             <option value="SOCIAL_SCIENCE">Social Science</option>
                         </select>
@@ -281,7 +282,7 @@ function CurriculumPanel({ onClose }) {
                     Select a stream to view and edit the Grade {grade} curriculum.
                 </div>
             ) : loading ? (
-                <div className="text-center text-slate-500 py-4">Loading…</div>
+                <div className="text-center text-slate-500 py-4">Loadingâ€¦</div>
             ) : (
                 <>
                     <div className="space-y-1">
@@ -307,14 +308,14 @@ function CurriculumPanel({ onClose }) {
                     <div className="flex gap-2 pt-2">
                         <select className="field flex-1" value={selectedSubject}
                             onChange={e => setSelectedSubject(e.target.value)}>
-                            <option value="">— Add subject to curriculum —</option>
+                            <option value="">â€” Add subject to curriculum â€”</option>
                             {available.map(s => (
                                 <option key={s.id} value={s.id}>{s.name}{s.code ? ` (${s.code})` : ''}</option>
                             ))}
                         </select>
                         <button className="btn-primary px-4" onClick={handleAdd}
                             disabled={!selectedSubject || adding}>
-                            {adding ? '…' : 'Add'}
+                            {adding ? 'â€¦' : 'Add'}
                         </button>
                     </div>
                 </>
@@ -327,7 +328,7 @@ function CurriculumPanel({ onClose }) {
     )
 }
 
-// ── End Term modal ────────────────────────────────────────────────────────────
+// â”€â”€ End Term modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function EndTermModal({ onClose }) {
     const [year, setYear] = useState(CURRENT_YEAR)
     const [loading, setLoading] = useState(false)
@@ -347,7 +348,7 @@ function EndTermModal({ onClose }) {
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 text-sm text-orange-800">
-                <strong>⚠️ End of Academic Year Action</strong>
+                <strong>âš ï¸ End of Academic Year Action</strong>
                 <ul className="mt-2 space-y-1 list-disc list-inside">
                     <li>All subject-teacher assignments for the year will be <strong>archived</strong></li>
                     <li>All students will be <strong>unassigned</strong> from their current classes</li>
@@ -358,9 +359,9 @@ function EndTermModal({ onClose }) {
 
             {result ? (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-800 space-y-1">
-                    <p>✅ Term ended for <strong>{year}</strong></p>
-                    <p>📦 {result.archivedAssignments} subject assignments archived</p>
-                    <p>👥 {result.studentsUnassigned} students unassigned from classes</p>
+                    <p>âœ… Term ended for <strong>{year}</strong></p>
+                    <p>ðŸ“¦ {result.archivedAssignments} subject assignments archived</p>
+                    <p>ðŸ‘¥ {result.studentsUnassigned} students unassigned from classes</p>
                 </div>
             ) : (
                 <>
@@ -372,7 +373,7 @@ function EndTermModal({ onClose }) {
                     <div className="flex justify-end gap-2 pt-2">
                         <button className="btn-ghost" onClick={onClose}>Cancel</button>
                         <button className="btn-danger" onClick={handleEndTerm} disabled={loading || !year}>
-                            {loading ? 'Processing…' : '⚠️ End Term'}
+                            {loading ? 'Processingâ€¦' : 'âš ï¸ End Term'}
                         </button>
                     </div>
                 </>
@@ -387,8 +388,9 @@ function EndTermModal({ onClose }) {
     )
 }
 
-// ── Main ClassesPage ──────────────────────────────────────────────────────────
+// â”€â”€ Main ClassesPage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ClassesPage() {
+    const { t } = useLanguage()
     const [classes, setClasses] = useState([])
     const [teachers, setTeachers] = useState([])
     const [loading, setLoading] = useState(true)
@@ -416,7 +418,7 @@ export default function ClassesPage() {
         try {
             if (modal.type === 'add') {
                 await classService.create(payload)
-                toast.success('Class created — curriculum auto-applied from grade template')
+                toast.success('Class created â€” curriculum auto-applied from grade template')
             } else {
                 await classService.update(modal.cls.id, payload)
                 toast.success('Class updated')
@@ -452,16 +454,16 @@ export default function ClassesPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Classes</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('classesPage')}</h1>
                     <p className="text-slate-500 mt-1">{classes.length} sections configured</p>
                 </div>
                 <div className="flex gap-2">
                     <button className="btn-ghost text-sm" onClick={() => setModal({ type: 'curriculum' })}>
-                        📚 Grade Curriculum
+                        ðŸ“š Grade Curriculum
                     </button>
                     <button className="btn-ghost text-sm border-orange-200 text-orange-600 hover:border-orange-400"
                         onClick={() => setModal({ type: 'endterm' })}>
-                        🔄 End Term
+                        ðŸ”„ End Term
                     </button>
                     <button className="btn-primary" onClick={() => setModal({ type: 'add' })}>
                         + Add Class
@@ -470,7 +472,7 @@ export default function ClassesPage() {
             </div>
 
             {loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">Loadingâ€¦</div>
             ) : classes.length === 0 ? (
                 <div className="card p-8 text-center text-slate-500">
                     No classes yet. Add your first class to get started.
@@ -491,12 +493,12 @@ export default function ClassesPage() {
                                                 <div className="text-xs text-slate-500">{cls.academicYear}</div>
                                             </div>
                                             <span className="text-xs bg-brand/10 text-brand font-medium px-2 py-0.5 rounded-full">
-                                                {cls.studentCount} / {cls.maxCapacity ?? '∞'}
+                                                {cls.studentCount} / {cls.maxCapacity ?? 'âˆž'}
                                             </span>
                                         </div>
                                         <div className="text-sm text-slate-600">
                                             <span className="text-slate-400">Homeroom: </span>
-                                            {cls.homeroomTeacherName || '—'}
+                                            {cls.homeroomTeacherName || 'â€”'}
                                         </div>
                                         <div className="flex gap-2 mt-auto pt-2 border-t border-slate-100 flex-wrap">
                                             <button
@@ -552,7 +554,7 @@ export default function ClassesPage() {
             {/* Subject-teacher assignments */}
             {modal?.type === 'assignments' && (
                 <Modal
-                    title={`Subject Assignments — Grade ${modal.cls.grade}${modal.cls.section}`}
+                    title={`Subject Assignments â€” Grade ${modal.cls.grade}${modal.cls.section}`}
                     onClose={() => { setModal(null); load() }}
                 >
                     <AssignmentsPanel
@@ -581,7 +583,7 @@ export default function ClassesPage() {
             {confirmDelete && (
                 <Modal title="Confirm Delete" onClose={() => setConfirmDelete(null)}>
                     <p className="text-slate-700">
-                        Delete <strong>Grade {confirmDelete.grade} – Section {confirmDelete.section}</strong>?
+                        Delete <strong>Grade {confirmDelete.grade} â€“ Section {confirmDelete.section}</strong>?
                         Students assigned to this class will become unassigned.
                     </p>
                     <div className="flex justify-end gap-2 mt-4">

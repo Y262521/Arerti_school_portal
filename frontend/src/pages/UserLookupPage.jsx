@@ -1,4 +1,5 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -50,7 +51,7 @@ function ResetPasswordModal({ user, onClose }) {
                 /* Show credentials after reset */
                 <div className="space-y-3">
                     <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-                        ✅ Password reset. Share these credentials with the user — they must change it on next login.
+                        âœ… Password reset. Share these credentials with the user â€” they must change it on next login.
                     </div>
                     <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
                         <p><span className="text-slate-500">Username:</span> <strong>{result.username}</strong></p>
@@ -58,7 +59,7 @@ function ResetPasswordModal({ user, onClose }) {
                     </div>
                     <div className="flex justify-end gap-2">
                         <button className="btn-ghost" onClick={copyAll}>
-                            {copied ? '✓ Copied!' : 'Copy to Clipboard'}
+                            {copied ? 'âœ“ Copied!' : 'Copy to Clipboard'}
                         </button>
                         <button className="btn-primary" onClick={onClose}>Done</button>
                     </div>
@@ -84,7 +85,7 @@ function ResetPasswordModal({ user, onClose }) {
                     <div className="flex justify-end gap-2 pt-2">
                         <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
                         <button type="submit" className="btn-primary" disabled={loading}>
-                            {loading ? 'Resetting…' : 'Reset Password'}
+                            {loading ? 'Resettingâ€¦' : 'Reset Password'}
                         </button>
                     </div>
                 </form>
@@ -94,6 +95,7 @@ function ResetPasswordModal({ user, onClose }) {
 }
 
 export default function UserLookupPage() {
+    const { t } = useLanguage()
     const [query, setQuery] = useState('')
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(false)
@@ -115,7 +117,7 @@ export default function UserLookupPage() {
     return (
         <div>
             <div className="mb-6">
-                <h1 className="font-display text-2xl font-bold text-slate-900">User Lookup</h1>
+                <h1 className="font-display text-2xl font-bold text-slate-900">{t('userLookupPageTitle')}</h1>
                 <p className="text-slate-500 mt-1">
                     Find any user to view their username or reset their password.
                 </p>
@@ -125,12 +127,12 @@ export default function UserLookupPage() {
             <form onSubmit={handleSearch} className="flex gap-3 mb-6 max-w-lg">
                 <input
                     className="field flex-1"
-                    placeholder="Search by name, username or email…"
+                    placeholder="Search by name, username or emailâ€¦"
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                 />
                 <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Searching…' : 'Search'}
+                    {loading ? 'Searchingâ€¦' : 'Search'}
                 </button>
             </form>
 
@@ -185,7 +187,7 @@ export default function UserLookupPage() {
 
             {resetModal && (
                 <Modal
-                    title={`Credentials — ${resetModal.fullName}`}
+                    title={`Credentials â€” ${resetModal.fullName}`}
                     onClose={() => setResetModal(null)}
                 >
                     <ResetPasswordModal

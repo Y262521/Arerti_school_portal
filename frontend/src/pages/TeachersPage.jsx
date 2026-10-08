@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import { teacherService } from '../services/teacherService'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -240,6 +241,7 @@ const EMPTY = {
 }
 
 export default function TeachersPage() {
+    const { t } = useLanguage()
     const [teachers, setTeachers] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -297,7 +299,7 @@ export default function TeachersPage() {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">Teachers</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('teachersPage')}</h1>
                     <p className="text-slate-500 mt-1">{teachers.length} staff members</p>
                 </div>
                 <button className="btn-primary" onClick={() => setModal({ mode: 'add' })}>
@@ -344,8 +346,8 @@ export default function TeachersPage() {
                                     <td className="px-4 py-3 font-medium text-slate-900">{t.fullName}</td>
                                     <td className="px-4 py-3 text-slate-600 text-xs">{t.email}</td>
                                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{t.username}</td>
-                                    <td className="px-4 py-3 text-slate-600">{t.qualification || '—'}</td>
-                                    <td className="px-4 py-3 text-slate-600">{t.specialization || '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600">{t.qualification || 'â€”'}</td>
+                                    <td className="px-4 py-3 text-slate-600">{t.specialization || 'â€”'}</td>
                                     <td className="px-4 py-3 text-right space-x-2">
                                         <button className="text-xs text-brand hover:underline"
                                             onClick={() => setModal({ mode: 'edit', teacher: t })}>
