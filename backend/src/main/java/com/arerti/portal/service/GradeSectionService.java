@@ -71,7 +71,7 @@ public class GradeSectionService {
             if (gradeSectionRepository.existsByGradeAndSectionAndAcademicYear(
                     req.grade(), req.section(), req.academicYear())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Grade " + req.grade() + " section " + req.section() + " already exists for " + req.academicYear());
+                        "Grade " + req.grade() + " Section " + req.section() + " already exists for " + req.academicYear() + ".");
             }
         }
 

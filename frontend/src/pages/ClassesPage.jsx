@@ -80,7 +80,6 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                         <option value="NATURAL_SCIENCE">{t('naturalScience')}</option>
                         <option value="SOCIAL_SCIENCE">{t('socialScience')}</option>
                     </select>
-                    <p className="text-xs text-slate-400 mt-1">ℹ️ {t('classDuplicateHint')}</p>
                 </div>
             )}
             <div className="flex justify-end gap-2 pt-2">

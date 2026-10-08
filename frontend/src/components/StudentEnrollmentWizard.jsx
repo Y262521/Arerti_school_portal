@@ -236,7 +236,6 @@ export function FullEnrollmentWizard({ windowId, grade, enrollmentType, academic
 
             {step === 1 && (
                 <div className="space-y-4">
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">ℹ️ {t('sectionPending')}</div>
                     <div className="grid grid-cols-2 gap-3">
                         <F field="previousSchool"><label className="field-label">{t('previousSchool')} *</label>
                             <input className={`field ${errors.previousSchool ? 'border-red-400' : ''}`} value={form.previousSchool} onChange={e => set('previousSchool', e.target.value)} /></F>
