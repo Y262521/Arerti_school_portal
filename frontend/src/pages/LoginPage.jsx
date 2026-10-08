@@ -50,7 +50,12 @@ export default function LoginPage() {
       toast.success(`${t('loginWelcome')} ${data.fullName}!`)
       navigate(from || HOME_BY_ROLE[data.role] || '/', { replace: true })
     } catch (err) {
-      toast.error(err.response?.data?.message || t('loginErrorFallback'))
+      // No response = network/connection problem (offline or server unreachable)
+      if (!err.response) {
+        toast.error(t('networkError'))
+      } else {
+        toast.error(err.response?.data?.message || t('loginErrorFallback'))
+      }
     } finally {
       setLoading(false)
     }

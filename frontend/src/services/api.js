@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Auto-logout on 401
+// Auto-logout on 401; enrich network errors with a readable message
 api.interceptors.response.use(
   (r) => r,
   (err) => {
@@ -29,8 +29,23 @@ api.interceptors.response.use(
         location.href = '/login'
       }
     }
+    // No response at all = offline or server unreachable
+    if (!err.response) {
+      err.isNetworkError = true
+    }
     return Promise.reject(err)
   }
 )
 
 export default api
+
+/**
+ * Extracts a user-facing error message from an Axios error.
+ * - Network/offline: returns null (caller should use t('networkError'))
+ * - Server error with message: returns the server message
+ * - Otherwise: returns null (caller should use a generic fallback)
+ */
+export function getErrorMessage(err) {
+  if (!err.response || err.isNetworkError) return '__NETWORK__'
+  return err.response?.data?.message || null
+}

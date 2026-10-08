@@ -614,6 +614,7 @@ const translations = {
     loginWelcome: 'Welcome,',
     copyrightText: 'Arerti General Secondary & Preparatory School',
     pleaseUseEmail: 'Please fill in both fields',
+    networkError: 'Cannot connect to the server. Please check your internet connection.',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────
     hiStudent: 'Hi',
@@ -1294,6 +1295,7 @@ const translations = {
     loginWelcome: 'እንኳን ደህና መጡ,',
     copyrightText: 'አረርቲ አጠቃላይ ሁለተኛ ደረጃ እና ቅድመ-ዩኒቨርሲቲ ትምህርት ቤት',
     pleaseUseEmail: 'ሁለቱንም ሳጥኖች ይሙሉ',
+    networkError: 'ከሰርቨሩ ጋር መገናኘት አልተቻለም። የኢንተርኔት ግንኙነትዎን ያረጋግጡ።',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────
     hiStudent: 'ሰላም',
