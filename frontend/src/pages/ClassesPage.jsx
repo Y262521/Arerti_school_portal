@@ -447,12 +447,9 @@ export default function ClassesPage() {
     // Group by grade for 9-10, by grade+stream for 11-12
     const byGroup = classes.reduce((acc, c) => {
         const key = c.grade >= 11 && c.stream
-            ? `${c.grade}||${c.stream}`   // e.g. "11||NATURAL_SCIENCE"
-            : `${c.grade}||`              // e.g. "9||"
+            ? `${c.grade}||${c.stream}`
+            : `${c.grade}||`
         if (!acc[key]) acc[key] = []
-        acc[key].push(c)
-        return acc
-    }, {})
         acc[key].push(c)
         return acc
     }, {})
