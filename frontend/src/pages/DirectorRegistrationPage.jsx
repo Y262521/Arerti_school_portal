@@ -858,7 +858,7 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onEnro
                             {loadingEnroll ? '…' : `📋 ${t('enrollments')}`}
                         </button>
                         <button className="btn-primary text-xs" onClick={onEnroll}>
-                            + {t('registerStudent')}
+                            + {t('addStudent')}
                         </button>
                         <button className="btn-ghost text-xs" onClick={onAssign}>+ {t('assignTeacher')}</button>
                         <button className="btn-ghost text-xs border-blue-200 text-blue-600" onClick={onPostpone}>
@@ -1054,7 +1054,7 @@ export default function DirectorRegistrationPage() {
             )}
 
             {enrollModal && (
-                <Modal title={`${t('registerStudent')} — ${enrollModal.academicYear}`} onClose={() => setEnrollModal(null)} size="lg">
+                <Modal title={`${t('addStudent')} — ${enrollModal.academicYear}`} onClose={() => setEnrollModal(null)} size="lg">
                     <StudentEnrollmentWizard
                         windowData={enrollModal}
                         onSuccess={load}
