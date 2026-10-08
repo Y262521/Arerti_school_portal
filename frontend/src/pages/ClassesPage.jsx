@@ -444,9 +444,15 @@ export default function ClassesPage() {
         }
     }
 
-    const byGrade = classes.reduce((acc, c) => {
-        const key = c.grade
+    // Group by grade for 9-10, by grade+stream for 11-12
+    const byGroup = classes.reduce((acc, c) => {
+        const key = c.grade >= 11 && c.stream
+            ? `${c.grade}||${c.stream}`   // e.g. "11||NATURAL_SCIENCE"
+            : `${c.grade}||`              // e.g. "9||"
         if (!acc[key]) acc[key] = []
+        acc[key].push(c)
+        return acc
+    }, {})
         acc[key].push(c)
         return acc
     }, {})
@@ -480,9 +486,31 @@ export default function ClassesPage() {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    {Object.entries(byGrade).sort((a, b) => Number(a[0]) - Number(b[0])).map(([gradeNum, sections]) => (
-                        <div key={gradeNum}>
-                            <h2 className="font-display font-semibold text-slate-700 mb-2">{t('grade')} {gradeNum}</h2>
+                    {Object.entries(byGroup)
+                        .sort(([a], [b]) => {
+                            const [gradeA, streamA] = a.split('||')
+                            const [gradeB, streamB] = b.split('||')
+                            if (gradeA !== gradeB) return Number(gradeA) - Number(gradeB)
+                            // Natural Science before Social Science
+                            return (streamA || '').localeCompare(streamB || '')
+                        })
+                        .map(([groupKey, sections]) => {
+                            const [gradeNum, stream] = groupKey.split('||')
+                            const streamLabel = stream === 'NATURAL_SCIENCE'
+                                ? t('naturalScience')
+                                : stream === 'SOCIAL_SCIENCE'
+                                    ? t('socialScience')
+                                    : null
+                            return (
+                        <div key={groupKey}>
+                            <h2 className="font-display font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                {t('grade')} {gradeNum}
+                                {streamLabel && (
+                                    <span className="text-xs font-semibold bg-brand/10 text-brand px-2 py-0.5 rounded-full">
+                                        {streamLabel}
+                                    </span>
+                                )}
+                            </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {sections.map(cls => (
                                     <div key={cls.id} className="card flex flex-col gap-2">
@@ -501,7 +529,7 @@ export default function ClassesPage() {
                                             <span className="text-slate-400">{t('homeroomTeacher')}: </span>
                                             {cls.homeroomTeacherName || '—'}
                                         </div>
-                                        {cls.stream && (
+                                        {cls.stream && Number(cls.grade) < 11 && (
                                             <div className="text-xs bg-brand/5 text-brand px-2 py-0.5 rounded-full w-fit">
                                                 {cls.stream.replace('_', ' ')}
                                             </div>
@@ -530,7 +558,8 @@ export default function ClassesPage() {
                                 ))}
                             </div>
                         </div>
-                    ))}
+                            )
+                        })}
                 </div>
             )}
 
