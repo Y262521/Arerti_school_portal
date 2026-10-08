@@ -21,16 +21,17 @@ const GRADE_COLOR = (g) => {
     return 'text-red-600 font-bold'
 }
 
-const COMPONENTS = [
-    { key: 'midExam',    label: 'Mid',       max: 20 },
-    { key: 'finalExam',  label: 'Final',     max: 60 },
-    { key: 'assignment', label: 'Assign',    max: 10 },
-    { key: 'testQuiz',   label: 'Test/Quiz', max: 10 },
-]
-
 // ── Grade Entry Form ───────────────────────────────────────────────────────────
 function GradeEntryForm({ student, subject, entry, term, academicYear,
     onSubmit, onClose, loading, canEdit, isLocked, hasRegradePermission }) {
+    const { t } = useLanguage()
+
+    const COMPONENTS = [
+        { key: 'midExam',    label: t('midExam'),   max: 20 },
+        { key: 'finalExam',  label: t('finalExam'), max: 60 },
+        { key: 'assignment', label: t('assignment'), max: 10 },
+        { key: 'testQuiz',   label: t('testQuiz'),  max: 10 },
+    ]
 
     const [form, setForm] = useState({
         midExam:    entry?.midExam    ?? '',
@@ -59,16 +60,16 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-sm text-slate-500">Semester {term} · {academicYear}</p>
+            <p className="text-sm text-slate-500">{t('semester')} {term} · {academicYear}</p>
 
             {isLocked && !hasRegradePermission && (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                    🔒 Marks are locked. Request regrade permission from the director to edit.
+                    🔒 {t('marksLocked')}
                 </div>
             )}
             {isLocked && hasRegradePermission && (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-                    ✅ Regrade permission granted. Marks will re-lock after saving.
+                    ✅ {t('regradePermissionGranted')}
                 </div>
             )}
 
@@ -90,25 +91,25 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
             </div>
 
             <div className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-700">Total</span>
+                <span className="text-sm font-semibold text-slate-700">{t('total')}</span>
                 <span className={`text-lg font-bold ${total >= 50 ? 'text-green-600' : 'text-red-600'}`}>
                     {total.toFixed(1)} / 100
                 </span>
             </div>
 
             <div>
-                <label className="field-label">Comment</label>
+                <label className="field-label">{t('commentLabel')}</label>
                 <textarea className="field" rows={2} value={form.comment}
                     onChange={e => set('comment', e.target.value)}
                     disabled={!isEditable}
-                    placeholder="Optional feedback…" />
+                    placeholder={t('optionalFeedback')} />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 {isEditable && (
                     <button type="submit" className="btn-primary" disabled={loading}>
-                        {loading ? 'Saving…' : 'Save Marks'}
+                        {loading ? t('saving') : t('saveMarks')}
                     </button>
                 )}
             </div>
@@ -118,27 +119,28 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
 
 // ── Regrade Request Form ───────────────────────────────────────────────────────
 function RegradeRequestForm({ student, subject, sectionId, term, academicYear, onSubmit, onClose, loading }) {
+    const { t } = useLanguage()
     const [reason, setReason] = useState('')
     return (
         <form onSubmit={e => { e.preventDefault(); onSubmit(reason) }} className="space-y-3">
             <p className="text-sm text-slate-600">
-                Request permission to edit marks for <strong>{student.fullName}</strong> in{' '}
-                <strong>{subject.name}</strong> — Semester {term}, {academicYear}.
+                {t('regradeRequestFor')} <strong>{student.fullName}</strong> {t('in')}{' '}
+                <strong>{subject.name}</strong> — {t('semester')} {term}, {academicYear}.
             </p>
             <div className="text-xs text-slate-400 bg-slate-50 rounded px-3 py-2">
-                Student UID: {student.studentUid}
+                {t('studentUidLabel')}: {student.studentUid}
             </div>
             <div>
-                <label className="field-label">Reason *</label>
+                <label className="field-label">{t('reasonLabel')} *</label>
                 <textarea className="field" rows={3} value={reason}
                     onChange={e => setReason(e.target.value)}
-                    placeholder="Explain why this student's marks need correction…"
+                    placeholder={t('regradeReasonPlaceholder')}
                     required />
             </div>
             <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
+                <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading || !reason.trim()}>
-                    {loading ? 'Submitting…' : 'Submit Request'}
+                    {loading ? t('submitting') : t('submitRequest')}
                 </button>
             </div>
         </form>
@@ -152,8 +154,7 @@ export default function GradebookPage() {
     const isAdmin   = user?.role === 'ADMIN'
     const isTeacher = user?.role === 'TEACHER'
 
-    const [gradeEntryStatus, setGradeEntryStatus] = useState(null) // null | { open, message }
-
+    const [gradeEntryStatus, setGradeEntryStatus] = useState(null)
     const [sections,           setSections]           = useState([])
     const [subjects,           setSubjects]           = useState([])
     const [grades,             setGrades]             = useState([])
@@ -161,31 +162,24 @@ export default function GradebookPage() {
     const [assignments,        setAssignments]        = useState([])
     const [myRegradePerms,     setMyRegradePerms]     = useState([])
     const [isHomeroomOfSection,setIsHomeroomOfSection]= useState(false)
-
     const [sectionId,    setSectionId]    = useState('')
     const [term,         setTerm]         = useState(1)
     const [academicYear, setAcademicYear] = useState(CURRENT_YEAR)
-
     const [loading,          setLoading]          = useState(false)
     const [saving,           setSaving]           = useState(false)
     const [modal,            setModal]            = useState(null)
     const [regradeModal,     setRegradeModal]     = useState(null)
     const [requestingRegrade,setRequestingRegrade]= useState(false)
 
-    // ── Initial load ────────────────────────────────────────────────────────
     useEffect(() => {
         Promise.all([classService.getAll(), subjectService.getAll()])
             .then(([c, s]) => { setSections(c); setSubjects(s) })
-            .catch(() => toast.error('Failed to load data'))
-
+            .catch(() => toast.error(t('failedToLoadData')))
         if (isTeacher) {
-            regradeService.myRequests()
-                .then(setMyRegradePerms)
-                .catch(() => {})
+            regradeService.myRequests().then(setMyRegradePerms).catch(() => {})
         }
     }, [isTeacher])
 
-    // ── Load grades when filters change ─────────────────────────────────────
     const loadGrades = async () => {
         if (!sectionId) return
         setLoading(true)
@@ -196,31 +190,24 @@ export default function GradebookPage() {
             ])
             setGrades(g)
             setStudents(allStudents.filter(st => String(st.sectionId) === String(sectionId)))
-
-            // Load subject-teacher assignments for this class
             try {
                 const data = await classService.getAssignments(sectionId)
                 setAssignments(data)
-
-                // FIX 1 & 2: Determine if logged-in teacher is the homeroom teacher of this class
                 if (isTeacher) {
                     const sec = sections.find(s => String(s.id) === String(sectionId))
-                    setIsHomeroomOfSection(
-                        !!sec && sec.homeroomTeacherName === user?.fullName
-                    )
+                    setIsHomeroomOfSection(!!sec && sec.homeroomTeacherName === user?.fullName)
                 }
             } catch {
                 setAssignments([])
                 setIsHomeroomOfSection(false)
             }
         } catch {
-            toast.error('Failed to load grades')
+            toast.error(t('failedToLoadGrades'))
         } finally { setLoading(false) }
     }
 
     useEffect(() => { loadGrades() }, [sectionId, term, academicYear])
 
-    // Check grade entry window status when term/year changes
     useEffect(() => {
         if (isTeacher && academicYear && term) {
             gradeEntryWindowService.getStatus(academicYear, term)
@@ -229,16 +216,10 @@ export default function GradebookPage() {
         }
     }, [term, academicYear, isTeacher])
 
-    // ── Derived helpers ──────────────────────────────────────────────────────
-
-    // Subjects THIS teacher is assigned to teach in this class
     const myAssignedSubjectIds = new Set(
-        assignments
-            .filter(a => a.teacherName === user?.fullName)
-            .map(a => a.subjectId)
+        assignments.filter(a => a.teacherName === user?.fullName).map(a => a.subjectId)
     )
 
-    // Active APPROVED regrade permission for a SPECIFIC student+subject
     const hasRegradePermission = (subjectId, studentId) =>
         myRegradePerms.some(p =>
             p.subjectId === subjectId &&
@@ -252,32 +233,24 @@ export default function GradebookPage() {
     const getGrade = (studentId, subjectId) =>
         grades.find(g => g.studentId === studentId && g.subjectId === subjectId)
 
-    // ── FIX 3: Visible subjects per role ────────────────────────────────────
-    // Admin        → all subjects in the class
-    // Homeroom     → all subjects in the class (view all, edit own + regrade others)
-    // Other teacher → ONLY their assigned subject(s)
     const classSubjectIds = new Set(assignments.map(a => a.subjectId))
     const visibleSubjects = subjects.filter(s => {
-        if (isAdmin)                      return classSubjectIds.has(s.id) || classSubjectIds.size === 0
-        if (!isTeacher)                   return false
-        if (isHomeroomOfSection)          return classSubjectIds.has(s.id) || classSubjectIds.size === 0
-        return myAssignedSubjectIds.has(s.id)   // non-homeroom teacher: only own subject
+        if (isAdmin)             return classSubjectIds.has(s.id) || classSubjectIds.size === 0
+        if (!isTeacher)          return false
+        if (isHomeroomOfSection) return classSubjectIds.has(s.id) || classSubjectIds.size === 0
+        return myAssignedSubjectIds.has(s.id)
     })
 
-    // ── Handlers ────────────────────────────────────────────────────────────
     const handleSaveGrade = async (payload) => {
         setSaving(true)
         try {
             await gradeService.upsert(payload)
-            toast.success('Marks saved')
+            toast.success(t('marksSaved'))
             setModal(null)
-            if (isTeacher) {
-                const perms = await regradeService.myRequests()
-                setMyRegradePerms(perms)
-            }
+            if (isTeacher) { const perms = await regradeService.myRequests(); setMyRegradePerms(perms) }
             loadGrades()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Save failed')
+            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
@@ -285,37 +258,34 @@ export default function GradebookPage() {
         setRequestingRegrade(true)
         try {
             await regradeService.request({
-                studentId:    regradeModal.student.id,   // scoped to specific student
-                subjectId:    regradeModal.subject.id,
-                sectionId:    Number(sectionId),
+                studentId: regradeModal.student.id,
+                subjectId: regradeModal.subject.id,
+                sectionId: Number(sectionId),
                 term, academicYear, reason,
             })
-            toast.success('Regrade request submitted — waiting for director approval')
+            toast.success(t('regradeRequestSubmitted'))
             setRegradeModal(null)
             const perms = await regradeService.myRequests()
             setMyRegradePerms(perms)
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to submit request')
+            toast.error(err.response?.data?.message || t('failedToSubmitRequest'))
         } finally { setRequestingRegrade(false) }
     }
 
-    // ── Render ───────────────────────────────────────────────────────────────
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('gradebook')}</h1>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('gradebookCard')}</h1>
                     <p className="text-slate-500 mt-1">
                         {isTeacher
-                            ? isHomeroomOfSection
-                                ? 'Homeroom view — all subjects visible, enter marks for your subject'
-                                : 'Enter marks for your assigned subject only'
-                            : 'Manage student grades'}
+                            ? isHomeroomOfSection ? t('homeroomGradebookView') : t('ownSubjectOnly')
+                            : t('gradebookDesc')}
                     </p>
                 </div>
             </div>
 
-            {/* Grade entry window status banner for teachers */}
+            {/* Grade entry window status banner */}
             {isTeacher && gradeEntryStatus && (
                 <div className={`mb-4 rounded-lg border p-3 text-sm ${
                     gradeEntryStatus.open
@@ -323,7 +293,7 @@ export default function GradebookPage() {
                         : 'bg-amber-50 border-amber-300 text-amber-800'
                 }`}>
                     {gradeEntryStatus.open
-                        ? `✅ ${t('gradeEntryOpen')} — Semester ${term}, ${academicYear}`
+                        ? `✅ ${t('gradeEntryOpen')} — ${t('semester')} ${term}, ${academicYear}`
                         : `🔒 ${t('gradeEntryClosed')}`
                     }
                 </div>
@@ -332,51 +302,50 @@ export default function GradebookPage() {
             {/* Filters */}
             <div className="card mb-6 flex flex-wrap gap-4 items-end">
                 <div>
-                    <label className="field-label">Class / Section</label>
+                    <label className="field-label">{t('classSection')}</label>
                     <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
-                        <option value="">— Select class —</option>
+                        <option value="">— {t('selectClass')} —</option>
                         {sections.map(s => (
-                            <option key={s.id} value={s.id}>Grade {s.grade} – {s.section} ({s.academicYear})</option>
+                            <option key={s.id} value={s.id}>
+                                Grade {s.grade} – {s.section} ({s.academicYear})
+                                {s.stream ? ` · ${s.stream.replace('_',' ')}` : ''}
+                            </option>
                         ))}
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Semester</label>
+                    <label className="field-label">{t('semester')}</label>
                     <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
-                        <option value={1}>Semester 1</option>
-                        <option value={2}>Semester 2</option>
+                        <option value={1}>{t('semester')} 1</option>
+                        <option value={2}>{t('semester')} 2</option>
                     </select>
                 </div>
                 <div>
-                    <label className="field-label">Academic Year</label>
+                    <label className="field-label">{t('academicYear')}</label>
                     <select className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)}>
-                        {YEAR_OPTIONS.map(y => (
-                            <option key={y} value={y}>{y}</option>
-                        ))}
+                        {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
             </div>
 
             {!sectionId ? (
-                <div className="card p-8 text-center text-slate-500">Select a class to view grades.</div>
+                <div className="card p-8 text-center text-slate-500">{t('selectClassToViewGrades')}</div>
             ) : loading ? (
-                <div className="card p-8 text-center text-slate-500">Loading…</div>
+                <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
             ) : students.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">No students in this section.</div>
+                <div className="card p-8 text-center text-slate-500">{t('noStudentsInSection')}</div>
             ) : (
                 <div className="card overflow-x-auto p-0">
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                                <th className="px-4 py-3 text-left sticky left-0 bg-slate-50 min-w-[160px]">Student</th>
+                                <th className="px-4 py-3 text-left sticky left-0 bg-slate-50 min-w-[160px]">{t('student')}</th>
                                 {visibleSubjects.map(subj => {
-                                    const isMine   = isAdmin || myAssignedSubjectIds.has(subj.id)
-                                    // Show regrade indicator in header if ANY student has active permission
+                                    const isMine = isAdmin || myAssignedSubjectIds.has(subj.id)
                                     const hasRegAny = myRegradePerms.some(p =>
                                         p.subjectId === subj.id &&
                                         String(p.sectionId) === String(sectionId) &&
-                                        p.term === term &&
-                                        p.academicYear === academicYear &&
+                                        p.term === term && p.academicYear === academicYear &&
                                         p.status === 'APPROVED'
                                     )
                                     return (
@@ -385,15 +354,15 @@ export default function GradebookPage() {
                                             {isTeacher && (
                                                 <div className="mt-0.5 text-xs font-normal normal-case">
                                                     {isMine
-                                                        ? <span className="text-green-500">✏️ yours</span>
-                                                        : <span className="text-slate-400">👁 view</span>}
-                                                    {hasRegAny && <span className="text-blue-500 ml-1">🔓 regrade</span>}
+                                                        ? <span className="text-green-500">✏️ {t('yourSubject')}</span>
+                                                        : <span className="text-slate-400">👁 {t('viewOnly')}</span>}
+                                                    {hasRegAny && <span className="text-blue-500 ml-1">🔓 {t('regrade')}</span>}
                                                 </div>
                                             )}
                                         </th>
                                     )
                                 })}
-                                <th className="px-3 py-3 text-center">Avg</th>
+                                <th className="px-3 py-3 text-center">{t('average')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -404,7 +373,6 @@ export default function GradebookPage() {
                                 const avg = scores.length > 0
                                     ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
                                     : '—'
-
                                 return (
                                     <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                                         <td className="px-4 py-3 sticky left-0 bg-white">
@@ -416,22 +384,11 @@ export default function GradebookPage() {
                                             const isMine   = isAdmin || myAssignedSubjectIds.has(subj.id)
                                             const hasReg   = hasRegradePermission(subj.id, student.id)
                                             const isLocked = entry?.locked ?? false
-
-                                            // canEdit:
-                                            // - Admin: always
-                                            // - Own subject, new entry: yes
-                                            // - Locked + regrade permission for THIS student: yes (homeroom or own)
-                                            const canEdit = isAdmin
+                                            const canEdit  = isAdmin
                                                 || (!isLocked && isMine)
                                                 || (isLocked && hasReg && (isMine || isHomeroomOfSection))
-
-                                            // Regrade button: homeroom only, entry exists, locked,
-                                            // no active permission for THIS student
-                                            const canRequestRegrade = isTeacher
-                                                && isHomeroomOfSection
-                                                && isLocked
-                                                && !hasReg
-                                                && !!entry
+                                            const canRequestRegrade = isTeacher && isHomeroomOfSection
+                                                && isLocked && !hasReg && !!entry
 
                                             return (
                                                 <td key={subj.id} className="px-2 py-2 text-center">
@@ -442,30 +399,24 @@ export default function GradebookPage() {
                                                                 ${isLocked && !hasReg ? 'opacity-60' : ''}
                                                                 ${GRADE_COLOR(entry?.grade)}`}
                                                             onClick={() => {
-                                                                if (isMine || isHomeroomOfSection || isAdmin) {
+                                                                if (isMine || isHomeroomOfSection || isAdmin)
                                                                     setModal({ student, subject: subj, entry })
-                                                                }
                                                             }}
                                                         >
                                                             {entry ? (
-                                                                <span>
-                                                                    {entry.score.toFixed(1)}
-                                                                    {isLocked && <span className="ml-1 text-slate-400">🔒</span>}
-                                                                </span>
+                                                                <span>{entry.score.toFixed(1)}{isLocked && <span className="ml-1 text-slate-400">🔒</span>}</span>
                                                             ) : (
                                                                 <span className={isMine || isAdmin ? 'text-slate-300' : 'text-slate-200'}>
                                                                     {isMine || isAdmin || isHomeroomOfSection ? '—' : '•'}
                                                                 </span>
                                                             )}
                                                         </button>
-
-                                                        {/* Regrade button only for homeroom, only on specific locked student */}
                                                         {canRequestRegrade && (
                                                             <button
                                                                 className="text-xs text-blue-500 hover:underline whitespace-nowrap"
                                                                 onClick={() => setRegradeModal({ student, subject: subj })}
                                                             >
-                                                                🔄 Request regrade
+                                                                🔄 {t('requestRegrade')}
                                                             </button>
                                                         )}
                                                     </div>
@@ -486,29 +437,20 @@ export default function GradebookPage() {
             {/* Legend */}
             {sectionId && isTeacher && (
                 <div className="mt-3 flex gap-4 text-xs text-slate-500 flex-wrap">
-                    <span>✏️ your subject</span>
-                    {isHomeroomOfSection && <span>👁 view only (other subjects)</span>}
-                    <span>🔒 locked after submission</span>
-                    {isHomeroomOfSection && <span>🔄 request regrade (homeroom only)</span>}
-                    <span>🔓 regrade active</span>
+                    <span>✏️ {t('yourSubject')}</span>
+                    {isHomeroomOfSection && <span>👁 {t('viewOnlyOtherSubjects')}</span>}
+                    <span>🔒 {t('lockedAfterSubmission')}</span>
+                    {isHomeroomOfSection && <span>🔄 {t('requestRegradeHomeroom')}</span>}
+                    <span>🔓 {t('regradeActive')}</span>
                 </div>
             )}
 
-            {/* Grade entry modal */}
             {modal && (
-                <Modal
-                    title={`${modal.student.fullName} — ${modal.subject.name}`}
-                    onClose={() => setModal(null)}
-                >
+                <Modal title={`${modal.student.fullName} — ${modal.subject.name}`} onClose={() => setModal(null)}>
                     <GradeEntryForm
-                        student={modal.student}
-                        subject={modal.subject}
-                        entry={modal.entry}
-                        term={term}
-                        academicYear={academicYear}
-                        onSubmit={handleSaveGrade}
-                        onClose={() => setModal(null)}
-                        loading={saving}
+                        student={modal.student} subject={modal.subject} entry={modal.entry}
+                        term={term} academicYear={academicYear}
+                        onSubmit={handleSaveGrade} onClose={() => setModal(null)} loading={saving}
                         canEdit={isAdmin || myAssignedSubjectIds.has(modal.subject.id) || isHomeroomOfSection}
                         isLocked={modal.entry?.locked ?? false}
                         hasRegradePermission={hasRegradePermission(modal.subject.id, modal.student.id)}
@@ -516,17 +458,12 @@ export default function GradebookPage() {
                 </Modal>
             )}
 
-            {/* Regrade request modal */}
             {regradeModal && (
-                <Modal title="Request Regrade Permission" onClose={() => setRegradeModal(null)}>
+                <Modal title={t('requestRegradePermission')} onClose={() => setRegradeModal(null)}>
                     <RegradeRequestForm
-                        student={regradeModal.student}
-                        subject={regradeModal.subject}
-                        sectionId={sectionId}
-                        term={term}
-                        academicYear={academicYear}
-                        onSubmit={handleRegradeRequest}
-                        onClose={() => setRegradeModal(null)}
+                        student={regradeModal.student} subject={regradeModal.subject}
+                        sectionId={sectionId} term={term} academicYear={academicYear}
+                        onSubmit={handleRegradeRequest} onClose={() => setRegradeModal(null)}
                         loading={requestingRegrade}
                     />
                 </Modal>

@@ -529,6 +529,71 @@ const translations = {
     STUDENT: 'Student',
     PARENT: 'Parent',
 
+    // ── Gradebook ────────────────────────────────────────────────────────────
+    failedToLoadData: 'Failed to load data',
+    failedToLoadGrades: 'Failed to load grades',
+    marksSaved: 'Marks saved',
+    regradePermissionGranted: 'Regrade permission granted. Marks will re-lock after saving.',
+    optionalFeedback: 'Optional feedback…',
+    regradeRequestFor: 'Request permission to edit marks for',
+    in: 'in',
+    regradeReasonPlaceholder: 'Explain why this student\'s marks need correction…',
+    submitting: 'Submitting…',
+    submitRequest: 'Submit Request',
+    regradeRequestSubmitted: 'Regrade request submitted — waiting for director approval',
+    failedToSubmitRequest: 'Failed to submit request',
+    homeroomGradebookView: 'Homeroom view — all subjects visible, enter marks for your subject',
+    ownSubjectOnly: 'Enter marks for your assigned subject only',
+    selectClassToViewGrades: 'Select a class to view grades.',
+    yourSubject: 'yours',
+    viewOnly: 'view',
+    viewOnlyOtherSubjects: 'view only (other subjects)',
+    lockedAfterSubmission: 'locked after submission',
+    requestRegradeHomeroom: 'request regrade (homeroom only)',
+    regradeActive: 'regrade active',
+    requestRegradePermission: 'Request Regrade Permission',
+
+    // ── GradeEntryWindow ─────────────────────────────────────────────────────
+    gradeEntryWindowSubtitle: 'Control when teachers can enter grades after final exams',
+    openGradeEntryWarning: 'Opening this window allows teachers to enter grades. Make sure final exams are completed first.',
+    gradeEntryWindowOpened: 'Grade entry window opened',
+    gradeEntryWindowClosed: 'Grade entry window closed',
+    gradeEntryWindowExtended: 'Grade entry window extended',
+    noGradeEntryWindows: 'No grade entry windows yet. Open one after final exams are completed.',
+    closeGradeEntryWarning: 'Closing this window will prevent teachers from entering any more grades.',
+    closeGradeEntryConfirm: 'Close grade entry for',
+    extended: 'Extended',
+
+    // ── Student detail / info ─────────────────────────────────────────────────
+    studentDetails: 'Student Details',
+    studentRegisteredSuccess: 'Student registered successfully. Share these credentials with the student.',
+    studentRegistered: 'Student registered',
+    studentUpdated: 'Student updated',
+    studentDeleted: 'Student deleted',
+    deleteStudentConfirm: 'Delete student',
+    noStudentsFound: 'No students found.',
+    studentCredentials: 'Student Login Credentials',
+    editStudent: 'Edit Student',
+
+    // ── Teacher detail ────────────────────────────────────────────────────────
+    teacherDetails: 'Teacher Details',
+
+    // ── Director Registration wizard ──────────────────────────────────────────
+    enrollmentTypeLabel: 'Enrollment Type',
+    selectEnrollmentType: 'Select how this student is enrolling:',
+    newEntrantDesc: 'First time Grade 9 student (from Grade 8)',
+    reEnrollDesc: 'Existing student re-enrolling for next grade',
+    transferDesc: 'Student transferring from another school',
+    repeatStudent: 'Repeat / Retained',
+    repeatDesc: 'Student repeating the same grade',
+    registerStudent: 'Register Student',
+    registerAnother: 'Register Another',
+    reviewSummary: 'Registration Summary',
+    registrationFailed: 'Registration failed',
+
+    // ── Notice board extras ───────────────────────────────────────────────────
+    noticeDeleted: 'Notice deleted',
+
     // ── Misc ─────────────────────────────────────────────────────────────────
     saveFailed: 'Save failed',
     deleteFailed: 'Delete failed',
@@ -1065,6 +1130,68 @@ const translations = {
     TEACHER: 'አስተማሪ',
     STUDENT: 'ተማሪ',
     PARENT: 'ወላጅ',
+
+    // ── Gradebook ────────────────────────────────────────────────────────────
+    failedToLoadData: 'መረጃ ማምጣት አልተቻለም',
+    failedToLoadGrades: 'ውጤቶችን ማምጣት አልተቻለም',
+    marksSaved: 'ውጤቶቹ ተቀምጠዋል',
+    regradePermissionGranted: 'ፈቃድ ተሰጥቷል። ከተቀመጠ በኋላ ዳግም ይቆለፋሉ።',
+    optionalFeedback: 'አማራጭ አስተያየት…',
+    regradeRequestFor: 'ድጋሚ ምዘና ፈቃድ ጥያቄ ለ',
+    in: 'ትምህርት',
+    regradeReasonPlaceholder: 'ለምን የዚህ ተማሪ ውጤት ማስተካከል ያስፈልጋል?',
+    submitting: 'በማስገባት ላይ…',
+    submitRequest: 'ጥያቄ አስገባ',
+    regradeRequestSubmitted: 'ጥያቄ ቀርቧል — ከዳይሬክተሩ ፈቃድ ይጠበቃል',
+    failedToSubmitRequest: 'ጥያቄ ማስገባት አልተቻለም',
+    homeroomGradebookView: 'የክፍል አስተማሪ እይታ — ሁሉም ትምህርቶች ይታያሉ',
+    ownSubjectOnly: 'ለእርስዎ ትምህርት ብቻ ውጤት ያስገቡ',
+    selectClassToViewGrades: 'ውጤቶችን ለማየት ክፍል ይምረጡ።',
+    yourSubject: 'የእርስዎ',
+    viewOnly: 'ማየት ብቻ',
+    viewOnlyOtherSubjects: 'ማየት ብቻ (ሌሎች ትምህርቶች)',
+    lockedAfterSubmission: 'ከተቀመጠ በኋላ ይቆለፋል',
+    requestRegradeHomeroom: 'ድጋሚ ምዘና ጠይቅ (የክፍል አስተማሪ)',
+    regradeActive: 'ድጋሚ ምዘና ክፍት',
+    requestRegradePermission: 'ድጋሚ ምዘና ፈቃድ ጠይቅ',
+
+    // ── GradeEntryWindow ─────────────────────────────────────────────────────
+    gradeEntryWindowSubtitle: 'አስተማሪዎቹ ፈተና ካለቀ በኋላ ውጤት ማስገባት የሚችሉበትን ጊዜ ይቆጣጠሩ',
+    openGradeEntryWarning: 'ይህ መስኮት ሲከፈት አስተማሪዎቹ ውጤት ማስገባት ይጀምራሉ። ፈተናዎቹ አልቀዋል ብለው ያረጋግጡ።',
+    gradeEntryWindowOpened: 'ውጤት ማስገቢያ ተከፍቷል',
+    gradeEntryWindowClosed: 'ውጤት ማስገቢያ ተዘግቷል',
+    gradeEntryWindowExtended: 'ውጤት ማስገቢያ ተራዝሟል',
+    noGradeEntryWindows: 'እስካሁን ምንም ውጤት ማስገቢያ የለም።',
+    closeGradeEntryWarning: 'ይህ መስኮት ሲዘጋ አስተማሪዎቹ ተጨማሪ ውጤት ማስገባት አይችሉም።',
+    closeGradeEntryConfirm: 'ውጤት ማስገቢያ ዝጋ',
+    extended: 'ተራዝሟል',
+
+    // ── Student ───────────────────────────────────────────────────────────────
+    studentDetails: 'የተማሪ ዝርዝር',
+    studentRegisteredSuccess: 'ተማሪ ተመዝግቧል። ምስጢሮቹን ለተማሪው ያካፍሉ።',
+    studentRegistered: 'ተማሪ ተመዝግቧል',
+    studentUpdated: 'ተማሪ ተስተካክሏል',
+    studentDeleted: 'ተማሪ ተሰርዟል',
+    deleteStudentConfirm: 'ተማሪ ሰርዝ',
+    noStudentsFound: 'ምንም ተማሪ አልተገኘም።',
+    studentCredentials: 'የተማሪ መግቢያ ምስጢሮች',
+    editStudent: 'ተማሪ አስተካክል',
+
+    // ── Teacher ───────────────────────────────────────────────────────────────
+    teacherDetails: 'የአስተማሪ ዝርዝር',
+
+    // ── Director Registration wizard ──────────────────────────────────────────
+    enrollmentTypeLabel: 'የምዝገባ ዓይነት',
+    selectEnrollmentType: 'ይህ ተማሪ እንዴት እንደሚመዘገብ ይምረጡ:',
+    newEntrantDesc: 'ለመጀመሪያ ጊዜ 9ኛ ክፍል (ከ8ኛ ክፍል)',
+    reEnrollDesc: 'ወደ ቀጣይ ክፍል የሚሄድ ተማሪ',
+    transferDesc: 'ከሌላ ትምህርት ቤት የሚዛወር ተማሪ',
+    repeatStudent: 'ድጋሚ / ቀርቷል',
+    repeatDesc: 'ተማሪ ተመሳሳይ ክፍል ዳግም ይደግማሉ',
+    registerStudent: 'ተማሪ ምዝገባ',
+    registerAnother: 'ሌላ ምዝግብ',
+    reviewSummary: 'የምዝገባ ማጠቃለያ',
+    registrationFailed: 'ምዝገባ አልተቻለም',
 
     // ── Misc ─────────────────────────────────────────────────────────────────
     saveFailed: 'ማስቀመጥ አልተቻለም',
