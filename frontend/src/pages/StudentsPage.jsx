@@ -11,7 +11,9 @@ const EMPTY = {
     email: '', fullName: '', phone: '',
     dateOfBirth: '', gender: '', parentName: '', parentPhone: '',
     enrollmentYear: new Date().getFullYear(), sectionId: ''
-}function CredentialsModal({ student, onClose }) {
+}
+
+function CredentialsModal({ student, onClose }) {
     const { t } = useLanguage()
     const [copied, setCopied] = useState(false)
     const text = `Student: ${student.fullName}\nUsername: ${student.generatedUsername}\nPassword: ${student.generatedPassword}\nLogin at: ${window.location.origin}`

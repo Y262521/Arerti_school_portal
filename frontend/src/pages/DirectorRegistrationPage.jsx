@@ -72,7 +72,7 @@ function AutoAssignModal({ onClose }) {
                     <p className="text-green-700">{t('assigned')}: {result.assignedStudents}</p>
                     {result.sectionCounts && Object.entries(result.sectionCounts).map(([sec, count]) => (
                         <div key={sec} className="flex justify-between text-xs text-green-700">
-                            <span>{sec}</span><span>{count} {t('students')}</span>
+                            <span>{sec}</span><span>{count} {t('studentsCount')}</span>
                         </div>
                     ))}
                 </div>

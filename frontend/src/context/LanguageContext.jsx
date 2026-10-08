@@ -408,7 +408,6 @@ const translations = {
     parentPhone: 'Phone Number',
 
     // ── Registration page ────────────────────────────────────────────────────
-    studentRegistration: 'Student Registration',
     registrationSubtitle: 'Manage registration windows and teacher assignments',
     registrationOpened: 'Registration Opened',
     registrationClosed: 'Registration Closed',
@@ -464,7 +463,7 @@ const translations = {
     goToClasses: 'Go to Classes to create sections first.',
     runAutoAssign: 'Run Auto-Assign',
     perSection: 'Per section',
-    students: 'students',
+    studentsCount: 'students',
 
     // ── Grade Submission Date (formerly Grade Entry Window) ──────────────────
     gradeEntryWindow: 'Grade Submission Date',
@@ -598,15 +597,12 @@ const translations = {
     registrationFailed: 'Registration failed',
 
     // ── Notice board extras ───────────────────────────────────────────────────
-    noticeDeleted: 'Notice deleted',
 
     // ── Misc ─────────────────────────────────────────────────────────────────
     saveFailed: 'Save failed',
     deleteFailed: 'Delete failed',
     confirmDelete: 'Confirm Delete',
     noLabel: '—',
-    subjectsDefined: 'subjects defined',
-    nameLabel: 'Full name',
 
     // ── Missing keys from Login hero & error messages ────────────────────────
     welcomeTitle: 'Welcome to Arerti General Secondary & Preparatory School Portal',
@@ -1094,7 +1090,6 @@ const translations = {
     parentPhone: 'ስልክ ቁጥር',
 
     // ── Registration ─────────────────────────────────────────────────────────
-    studentRegistration: 'የተማሪ ምዝገባ',
     registrationSubtitle: 'የምዝገባ መስኮቶችን እና ምደባዎችን ያስተዳድሩ',
     registrationOpened: 'ምዝገባ ተጀምሯል',
     registrationClosed: 'ምዝገባ ተዘግቷል',
@@ -1150,7 +1145,7 @@ const translations = {
     goToClasses: 'ወደ ክፍሎች ሄደው ክፍሎቹን ይፍጠሩ።',
     runAutoAssign: 'ምደባ አሂድ',
     perSection: 'በክፍል',
-    students: 'ተማሪዎች',
+    studentsCount: 'ተማሪዎች',
 
     // ── Grade Submission Date (formerly Grade Entry Window) ──────────────────
     gradeEntryWindow: 'የውጤት ማስረከቢያ ቀን',
