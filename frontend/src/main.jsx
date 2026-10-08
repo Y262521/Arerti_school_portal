@@ -13,7 +13,28 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <LanguageProvider>
         <AuthProvider>
           <App />
-          <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 4500,
+              style: { maxWidth: '520px', fontSize: '14px' },
+              success: {
+                duration: 3500,
+                style: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' },
+              },
+              error: {
+                duration: 6000,
+                style: {
+                  background: '#fef2f2',
+                  color: '#991b1b',
+                  border: '1px solid #fecaca',
+                  fontWeight: '500',
+                  padding: '14px 18px',
+                },
+                iconTheme: { primary: '#dc2626', secondary: '#fff' },
+              },
+            }}
+          />
         </AuthProvider>
       </LanguageProvider>
     </BrowserRouter>

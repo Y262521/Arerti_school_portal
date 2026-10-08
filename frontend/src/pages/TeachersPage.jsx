@@ -289,12 +289,17 @@ export default function TeachersPage() {
                                 <th className="px-3 py-3">{t('fatherName')}</th>
                                 <th className="px-3 py-3">{t('grandfatherName')}</th>
                                 <th className="px-3 py-3">{t('gender')}</th>
+                                <th className="px-3 py-3">{t('dateOfBirth')}</th>
                                 <th className="px-3 py-3">{t('email')}</th>
                                 <th className="px-3 py-3">{t('username')}</th>
                                 <th className="px-3 py-3">{t('phone')}</th>
+                                <th className="px-3 py-3">{t('region')}</th>
+                                <th className="px-3 py-3">{t('city')}</th>
+                                <th className="px-3 py-3">{t('kebele')}</th>
+                                <th className="px-3 py-3">{t('houseNo')}</th>
                                 <th className="px-3 py-3">{t('qualification')}</th>
                                 <th className="px-3 py-3">{t('specialization')}</th>
-                                <th className="px-3 py-3">{t('region')}</th>
+                                <th className="px-3 py-3">{t('hireDate')}</th>
                                 <th className="px-3 py-3 text-right">{t('actions')}</th>
                             </tr>
                         </thead>
@@ -313,12 +318,17 @@ export default function TeachersPage() {
                                     <td className="px-3 py-3 text-slate-700">{tr.fatherName || '—'}</td>
                                     <td className="px-3 py-3 text-slate-700">{tr.grandfatherName || '—'}</td>
                                     <td className="px-3 py-3 text-slate-600">{tr.gender ? t(tr.gender.toLowerCase()) || tr.gender : '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600 text-xs">{tr.dateOfBirth || '—'}</td>
                                     <td className="px-3 py-3 text-slate-600 text-xs">{tr.email}</td>
                                     <td className="px-3 py-3 font-mono text-xs text-slate-500">{tr.username}</td>
                                     <td className="px-3 py-3 text-slate-600 text-xs">{tr.phone || '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600">{tr.region || '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600 text-xs">{tr.city || '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600 text-xs">{tr.kebele || '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600 text-xs">{tr.houseNo || '—'}</td>
                                     <td className="px-3 py-3 text-slate-600">{tr.qualification || '—'}</td>
                                     <td className="px-3 py-3 text-slate-600">{tr.specialization || '—'}</td>
-                                    <td className="px-3 py-3 text-slate-600">{tr.region || '—'}</td>
+                                    <td className="px-3 py-3 text-slate-600 text-xs">{tr.hireDate || '—'}</td>
                                     <td className="px-3 py-3 text-right space-x-2" onClick={e => e.stopPropagation()}>
                                         <button className="text-xs text-brand hover:underline" onClick={() => setModal({ mode: 'edit', teacher: tr })}>{t('edit')}</button>
                                         <button className="text-xs text-red-500 hover:underline" onClick={() => setConfirmDelete(tr)}>{t('delete')}</button>

@@ -10,6 +10,7 @@ import java.util.List;
 public interface GradeSectionRepository extends JpaRepository<GradeSection, Long> {
     List<GradeSection> findByAcademicYear(String academicYear);
     boolean existsByGradeAndSectionAndAcademicYear(Integer grade, String section, String academicYear);
+    boolean existsByGradeAndSectionAndAcademicYearAndStream(Integer grade, String section, String academicYear, String stream);
 
     @Query("SELECT COUNT(s) FROM Student s WHERE s.sectionId = :sectionId")
     long countStudentsBySectionId(Long sectionId);

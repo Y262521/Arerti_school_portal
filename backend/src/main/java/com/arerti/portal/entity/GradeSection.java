@@ -13,7 +13,7 @@ import java.time.Instant;
  */
 @Entity
 @Table(name = "grade_sections",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"grade", "section", "academic_year"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"grade", "section", "academic_year", "stream"}))
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter

@@ -234,12 +234,15 @@ export default function GradebookPage() {
         grades.find(g => g.studentId === studentId && g.subjectId === subjectId)
 
     const classSubjectIds = new Set(assignments.map(a => a.subjectId))
+    // Teachers only see subjects assigned to them — homeroom does NOT grant access to all subjects
     const visibleSubjects = subjects.filter(s => {
-        if (isAdmin)             return classSubjectIds.has(s.id) || classSubjectIds.size === 0
-        if (!isTeacher)          return false
-        if (isHomeroomOfSection) return classSubjectIds.has(s.id) || classSubjectIds.size === 0
+        if (isAdmin) return classSubjectIds.has(s.id) || classSubjectIds.size === 0
+        if (!isTeacher) return false
         return myAssignedSubjectIds.has(s.id)
     })
+
+    // Teachers can only open the grade form when the window is open (or they have regrade permission)
+    const windowIsOpen = !isTeacher || isAdmin || (gradeEntryStatus?.open === true)
 
     const handleSaveGrade = async (payload) => {
         setSaving(true)
@@ -279,20 +282,20 @@ export default function GradebookPage() {
                     <h1 className="font-display text-2xl font-bold text-slate-900">{t('gradebookCard')}</h1>
                     <p className="text-slate-500 mt-1">
                         {isTeacher
-                            ? isHomeroomOfSection ? t('homeroomGradebookView') : t('ownSubjectOnly')
+                            ? t('ownSubjectOnly')
                             : t('gradebookDesc')}
                     </p>
                 </div>
             </div>
 
-            {/* Grade entry window status banner */}
-            {isTeacher && gradeEntryStatus && (
+            {/* Grade submission window status banner */}
+            {isTeacher && (
                 <div className={`mb-4 rounded-lg border p-3 text-sm ${
-                    gradeEntryStatus.open
+                    gradeEntryStatus?.open
                         ? 'bg-green-50 border-green-200 text-green-800'
                         : 'bg-amber-50 border-amber-300 text-amber-800'
                 }`}>
-                    {gradeEntryStatus.open
+                    {gradeEntryStatus?.open
                         ? `✅ ${t('gradeEntryOpen')} — ${t('semester')} ${term}, ${academicYear}`
                         : `🔒 ${t('gradeEntryClosed')}`
                     }
@@ -307,7 +310,7 @@ export default function GradebookPage() {
                         <option value="">— {t('selectClass')} —</option>
                         {sections.map(s => (
                             <option key={s.id} value={s.id}>
-                                Grade {s.grade} – {s.section} ({s.academicYear})
+                                {t('grade')} {s.grade} – {s.section} ({s.academicYear})
                                 {s.stream ? ` · ${s.stream.replace('_',' ')}` : ''}
                             </option>
                         ))}
@@ -385,21 +388,23 @@ export default function GradebookPage() {
                                             const hasReg   = hasRegradePermission(subj.id, student.id)
                                             const isLocked = entry?.locked ?? false
                                             const canEdit  = isAdmin
-                                                || (!isLocked && isMine)
-                                                || (isLocked && hasReg && (isMine || isHomeroomOfSection))
+                                                || (windowIsOpen && !isLocked && isMine)
+                                                || (isLocked && hasReg && isMine)
                                             const canRequestRegrade = isTeacher && isHomeroomOfSection
                                                 && isLocked && !hasReg && !!entry
+                                            // Teacher can click cell only if window open OR has regrade perm
+                                            const canOpenModal = isAdmin || (isMine && (windowIsOpen || hasReg))
 
                                             return (
                                                 <td key={subj.id} className="px-2 py-2 text-center">
                                                     <div className="flex flex-col items-center gap-0.5">
                                                         <button
                                                             className={`rounded px-2 py-0.5 text-xs w-full transition
-                                                                ${canEdit || isMine || isHomeroomOfSection ? 'hover:bg-brand/10 cursor-pointer' : 'cursor-default'}
+                                                                ${canOpenModal ? 'hover:bg-brand/10 cursor-pointer' : 'cursor-default'}
                                                                 ${isLocked && !hasReg ? 'opacity-60' : ''}
                                                                 ${GRADE_COLOR(entry?.grade)}`}
                                                             onClick={() => {
-                                                                if (isMine || isHomeroomOfSection || isAdmin)
+                                                                if (canOpenModal)
                                                                     setModal({ student, subject: subj, entry })
                                                             }}
                                                         >
@@ -438,7 +443,6 @@ export default function GradebookPage() {
             {sectionId && isTeacher && (
                 <div className="mt-3 flex gap-4 text-xs text-slate-500 flex-wrap">
                     <span>✏️ {t('yourSubject')}</span>
-                    {isHomeroomOfSection && <span>👁 {t('viewOnlyOtherSubjects')}</span>}
                     <span>🔒 {t('lockedAfterSubmission')}</span>
                     {isHomeroomOfSection && <span>🔄 {t('requestRegradeHomeroom')}</span>}
                     <span>🔓 {t('regradeActive')}</span>
@@ -451,7 +455,7 @@ export default function GradebookPage() {
                         student={modal.student} subject={modal.subject} entry={modal.entry}
                         term={term} academicYear={academicYear}
                         onSubmit={handleSaveGrade} onClose={() => setModal(null)} loading={saving}
-                        canEdit={isAdmin || myAssignedSubjectIds.has(modal.subject.id) || isHomeroomOfSection}
+                        canEdit={isAdmin || (windowIsOpen && myAssignedSubjectIds.has(modal.subject.id))}
                         isLocked={modal.entry?.locked ?? false}
                         hasRegradePermission={hasRegradePermission(modal.subject.id, modal.student.id)}
                     />

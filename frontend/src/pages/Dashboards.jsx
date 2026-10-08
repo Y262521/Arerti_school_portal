@@ -110,7 +110,7 @@ export function TeacherDashboard() {
       </div>
       {notices.length > 0 && (
         <div className="card">
-          <h2 className="font-display font-semibold text-slate-800 mb-3">Latest Notices</h2>
+          <h2 className="font-display font-semibold text-slate-800 mb-3">{t('latestNotices')}</h2>
           <ul className="space-y-2">
             {notices.map(n => (
               <li key={n.id} className="text-sm text-slate-600 flex gap-2">
@@ -144,7 +144,7 @@ export function StudentDashboard() {
 
   return (
     <div>
-      <DashboardHeader title={`Hi, ${user?.fullName}`} subtitle={t('yourSchoolSnapshot')} />
+      <DashboardHeader title={`${t('hiStudent')}, ${user?.fullName}`} subtitle={t('yourSchoolSnapshot')} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Link to="/student/grades" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">{t('average')}</div>
@@ -159,7 +159,7 @@ export function StudentDashboard() {
             {report ? `${report.attendancePercent}%` : '—'}
           </div>
           <div className="mt-1 text-xs text-slate-500">
-            {report ? `${report.presentDays}/${report.totalDays} days` : `${t('viewAttendanceArrow')} →`}
+            {report ? `${report.presentDays}/${report.totalDays} ${t('presentDays')}` : `${t('viewAttendanceArrow')} →`}
           </div>
         </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
@@ -185,7 +185,7 @@ export function ParentDashboard() {
 
   return (
     <div>
-      <DashboardHeader title={`${t('welcomeAdmin')}, ${user?.fullName}`} subtitle={t('trackChildProgress')} />
+      <DashboardHeader title={`${t('welcomeParent')}, ${user?.fullName}`} subtitle={t('trackChildProgress')} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Link to="/parent/children" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">{t('linkedChildren')}</div>
@@ -210,7 +210,7 @@ export function ParentDashboard() {
       </div>
       {notices.length > 0 && (
         <div className="card">
-          <h2 className="font-display font-semibold text-slate-800 mb-3">Latest Notices</h2>
+          <h2 className="font-display font-semibold text-slate-800 mb-3">{t('latestNotices')}</h2>
           <ul className="space-y-2">
             {notices.map(n => (
               <li key={n.id} className="text-sm text-slate-600 flex gap-2">
@@ -223,8 +223,9 @@ export function ParentDashboard() {
       )}
       {children.length === 0 && (
         <div className="card mt-4 text-sm text-slate-600">
-          Link your account to your child via their <strong>Student UID</strong> —
-          go to <Link to="/parent/children" className="text-brand hover:underline">{t('myChildren')}</Link> to get started.
+          {t('linkChildInstructions').replace('My Children', '')}
+          <Link to="/parent/children" className="text-brand hover:underline">{t('myChildren')}</Link>
+          {' '}{t('linkChildInstructions').split('My Children').slice(-1)[0] || ''}
         </div>
       )}
     </div>

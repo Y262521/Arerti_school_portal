@@ -54,16 +54,25 @@ public class GradeSectionService {
     @Transactional
     @CacheEvict(value = "classes", allEntries = true)
     public GradeSectionResponse create(GradeSectionRequest req) {
-        if (gradeSectionRepository.existsByGradeAndSectionAndAcademicYear(
-                req.grade(), req.section(), req.academicYear())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Grade " + req.grade() + " section " + req.section() + " already exists for " + req.academicYear());
-        }
-
-        // Validate stream for Grade 11-12
-        if (req.grade() >= 11 && (req.stream() == null || req.stream().isBlank())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Stream (NATURAL_SCIENCE or SOCIAL_SCIENCE) is required for Grade 11 and 12");
+        // For Grade 11-12, uniqueness includes stream (Natural and Social are separate classes)
+        // For Grade 9-10, stream is always null
+        if (req.grade() >= 11) {
+            if (req.stream() == null || req.stream().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Stream (NATURAL_SCIENCE or SOCIAL_SCIENCE) is required for Grade 11 and 12");
+            }
+            if (gradeSectionRepository.existsByGradeAndSectionAndAcademicYearAndStream(
+                    req.grade(), req.section(), req.academicYear(), req.stream())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Grade " + req.grade() + " section " + req.section() + " (" +
+                        req.stream().replace("_", " ") + ") already exists for " + req.academicYear());
+            }
+        } else {
+            if (gradeSectionRepository.existsByGradeAndSectionAndAcademicYear(
+                    req.grade(), req.section(), req.academicYear())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Grade " + req.grade() + " section " + req.section() + " already exists for " + req.academicYear());
+            }
         }
 
         GradeSection gs = GradeSection.builder()

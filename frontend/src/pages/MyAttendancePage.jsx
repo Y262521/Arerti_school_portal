@@ -11,7 +11,17 @@ const STATUS_STYLES = {
     EXCUSED: 'bg-blue-100 text-blue-700',
 }
 
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+// Translation key arrays — index matches JS getMonth() / getDay()
+const MONTHS_KEYS    = ['monthJan','monthFeb','monthMar','monthApr','monthMay','monthJun','monthJul','monthAug','monthSep','monthOct','monthNov','monthDec']
+const WEEKDAY_KEYS   = ['weekdayShortSun','weekdayShortMon','weekdayShortTue','weekdayShortWed','weekdayShortThu','weekdayShortFri','weekdayShortSat']
+
+// Status → translation key
+const STATUS_LABEL_KEYS = {
+    PRESENT: 'present',
+    ABSENT:  'absent',
+    LATE:    'late',
+    EXCUSED: 'excused',
+}
 
 export default function MyAttendancePage() {
     const { t } = useLanguage()
@@ -39,6 +49,14 @@ export default function MyAttendancePage() {
     const late    = records.filter(r => r.status === 'LATE').length
     const excused = records.filter(r => r.status === 'EXCUSED').length
     const pct     = total > 0 ? Math.round((present / total) * 100) : 0
+
+    // Translated status label for the filter tabs
+    const STATUS_LABELS = {
+        PRESENT: t('present'),
+        ABSENT:  t('absent'),
+        LATE:    t('late'),
+        EXCUSED: t('excused'),
+    }
 
     if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
 
@@ -101,7 +119,9 @@ export default function MyAttendancePage() {
                                 : 'border-slate-200 text-slate-600 hover:border-brand'
                         }`}
                     >
-                        {s === 'ALL' ? `${t('all')} (${total})` : `${s} (${records.filter(r => r.status === s).length})`}
+                        {s === 'ALL'
+                            ? `${t('all')} (${total})`
+                            : `${STATUS_LABELS[s]} (${records.filter(r => r.status === s).length})`}
                     </button>
                 ))}
             </div>
@@ -126,14 +146,14 @@ export default function MyAttendancePage() {
                                 return (
                                     <tr key={rec.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                                         <td className="px-4 py-3 font-mono text-slate-700">
-                                            {d.getDate()} {MONTHS[d.getMonth()]} {d.getFullYear()}
+                                            {d.getDate()} {t(MONTHS_KEYS[d.getMonth()])} {d.getFullYear()}
                                         </td>
                                         <td className="px-4 py-3 text-slate-500">
-                                            {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                                            {t(WEEKDAY_KEYS[d.getDay()])}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${STATUS_STYLES[rec.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                                                {rec.status}
+                                                {t(STATUS_LABEL_KEYS[rec.status]) || rec.status}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-slate-500 text-xs">{rec.note || '—'}</td>

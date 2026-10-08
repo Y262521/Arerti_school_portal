@@ -36,7 +36,7 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                 <div>
                     <label className="field-label">{t('grade')} *</label>
                     <select className="field" value={form.grade} onChange={e => set('grade', e.target.value)} required>
-                        {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
+                        {[9, 10, 11, 12].map(g => <option key={g} value={g}>{t('grade')} {g}</option>)}
                     </select>
                 </div>
                 <div>
@@ -80,6 +80,7 @@ function ClassForm({ initial, teachers, onSubmit, onClose, loading }) {
                         <option value="NATURAL_SCIENCE">{t('naturalScience')}</option>
                         <option value="SOCIAL_SCIENCE">{t('socialScience')}</option>
                     </select>
+                    <p className="text-xs text-slate-400 mt-1">ℹ️ {t('classDuplicateHint')}</p>
                 </div>
             )}
             <div className="flex justify-end gap-2 pt-2">
@@ -149,7 +150,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
             <div className="flex items-center justify-between">
                 <div>
                     <p className="text-sm text-slate-600">
-                        Grade {cls.grade} – Section {cls.section} · {cls.academicYear}
+                        {t('grade')} {cls.grade} – {t('section')} {cls.section} · {cls.academicYear}
                         {cls.stream && <span className="ml-2 text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">{cls.stream.replace('_', ' ')}</span>}
                     </p>
                     {unassigned > 0 && (
@@ -262,7 +263,7 @@ function CurriculumPanel({ onClose }) {
                 <div>
                     <label className="field-label mb-0">{t('grade')}:</label>
                     <select className="field w-32" value={grade} onChange={e => { setGrade(Number(e.target.value)); setStream('') }}>
-                        {[9, 10, 11, 12].map(g => <option key={g} value={g}>Grade {g}</option>)}
+                        {[9, 10, 11, 12].map(g => <option key={g} value={g}>{t('grade')} {g}</option>)}
                     </select>
                 </div>
                 {needsStream && (
@@ -445,7 +446,7 @@ export default function ClassesPage() {
     }
 
     const byGrade = classes.reduce((acc, c) => {
-        const key = `Grade ${c.grade}`
+        const key = c.grade
         if (!acc[key]) acc[key] = []
         acc[key].push(c)
         return acc
@@ -480,16 +481,16 @@ export default function ClassesPage() {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    {Object.entries(byGrade).sort().map(([gradeLabel, sections]) => (
-                        <div key={gradeLabel}>
-                            <h2 className="font-display font-semibold text-slate-700 mb-2">{gradeLabel}</h2>
+                    {Object.entries(byGrade).sort((a, b) => Number(a[0]) - Number(b[0])).map(([gradeNum, sections]) => (
+                        <div key={gradeNum}>
+                            <h2 className="font-display font-semibold text-slate-700 mb-2">{t('grade')} {gradeNum}</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {sections.map(cls => (
                                     <div key={cls.id} className="card flex flex-col gap-2">
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <div className="font-bold text-lg text-slate-900">
-                                                    Section {cls.section}
+                                                    {t('section')} {cls.section}
                                                 </div>
                                                 <div className="text-xs text-slate-500">{cls.academicYear}</div>
                                             </div>
@@ -560,7 +561,7 @@ export default function ClassesPage() {
             {/* Subject-teacher assignments */}
             {modal?.type === 'assignments' && (
                 <Modal
-                    title={`${t('subjectAssignments')} – Grade ${modal.cls.grade}${modal.cls.section}`}
+                    title={`${t('subjectAssignments')} – ${t('grade')} ${modal.cls.grade}${modal.cls.section}`}
                     onClose={() => { setModal(null); load() }}
                 >
                     <AssignmentsPanel
@@ -589,7 +590,7 @@ export default function ClassesPage() {
             {confirmDelete && (
                 <Modal title={t('confirmDelete')} onClose={() => setConfirmDelete(null)}>
                     <p className="text-slate-700">
-                        {t('deleteClassConfirm')} <strong>Grade {confirmDelete.grade} – Section {confirmDelete.section}</strong>?
+                        {t('deleteClassConfirm')} <strong>{t('grade')} {confirmDelete.grade} – {t('section')} {confirmDelete.section}</strong>?
                     </p>
                     <div className="flex justify-end gap-2 mt-4">
                         <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>

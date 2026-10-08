@@ -4,13 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import toast from 'react-hot-toast'
 
-const ROLE_LABELS = {
-    ADMIN: 'Director',
-    TEACHER: 'Teacher',
-    STUDENT: 'Student',
-    PARENT: 'Parent / Guardian',
-}
-
 export default function AccountPage() {
     const { user } = useAuth()
     const { t } = useLanguage()
@@ -67,7 +60,7 @@ export default function AccountPage() {
                         <dt className="text-slate-500">{t('roleLabel')}</dt>
                         <dd>
                             <span className="inline-block bg-brand/10 text-brand text-xs font-semibold px-2 py-0.5 rounded-full">
-                                {ROLE_LABELS[user?.role] ?? user?.role}
+                                {t(user?.role) || user?.role}
                             </span>
                         </dd>
                     </div>

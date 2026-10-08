@@ -22,6 +22,13 @@ function UploadForm({ onSubmit, onClose, loading }) {
     const [subject, setSubject] = useState('')
     const [file, setFile] = useState(null)
 
+    const AUDIENCE_LABELS = {
+        GENERAL:  t('audienceGeneral'),
+        STUDENTS: t('audienceStudents'),
+        TEACHERS: t('audienceTeachers'),
+        PARENTS:  t('audienceParents'),
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         if (!file) { toast.error(t('choosefile')); return }
@@ -48,7 +55,7 @@ function UploadForm({ onSubmit, onClose, loading }) {
                 <div>
                     <label className="field-label">{t('audienceLabel')}</label>
                     <select className="field" value={audience} onChange={e => setAudience(e.target.value)}>
-                        {AUDIENCE_OPTS.map(a => <option key={a}>{a}</option>)}
+                        {AUDIENCE_OPTS.map(a => <option key={a} value={a}>{AUDIENCE_LABELS[a] || a}</option>)}
                     </select>
                 </div>
                 <div>
@@ -81,6 +88,13 @@ export default function ResourcesPage() {
     const { user } = useAuth()
     const { t } = useLanguage()
     const canUpload = user?.role === 'ADMIN' || user?.role === 'TEACHER'
+
+    const AUDIENCE_LABELS = {
+        GENERAL:  t('audienceGeneral'),
+        STUDENTS: t('audienceStudents'),
+        TEACHERS: t('audienceTeachers'),
+        PARENTS:  t('audienceParents'),
+    }
     const [resources, setResources] = useState([])
     const [loading, setLoading] = useState(true)
     const [uploading, setUploading] = useState(false)
@@ -153,7 +167,7 @@ export default function ResourcesPage() {
                                     <p className="text-xs text-slate-400 mt-0.5">{r.fileName} · {formatSize(r.sizeBytes)}</p>
                                 </div>
                                 <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full whitespace-nowrap">
-                                    {r.audience}
+                                    {AUDIENCE_LABELS[r.audience] || r.audience}
                                 </span>
                             </div>
                             {r.description && (

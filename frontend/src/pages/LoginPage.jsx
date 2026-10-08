@@ -41,16 +41,16 @@ export default function LoginPage() {
   const onSubmit = async (e) => {
     e.preventDefault()
     if (!form.username || !form.password) {
-      toast.error('Please fill in both fields')
+      toast.error(t('pleaseUseEmail'))
       return
     }
     setLoading(true)
     try {
       const data = await login(form.username, form.password)
-      toast.success(`Welcome, ${data.fullName}!`)
+      toast.success(`${t('loginWelcome')} ${data.fullName}!`)
       navigate(from || HOME_BY_ROLE[data.role] || '/', { replace: true })
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed — check your ID and password')
+      toast.error(err.response?.data?.message || t('loginErrorFallback'))
     } finally {
       setLoading(false)
     }
@@ -64,40 +64,40 @@ export default function LoginPage() {
           <div className="flex items-center gap-3">
             <img src="/logo.png" className="h-14 w-14 rounded-full bg-white p-1 shrink-0" alt="logo" />
             <div>
-              <div className="font-display text-xl font-bold leading-tight">Arerti General Secondary</div>
-              <div className="font-display text-xl font-bold leading-tight">& Preparatory School</div>
-              <div className="text-sm text-white/80 mt-1">Digital Portal</div>
+              <div className="font-display text-xl font-bold leading-tight">{t('loginBrandTitle1')}</div>
+              <div className="font-display text-xl font-bold leading-tight">{t('loginBrandTitle2')}</div>
+              <div className="text-sm text-white/80 mt-1">{t('loginDigitalPortal')}</div>
             </div>
           </div>
         </div>
         <div>
           <h1 className="font-display text-4xl xl:text-5xl font-bold leading-tight">
-            Welcome to Arerti General Secondary & Preparatory<br/>School Portal
+            {t('welcomeTitle')}
           </h1>
           <p className="mt-4 text-white/80 max-w-md">
-            Manage students, grades, attendance and communication — securely, from any device.
+            {t('welcomeSubtitle')}
           </p>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-md text-sm">
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">For Directors</div>
-              <div className="text-white/70 text-xs">Manage the whole school</div>
+              <div className="font-semibold">{t('forDirectors')}</div>
+              <div className="text-white/70 text-xs">{t('manageSchool')}</div>
             </div>
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">For Teachers</div>
-              <div className="text-white/70 text-xs">Grades, attendance, materials</div>
+              <div className="font-semibold">{t('forTeachers')}</div>
+              <div className="text-white/70 text-xs">{t('gradesAttendance')}</div>
             </div>
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">For Students</div>
-              <div className="text-white/70 text-xs">View results, get materials</div>
+              <div className="font-semibold">{t('forStudents')}</div>
+              <div className="text-white/70 text-xs">{t('viewResults')}</div>
             </div>
             <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">For Parents</div>
-              <div className="text-white/70 text-xs">Track your child's progress</div>
+              <div className="font-semibold">{t('forParents')}</div>
+              <div className="text-white/70 text-xs">{t('trackChild')}</div>
             </div>
           </div>
         </div>
         <div className="text-xs text-white/60">
-          © {new Date().getFullYear()} Arerti General Secondary & Preparatory School
+          © {new Date().getFullYear()} {t('copyrightText')}
         </div>
       </div>
 

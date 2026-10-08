@@ -27,6 +27,14 @@ export default function AttendancePage() {
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState({})
 
+    // Status label map — uses translation keys
+    const STATUS_LABELS = {
+        PRESENT: t('present'),
+        ABSENT:  t('absent'),
+        LATE:    t('late'),
+        EXCUSED: t('excused'),
+    }
+
     useEffect(() => {
         const loader = isAdmin ? classService.getAll() : classService.getMyClasses()
         loader
@@ -70,7 +78,7 @@ export default function AttendancePage() {
         for (const student of students) {
             await handleMark(student.id, status)
         }
-        toast.success(`${t('allMarkedAs')} ${status}`)
+        toast.success(`${t('allMarkedAs')} ${STATUS_LABELS[status]}`)
     }
 
     const present = records.filter(r => r.status === 'PRESENT').length
@@ -94,7 +102,9 @@ export default function AttendancePage() {
                     <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
                         <option value="">— {t('selectClass')} —</option>
                         {sections.map(s => (
-                            <option key={s.id} value={s.id}>Grade {s.grade} – {s.section} ({s.academicYear})</option>
+                            <option key={s.id} value={s.id}>
+                                {t('grade')} {s.grade} – {s.section} ({s.academicYear})
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -157,7 +167,7 @@ export default function AttendancePage() {
                                         <td className="px-4 py-3 text-center">
                                             {status ? (
                                                 <span className={`text-xs font-medium px-2 py-1 rounded-full ${STATUS_STYLES[status]}`}>
-                                                    {status}
+                                                    {STATUS_LABELS[status] || status}
                                                 </span>
                                             ) : (
                                                 <span className="text-xs text-slate-300">—</span>
@@ -170,12 +180,13 @@ export default function AttendancePage() {
                                                         key={s}
                                                         disabled={saving[student.id]}
                                                         onClick={() => handleMark(student.id, s)}
+                                                        title={STATUS_LABELS[s]}
                                                         className={`text-xs px-2 py-1 rounded transition border ${status === s
                                                                 ? STATUS_STYLES[s] + ' border-current'
                                                                 : 'border-slate-200 text-slate-500 hover:border-slate-400'
                                                             }`}
                                                     >
-                                                        {s[0]}
+                                                        {STATUS_LABELS[s]?.[0] || s[0]}
                                                     </button>
                                                 ))}
                                             </div>

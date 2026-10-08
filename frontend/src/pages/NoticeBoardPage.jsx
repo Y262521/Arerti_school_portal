@@ -21,6 +21,18 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
     const [form, setForm] = useState(initial)
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+    const AUDIENCE_LABELS = {
+        GENERAL: t('audienceGeneral'),
+        STUDENT: t('STUDENT'),
+        TEACHER: t('TEACHER'),
+        PARENT:  t('PARENT'),
+    }
+    const PRIORITY_LABELS = {
+        LOW:    t('priorityLow'),
+        MEDIUM: t('priorityMedium'),
+        HIGH:   t('priorityHigh'),
+    }
+
     return (
         <form onSubmit={e => { e.preventDefault(); onSubmit(form) }} className="space-y-3">
             <div>
@@ -36,13 +48,13 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
                 <div>
                     <label className="field-label">{t('audienceLabel')}</label>
                     <select className="field" value={form.audience} onChange={e => set('audience', e.target.value)}>
-                        {AUDIENCE_OPTS.map(a => <option key={a}>{a}</option>)}
+                        {AUDIENCE_OPTS.map(a => <option key={a} value={a}>{AUDIENCE_LABELS[a] || a}</option>)}
                     </select>
                 </div>
                 <div>
                     <label className="field-label">{t('priorityLabel')}</label>
                     <select className="field" value={form.priority} onChange={e => set('priority', e.target.value)}>
-                        {PRIORITY_OPTS.map(p => <option key={p}>{p}</option>)}
+                        {PRIORITY_OPTS.map(p => <option key={p} value={p}>{PRIORITY_LABELS[p] || p}</option>)}
                     </select>
                 </div>
             </div>
@@ -70,6 +82,10 @@ export default function NoticeBoardPage() {
     const [modal, setModal] = useState(null)
     const [expanded, setExpanded] = useState(null)
     const [confirmDelete, setConfirmDelete] = useState(null)
+
+    // Translated badge labels (computed inside component so t() is in scope)
+    const PRIORITY_LABELS = { LOW: t('priorityLow'), MEDIUM: t('priorityMedium'), HIGH: t('priorityHigh') }
+    const AUDIENCE_LABELS = { GENERAL: t('audienceGeneral'), STUDENT: t('STUDENT'), TEACHER: t('TEACHER'), PARENT: t('PARENT') }
 
     const load = async () => {
         setLoading(true)
@@ -134,10 +150,10 @@ export default function NoticeBoardPage() {
                                     <div className="flex items-center gap-2 flex-wrap">
                                         {n.pinned && <span className="text-brand text-xs font-bold">📌 {t('pinned')}</span>}
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${PRIORITY_BADGE[n.priority] || PRIORITY_BADGE.LOW}`}>
-                                            {n.priority}
+                                            {PRIORITY_LABELS[n.priority] || n.priority}
                                         </span>
                                         <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                                            {n.audience}
+                                            {AUDIENCE_LABELS[n.audience] || n.audience}
                                         </span>
                                     </div>
                                     <h3 className="font-semibold text-slate-900 mt-1">{n.title}</h3>

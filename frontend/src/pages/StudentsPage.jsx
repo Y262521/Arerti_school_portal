@@ -103,7 +103,7 @@ function StudentForm({ initial, sections, onSubmit, onClose, loading, isEdit }) 
                 <select className="field" value={form.sectionId} onChange={e => set('sectionId', e.target.value)}>
                     <option value="">— {t('unassigned')} —</option>
                     {sections.map(s => (
-                        <option key={s.id} value={s.id}>Grade {s.grade} – {s.section} ({s.academicYear})</option>
+                        <option key={s.id} value={s.id}>{t('grade')} {s.grade} – {s.section} ({s.academicYear})</option>
                     ))}
                 </select>
             </div>
@@ -130,7 +130,7 @@ function StudentDetailModal({ student, sections, onClose, onEdit }) {
         [t('gender'), student.gender ? t(student.gender.toLowerCase()) || student.gender : '—'],
         [t('dateOfBirth'), student.dateOfBirth || '—'],
         [t('enrollmentYear'), student.enrollmentYear || '—'],
-        [t('classSection'), section ? `Grade ${section.grade} – ${section.section} (${section.academicYear})` : t('unassigned')],
+        [t('classSection'), section ? `${t('grade')} ${section.grade} – ${section.section} (${section.academicYear})` : t('unassigned')],
         [t('parentName'), student.parentName || '—'],
         [t('guardianPhone'), student.parentPhone || '—'],
     ]
@@ -247,6 +247,7 @@ export default function StudentsPage() {
                                 <th className="px-4 py-3">{t('email')}</th>
                                 <th className="px-4 py-3">{t('username')}</th>
                                 <th className="px-4 py-3">{t('gender')}</th>
+                                <th className="px-4 py-3">{t('dateOfBirth')}</th>
                                 <th className="px-4 py-3">{t('classSection')}</th>
                                 <th className="px-4 py-3">{t('parentName')}</th>
                                 <th className="px-4 py-3">{t('guardianPhone')}</th>
@@ -263,6 +264,7 @@ export default function StudentsPage() {
                                     <td className="px-4 py-3 text-slate-600 text-xs">{s.email}</td>
                                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{s.username}</td>
                                     <td className="px-4 py-3 text-slate-600">{s.gender ? t(s.gender.toLowerCase()) || s.gender : '—'}</td>
+                                    <td className="px-4 py-3 text-slate-600 text-xs">{s.dateOfBirth || '—'}</td>
                                     <td className="px-4 py-3 text-slate-600">{s.sectionLabel || '—'}</td>
                                     <td className="px-4 py-3 text-slate-600">{s.parentName || '—'}</td>
                                     <td className="px-4 py-3 text-slate-600 text-xs">{s.parentPhone || '—'}</td>
