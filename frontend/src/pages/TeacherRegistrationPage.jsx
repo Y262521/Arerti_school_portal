@@ -494,7 +494,7 @@ export default function TeacherRegistrationPage() {
 
     if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
 
-    const isWindowExpired = !window_ || window_.status === 'CLOSED' || window_.active === false ||
+    const isWindowExpired = !window_ || window_.status === 'CLOSED' ||
         (window_.endDatetime && new Date(window_.endDatetime) <= new Date())
 
     if (isWindowExpired) return (

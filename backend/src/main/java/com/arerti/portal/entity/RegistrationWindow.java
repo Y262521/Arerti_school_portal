@@ -53,11 +53,10 @@ public class RegistrationWindow {
 
     public enum WindowStatus { OPEN, CLOSED }
 
-    /** True if current datetime is within the window and status is OPEN */
+    /** True if window status is OPEN and end datetime has not passed */
     public boolean isActive() {
         LocalDateTime now = LocalDateTime.now();
         return status == WindowStatus.OPEN
-                && !now.isBefore(startDatetime)
                 && !now.isAfter(endDatetime);
     }
 }

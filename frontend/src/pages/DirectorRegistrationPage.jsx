@@ -353,15 +353,12 @@ export default function DirectorRegistrationPage() {
         catch { toast.error(t('failedToRemove')) }
     }
 
-    // A window is active only if: status is OPEN, backend reports active, and end datetime has not passed
+    // A window is active if status is not CLOSED and the end datetime has not passed
     const isWindowActive = (w) => {
         if (!w) return false
         if (w.status === 'CLOSED') return false
-        if (w.active === false) return false
         const end = w.endDatetime || w.endDate
         if (end && new Date(end) <= new Date()) return false
-        const start = w.startDatetime || w.startDate
-        if (start && new Date(start) > new Date()) return false
         return true
     }
 

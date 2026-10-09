@@ -13,7 +13,7 @@ public interface RegistrationWindowRepository extends JpaRepository<Registration
     List<RegistrationWindow> findAllByOrderByCreatedAtDesc();
 
     @Query("SELECT w FROM RegistrationWindow w WHERE w.status = 'OPEN' " +
-           "AND w.startDatetime <= :now AND w.endDatetime >= :now")
+           "AND w.endDatetime >= :now")
     Optional<RegistrationWindow> findActive(LocalDateTime now);
 
     List<RegistrationWindow> findAllByStatus(RegistrationWindow.WindowStatus status);
