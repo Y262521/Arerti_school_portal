@@ -40,10 +40,6 @@ const ADMIN_GROUPS = [
   },
 ]
 
-const ADMIN_ALL_LINKS = ADMIN_GROUPS.flatMap(g =>
-  g.single ? [{ to: g.to, key: g.key }] : g.items
-)
-
 const ROLE_LINKS = {
   TEACHER: [
     { to: '/teacher',              key: 'dashboard' },
@@ -144,6 +140,67 @@ function HamburgerIcon({ open }) {
   )
 }
 
+// ── Mobile Group Accordion (collapsible categories for Director/Admin on mobile) ────
+function MobileGroupAccordion({ group, t, location, onSelect }) {
+  const isGroupActive = group.items.some(
+    item => location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+  )
+  const [open, setOpen] = useState(isGroupActive)
+
+  useEffect(() => {
+    if (isGroupActive) setOpen(true)
+  }, [isGroupActive])
+
+  return (
+    <div
+      className={`rounded-xl border transition-colors overflow-hidden
+        ${isGroupActive ? 'border-brand/30 bg-brand/[0.03]' : 'border-slate-200/90 bg-slate-50/60'}`}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-semibold transition
+          ${isGroupActive ? 'text-brand font-bold' : 'text-slate-700 hover:text-brand'}`}
+      >
+        <span className="flex items-center gap-2">
+          {t(group.key)}
+          {isGroupActive && (
+            <span className="w-1.5 h-1.5 rounded-full bg-brand" />
+          )}
+        </span>
+        <svg
+          className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180 text-brand' : 'text-slate-400'}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="px-2 pb-2.5 pt-1 space-y-1 bg-white border-t border-slate-100">
+          {group.items.map(item => {
+            const active = location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onSelect}
+                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-sm font-medium transition
+                  ${active
+                    ? 'bg-brand text-white shadow-sm font-semibold'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-brand'}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-white' : 'bg-slate-300'}`} />
+                {t(item.key)}
+              </NavLink>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Layout ────────────────────────────────────────────────────────────────
 export default function Layout({ children }) {
   const { user, logout } = useAuth()
@@ -161,8 +218,6 @@ export default function Layout({ children }) {
     logout()
     navigate('/login', { replace: true })
   }
-
-  const mobileLinks = isAdmin ? ADMIN_ALL_LINKS : links
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -259,23 +314,54 @@ export default function Layout({ children }) {
 
         {/* Mobile menu drawer */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white">
+          <div className="md:hidden border-t border-slate-200 bg-white max-h-[calc(100vh-72px)] overflow-y-auto">
             {/* Nav links */}
-            <nav className="px-4 py-3 space-y-1">
-              {mobileLinks.map(l => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition
-                     ${isActive
-                        ? 'bg-brand text-white'
-                        : 'text-slate-700 hover:bg-slate-50 hover:text-brand'}`
-                  }
-                >
-                  {t(l.key)}
-                </NavLink>
-              ))}
+            <nav className="px-4 py-3 space-y-1.5">
+              {isAdmin ? (
+                ADMIN_GROUPS.map(group =>
+                  group.single ? (
+                    <NavLink
+                      key={group.to}
+                      to={group.to}
+                      end
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition
+                         ${isActive
+                            ? 'bg-brand text-white shadow-sm'
+                            : 'text-slate-700 hover:bg-slate-50 hover:text-brand'}`
+                      }
+                    >
+                      {t(group.key)}
+                    </NavLink>
+                  ) : (
+                    <MobileGroupAccordion
+                      key={group.key}
+                      group={group}
+                      t={t}
+                      location={location}
+                      onSelect={() => setMobileOpen(false)}
+                    />
+                  )
+                )
+              ) : (
+                links.map(l => (
+                  <NavLink
+                    key={l.to}
+                    to={l.to}
+                    end={l.to === '/'}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition
+                       ${isActive
+                          ? 'bg-brand text-white'
+                          : 'text-slate-700 hover:bg-slate-50 hover:text-brand'}`
+                    }
+                  >
+                    {t(l.key)}
+                  </NavLink>
+                ))
+              )}
             </nav>
 
             {/* Mobile bottom actions */}
