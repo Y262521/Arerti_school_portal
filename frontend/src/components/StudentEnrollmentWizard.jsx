@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { useLanguage } from '../context/LanguageContext'
 import toast from 'react-hot-toast'
@@ -92,6 +92,19 @@ export function EthiopianPhoneInput({ value, onChange, required }) {
     )
 }
 
+// ── Field error wrapper (defined outside to preserve input focus) ─────────────
+const FormErrorsContext = createContext({})
+
+function F({ field, children }) {
+    const errors = useContext(FormErrorsContext)
+    return (
+        <div>
+            {children}
+            {errors?.[field] && <p className="text-xs text-red-500 mt-0.5">{errors[field]}</p>}
+        </div>
+    )
+}
+
 // ── Full 4-step wizard (New / Transfer) ───────────────────────────────────────
 export function FullEnrollmentWizard({ windowId, grade, enrollmentType, academicYear, onSuccess, onClose }) {
     const { t } = useLanguage()
@@ -176,15 +189,10 @@ export function FullEnrollmentWizard({ windowId, grade, enrollmentType, academic
         } finally { setSaving(false) }
     }
 
-    const F = ({ field, children }) => (
-        <div>{children}
-            {errors[field] && <p className="text-xs text-red-500 mt-0.5">{errors[field]}</p>}
-        </div>
-    )
-
     return (
-        <div className="space-y-6">
-            <StepBar step={step} steps={WIZARD_STEPS} />
+        <FormErrorsContext.Provider value={errors}>
+            <div className="space-y-6">
+                <StepBar step={step} steps={WIZARD_STEPS} />
             <div className="inline-flex items-center gap-2">
                 <span className="bg-brand/10 text-brand text-xs font-semibold px-2 py-0.5 rounded-full">{t('grade')} {grade}</span>
                 <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">
@@ -317,6 +325,7 @@ export function FullEnrollmentWizard({ windowId, grade, enrollmentType, academic
                 }
             </div>
         </div>
+        </FormErrorsContext.Provider>
     )
 }
 
