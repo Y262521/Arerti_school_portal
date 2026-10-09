@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { teacherService } from '../services/teacherService'
 import { useLanguage } from '../context/LanguageContext'
@@ -227,7 +227,7 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onEnro
                     </p>
                     <p className="text-xs text-slate-400">{t('openedBy')}: {w.openedBy}</p>
                 </div>
-                {active && (
+                {active ? (
                     <div className="flex gap-2 flex-wrap">
                         <button className="btn-ghost text-xs" onClick={loadEnrollments} disabled={loadingEnroll}>
                             {loadingEnroll ? '…' : `📋 ${t('enrollments')}`}
@@ -241,6 +241,12 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onEnro
                         </button>
                         <button className="btn-ghost text-xs border-red-200 text-red-600" onClick={onClose}>
                             {t('closeRegistration')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex gap-2 flex-wrap">
+                        <button className="btn-ghost text-xs" onClick={loadEnrollments} disabled={loadingEnroll}>
+                            {loadingEnroll ? '…' : `📋 ${t('enrollments')}`}
                         </button>
                     </div>
                 )}
@@ -347,8 +353,20 @@ export default function DirectorRegistrationPage() {
         catch { toast.error(t('failedToRemove')) }
     }
 
-    const activeWindows = windows.filter(w => w.status === 'OPEN')
-    const closedWindows = windows.filter(w => w.status === 'CLOSED')
+    // A window is active only if: status is OPEN, backend reports active, and end datetime has not passed
+    const isWindowActive = (w) => {
+        if (!w) return false
+        if (w.status === 'CLOSED') return false
+        if (w.active === false) return false
+        const end = w.endDatetime || w.endDate
+        if (end && new Date(end) <= new Date()) return false
+        const start = w.startDatetime || w.startDate
+        if (start && new Date(start) > new Date()) return false
+        return true
+    }
+
+    const activeWindows = windows.filter(isWindowActive)
+    const closedWindows = windows.filter(w => !isWindowActive(w))
 
     return (
         <div>

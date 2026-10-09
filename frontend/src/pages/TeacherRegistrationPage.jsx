@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { registrationService } from '../services/registrationService'
 import { classService } from '../services/classService'
@@ -494,7 +494,10 @@ export default function TeacherRegistrationPage() {
 
     if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
 
-    if (!window_) return (
+    const isWindowExpired = !window_ || window_.status === 'CLOSED' || window_.active === false ||
+        (window_.endDatetime && new Date(window_.endDatetime) <= new Date())
+
+    if (isWindowExpired) return (
         <div className="card p-12 text-center">
             <div className="text-5xl mb-4">🔒</div>
             <h2 className="font-semibold text-slate-700 text-lg">{t('noActiveWindow')}</h2>

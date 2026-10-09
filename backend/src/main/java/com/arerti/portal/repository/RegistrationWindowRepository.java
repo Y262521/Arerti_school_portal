@@ -16,6 +16,8 @@ public interface RegistrationWindowRepository extends JpaRepository<Registration
            "AND w.startDatetime <= :now AND w.endDatetime >= :now")
     Optional<RegistrationWindow> findActive(LocalDateTime now);
 
+    List<RegistrationWindow> findAllByStatus(RegistrationWindow.WindowStatus status);
+
     Optional<RegistrationWindow> findFirstByStatusOrderByCreatedAtDesc(
             RegistrationWindow.WindowStatus status);
 }

@@ -32,15 +32,33 @@ public class RegistrationService {
     private final AuditService auditService;
     private final com.arerti.portal.repository.GradeEntryRepository gradeEntryRepository;
 
+    // ── Auto-close expired windows ───────────────────────────────────────────
+
+    @Transactional
+    public void autoCloseExpiredWindows() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        List<RegistrationWindow> openWindows = windowRepository.findAllByStatus(RegistrationWindow.WindowStatus.OPEN);
+        for (RegistrationWindow w : openWindows) {
+            if (now.isAfter(w.getEndDatetime())) {
+                w.setStatus(RegistrationWindow.WindowStatus.CLOSED);
+                windowRepository.save(w);
+            }
+        }
+    }
+
     // ── Window management (Director) ─────────────────────────────────────────
 
+    @Transactional
     public List<RegistrationWindowResponse> findAllWindows() {
+        autoCloseExpiredWindows();
         return windowRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(w -> RegistrationWindowResponse.from(w, getAssignments(w)))
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public RegistrationWindowResponse findWindowById(Long id) {
+        autoCloseExpiredWindows();
         RegistrationWindow w = getWindow(id);
         return RegistrationWindowResponse.from(w, getAssignments(w));
     }
@@ -108,15 +126,14 @@ public class RegistrationService {
 
     // ── Teacher: active window ────────────────────────────────────────────────
 
+    @Transactional
     public RegistrationWindowResponse getMyActiveWindow(String teacherUsername) {
+        autoCloseExpiredWindows();
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         if (teacher == null) return null;
 
-        // First try: window active right now (within datetime range)
+        // Window active right now (within datetime range and status OPEN)
         RegistrationWindow activeWindow = windowRepository.findActive(java.time.LocalDateTime.now())
-                // Fallback: any OPEN window (director may have set future start date during setup/testing)
-                .or(() -> windowRepository.findFirstByStatusOrderByCreatedAtDesc(
-                        RegistrationWindow.WindowStatus.OPEN))
                 .orElse(null);
         if (activeWindow == null) return null;
 
@@ -458,9 +475,14 @@ public class RegistrationService {
     }
 
     private RegistrationWindow getWindow(Long id) {
-        return windowRepository.findById(id)
+        RegistrationWindow w = windowRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Registration window not found"));
+        if (w.getStatus() == RegistrationWindow.WindowStatus.OPEN && java.time.LocalDateTime.now().isAfter(w.getEndDatetime())) {
+            w.setStatus(RegistrationWindow.WindowStatus.CLOSED);
+            w = windowRepository.save(w);
+        }
+        return w;
     }
 
     private String generateUid() {
