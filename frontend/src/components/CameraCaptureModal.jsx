@@ -2,25 +2,41 @@ import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from './Modal'
 
-export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }) {
+export default function CameraCaptureModal({
+    isOpen,
+    onClose,
+    onCapture,
+    title,
+    defaultFacingMode = 'environment'
+}) {
     const { t } = useLanguage()
     const videoRef = useRef(null)
     const streamRef = useRef(null)
     const fallbackInputRef = useRef(null)
+    const activeSessionRef = useRef(0)
 
     const [capturedBlob, setCapturedBlob] = useState(null)
     const [capturedDataUrl, setCapturedDataUrl] = useState('')
-    const [facingMode, setFacingMode] = useState('environment') // default to back camera for docs, works on webcams too
+    const [facingMode, setFacingMode] = useState(defaultFacingMode)
     const [hasMultipleCameras, setHasMultipleCameras] = useState(false)
     const [cameraError, setCameraError] = useState('')
     const [startingCamera, setStartingCamera] = useState(false)
 
-    // Stop all active tracks
+    // Check if running on a mobile device where front/back cameras virtually always exist
+    const isMobileDevice = () => {
+        if (typeof navigator === 'undefined') return false
+        return /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent || '') ||
+            (navigator.maxTouchPoints && navigator.maxTouchPoints > 1)
+    }
+
+    // Stop active tracks and detach video element
     const stopStream = () => {
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => {
-                try { track.stop() } catch {}
-            })
+            try {
+                streamRef.current.getTracks().forEach(track => {
+                    try { track.stop() } catch {}
+                })
+            } catch {}
             streamRef.current = null
         }
         if (videoRef.current) {
@@ -28,69 +44,127 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
         }
     }
 
-    // Start video stream
+    // Start camera with session protection & hardware release delay
     const startCamera = async (mode = facingMode) => {
+        const currentSession = ++activeSessionRef.current
+
+        // 1. Fully release previous stream
         stopStream()
         setCameraError('')
         setStartingCamera(true)
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setCameraError(t('cameraError') || 'Camera not supported on this browser.')
+            setCameraError(t('cameraError'))
             setStartingCamera(false)
             return
         }
 
-        try {
-            // Check available video devices
-            try {
-                const devices = await navigator.mediaDevices.enumerateDevices()
-                const videoDevices = devices.filter(d => d.kind === 'videoinput')
-                setHasMultipleCameras(videoDevices.length > 1)
-            } catch {}
+        // 2. Allow hardware camera on mobile (Android/iOS) 200ms to complete teardown
+        await new Promise(resolve => setTimeout(resolve, 200))
+        if (currentSession !== activeSessionRef.current) return
 
-            const constraints = {
+        // 3. Progressive constraints list from specific to generic
+        const constraintCandidates = [
+            {
                 video: {
-                    facingMode: mode,
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
+                    facingMode: { ideal: mode },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 },
                 audio: false
+            },
+            {
+                video: {
+                    facingMode: { ideal: mode }
+                },
+                audio: false
+            },
+            {
+                video: {
+                    facingMode: mode
+                },
+                audio: false
+            },
+            {
+                video: true,
+                audio: false
             }
+        ]
 
-            let stream
+        let stream = null
+        let lastErr = null
+
+        for (const constraints of constraintCandidates) {
+            if (currentSession !== activeSessionRef.current) break
             try {
                 stream = await navigator.mediaDevices.getUserMedia(constraints)
+                if (stream) break
             } catch (err) {
-                // If specific facingMode fails, try generic video
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                lastErr = err
             }
-
-            streamRef.current = stream
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream
-                await videoRef.current.play().catch(() => {})
-            }
-        } catch (err) {
-            console.error('Camera access error:', err)
-            setCameraError(t('cameraError') || 'Camera permission denied or camera unavailable.')
-        } finally {
-            setStartingCamera(false)
         }
+
+        // If another session was started while getUserMedia was resolving, drop this stream
+        if (currentSession !== activeSessionRef.current) {
+            if (stream) {
+                try { stream.getTracks().forEach(tr => tr.stop()) } catch {}
+            }
+            return
+        }
+
+        if (!stream) {
+            console.error('All camera constraint attempts failed:', lastErr)
+            setCameraError(t('cameraError'))
+            setStartingCamera(false)
+            return
+        }
+
+        // 4. Attach stream to video element
+        streamRef.current = stream
+        if (videoRef.current) {
+            videoRef.current.srcObject = stream
+            try {
+                await videoRef.current.play()
+            } catch {}
+        }
+
+        // 5. Detect if device has multiple cameras (or mobile device)
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices()
+            const videoDevices = devices.filter(d => d.kind === 'videoinput')
+            setHasMultipleCameras(videoDevices.length > 1 || isMobileDevice())
+        } catch {
+            setHasMultipleCameras(isMobileDevice())
+        }
+
+        setStartingCamera(false)
     }
 
+    // Effect: Handle opening, closing, and facingMode changes cleanly
     useEffect(() => {
         if (isOpen && !capturedBlob) {
             startCamera(facingMode)
         } else if (!isOpen) {
+            activeSessionRef.current++
             stopStream()
             setCapturedBlob(null)
             setCapturedDataUrl('')
             setCameraError('')
+            setFacingMode(defaultFacingMode)
         }
+
         return () => {
+            activeSessionRef.current++
             stopStream()
         }
     }, [isOpen, facingMode])
+
+    // Toggle camera between front and back safely without race conditions
+    const toggleFacingMode = () => {
+        if (startingCamera) return
+        setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'))
+        // useEffect([isOpen, facingMode]) handles the camera restart safely
+    }
 
     // Capture photo from video frame
     const handleSnap = () => {
@@ -112,39 +186,35 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
         }, 'image/jpeg', 0.92)
     }
 
-    // Retake
+    // Retake photo
     const handleRetake = () => {
         if (capturedDataUrl) {
-            URL.revokeObjectURL(capturedDataUrl)
+            try { URL.revokeObjectURL(capturedDataUrl) } catch {}
         }
         setCapturedBlob(null)
         setCapturedDataUrl('')
         startCamera(facingMode)
     }
 
-    // Confirm photo
+    // Use photo
     const handleUsePhoto = () => {
         if (!capturedBlob) return
         const file = new File([capturedBlob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' })
+        activeSessionRef.current++
         stopStream()
         onCapture(file)
         onClose()
     }
 
-    // Mobile file fallback (native camera intent)
+    // Fallback native camera file picker
     const handleFallbackChange = (e) => {
         const file = e.target.files?.[0]
         if (file) {
+            activeSessionRef.current++
             stopStream()
             onCapture(file)
             onClose()
         }
-    }
-
-    const toggleFacingMode = () => {
-        const nextMode = facingMode === 'environment' ? 'user' : 'environment'
-        setFacingMode(nextMode)
-        startCamera(nextMode)
     }
 
     if (!isOpen) return null
@@ -152,7 +222,11 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
     return (
         <Modal
             isOpen={isOpen}
-            onClose={() => { stopStream(); onClose() }}
+            onClose={() => {
+                activeSessionRef.current++
+                stopStream()
+                onClose()
+            }}
             title={title || t('takePhoto')}
             maxWidth="max-w-xl"
         >
@@ -164,14 +238,14 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
                             <span className="text-4xl block">📷</span>
                             <p className="text-sm text-red-300 font-medium">{cameraError}</p>
                             <p className="text-xs text-slate-300">
-                                You can also use your device&apos;s camera directly via the button below.
+                                {t('useNativeCameraHint') || "You can also use your device's camera directly via the button below."}
                             </p>
                             <button
                                 type="button"
                                 className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-2"
                                 onClick={() => fallbackInputRef.current?.click()}
                             >
-                                📸 {t('takePhoto')} (Native Camera)
+                                📸 {t('takePhoto')} ({t('nativeCamera') || 'Native Camera'})
                             </button>
                         </div>
                     ) : capturedDataUrl ? (
@@ -190,19 +264,20 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
                                 className="w-full h-full object-cover"
                             />
                             {startingCamera && (
-                                <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center text-white text-xs">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent mr-2" />
-                                    Starting camera…
+                                <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center text-white text-xs gap-2">
+                                    <div className="animate-spin rounded-full h-7 w-7 border-2 border-white border-t-transparent" />
+                                    <span>{t('startingCamera') || 'Starting camera…'}</span>
                                 </div>
                             )}
 
-                            {/* Switch Camera Button (if multiple cameras available) */}
-                            {hasMultipleCameras && (
+                            {/* Switch Camera Button (always on mobile or when multiple cameras detected) */}
+                            {hasMultipleCameras && !capturedDataUrl && !cameraError && (
                                 <button
                                     type="button"
+                                    disabled={startingCamera}
                                     onClick={toggleFacingMode}
                                     title={t('switchCamera')}
-                                    className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full p-2.5 backdrop-blur border border-white/20 transition shadow"
+                                    className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full p-2.5 backdrop-blur border border-white/20 transition shadow disabled:opacity-50"
                                 >
                                     🔄
                                 </button>
@@ -216,7 +291,7 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
                     ref={fallbackInputRef}
                     type="file"
                     accept="image/*"
-                    capture="environment"
+                    capture={facingMode === 'user' ? 'user' : 'environment'}
                     className="hidden"
                     onChange={handleFallbackChange}
                 />
@@ -226,7 +301,11 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
                     <button
                         type="button"
                         className="btn-ghost text-xs"
-                        onClick={() => { stopStream(); onClose() }}
+                        onClick={() => {
+                            activeSessionRef.current++
+                            stopStream()
+                            onClose()
+                        }}
                     >
                         {t('cancel')}
                     </button>
@@ -257,13 +336,13 @@ export default function CameraCaptureModal({ isOpen, onClose, onCapture, title }
                                         className="btn-ghost text-xs"
                                         onClick={() => startCamera(facingMode)}
                                     >
-                                        Try Again
+                                        {t('tryAgain') || 'Try Again'}
                                     </button>
                                 ) : (
                                     <button
                                         type="button"
                                         disabled={startingCamera}
-                                        className="btn-primary text-xs py-2 px-5 shadow-lg flex items-center gap-2 font-semibold"
+                                        className="btn-primary text-xs py-2 px-5 shadow-lg flex items-center gap-2 font-semibold disabled:opacity-50"
                                         onClick={handleSnap}
                                     >
                                         📷 {t('capturePhoto')}
