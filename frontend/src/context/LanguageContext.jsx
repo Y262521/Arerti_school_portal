@@ -613,8 +613,8 @@ const translations = {
     loginErrorFallback: 'Login failed — check your ID and password',
     loginWelcome: 'Welcome,',
     copyrightText: 'Arerti General Secondary & Preparatory School',
-    pleaseUseEmail: 'Please fill in both fields',
-    networkError: 'Cannot connect to the server. Please check your internet connection.',
+    pleaseUseEmail: 'Please fill email and password to login',
+    networkError: 'Please check your internet connection.',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────
     hiStudent: 'Hi',
@@ -1294,8 +1294,8 @@ const translations = {
     loginErrorFallback: 'መግቢያ አልተቻለም — ​​ID እና የይለፍ ቃልዎን ያረጋግጡ',
     loginWelcome: 'እንኳን ደህና መጡ,',
     copyrightText: 'አረርቲ አጠቃላይ ሁለተኛ ደረጃ እና ቅድመ-ዩኒቨርሲቲ ትምህርት ቤት',
-    pleaseUseEmail: 'ሁለቱንም ሳጥኖች ይሙሉ',
-    networkError: 'ከሰርቨሩ ጋር መገናኘት አልተቻለም። የኢንተርኔት ግንኙነትዎን ያረጋግጡ።',
+    pleaseUseEmail: 'ለመግባት ኢሜይል እና የይለፍ ቃል ይሙሉ',
+    networkError: 'የኢንተርኔት ግንኙነትዎን ያረጋግጡ።',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────
     hiStudent: 'ሰላም',

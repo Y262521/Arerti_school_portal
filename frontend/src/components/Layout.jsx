@@ -170,14 +170,13 @@ export default function Layout({ children }) {
       <header className="sticky top-0 z-30 bg-white/98 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-18 flex items-center gap-3" style={{ height: '72px' }}>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 mr-2">
-            <img src="/logo.png" alt="Arerti" className="h-10 w-10 rounded-full object-cover shrink-0 shadow-sm" />
-            <div className="leading-tight hidden lg:block">
-              <div className="font-display font-bold text-brand text-sm whitespace-nowrap">Arerti General Secondary</div>
-              <div className="font-display font-bold text-brand text-xs whitespace-nowrap text-slate-500">& Preparatory School</div>
+          {/* Logo & School Name */}
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-2 min-w-0">
+            <img src="/logo.png" alt="Arerti" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0 shadow-sm" />
+            <div className="leading-tight min-w-0">
+              <div className="font-display font-bold text-brand text-xs sm:text-sm whitespace-nowrap">Arerti General Secondary</div>
+              <div className="font-display font-bold text-brand text-[10px] sm:text-xs whitespace-nowrap text-slate-500">& Preparatory School</div>
             </div>
-            <div className="font-display font-bold text-brand text-base md:hidden whitespace-nowrap">Arerti</div>
           </Link>
 
           {/* Desktop nav — hidden on mobile */}
