@@ -206,11 +206,26 @@ public class StudentService {
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private String generateUid() {
-        int year = Year.now().getValue();
-        String suffix = java.util.UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 6).toUpperCase();
-        return String.format("STU-%d-%s", year, suffix);
+    private synchronized String generateUid() {
+        List<String> uids = studentRepository.findAgspsUids();
+        int maxNum = 999;
+        for (String uid : uids) {
+            if (uid != null && uid.toUpperCase().startsWith("AGSPS-")) {
+                try {
+                    int val = Integer.parseInt(uid.substring(6).trim());
+                    if (val > maxNum) {
+                        maxNum = val;
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        int next = maxNum + 1;
+        String candidate = "AGSPS-" + next;
+        while (studentRepository.existsByStudentUid(candidate)) {
+            next++;
+            candidate = "AGSPS-" + next;
+        }
+        return candidate;
     }
 
     /** Generates a readable password: e.g. Arerti@2026 + 3 random digits */

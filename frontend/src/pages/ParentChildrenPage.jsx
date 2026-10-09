@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { parentService } from '../services/parentService'
 import Modal from '../components/Modal'
@@ -15,7 +15,7 @@ function LinkForm({ onSubmit, onClose, loading }) {
                 <label className="field-label">{t('studentUidLabel')} *</label>
                 <input
                     className="field"
-                    placeholder="e.g. STU-2026-001"
+                    placeholder="e.g. AGSPS-1000"
                     value={studentUid}
                     onChange={e => setStudentUid(e.target.value)}
                     required

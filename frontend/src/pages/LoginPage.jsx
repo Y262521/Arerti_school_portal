@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import Modal from '../components/Modal'
+import { authService } from '../services/authService'
 
 const HOME_BY_ROLE = {
   ADMIN:   '/admin',
@@ -36,6 +38,33 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  // Parent account self-registration
+  const [showParentModal, setShowParentModal] = useState(false)
+  const [parentForm, setParentForm] = useState({
+    fullName: '', email: '', phone: '', username: '', password: ''
+  })
+  const [parentRegistering, setParentRegistering] = useState(false)
+
+  const handleParentRegister = async (e) => {
+    e.preventDefault()
+    if (!parentForm.fullName || !parentForm.email || !parentForm.username || !parentForm.password) {
+      toast.error('Please fill all required fields.')
+      return
+    }
+    setParentRegistering(true)
+    try {
+      const data = await authService.register({ ...parentForm, role: 'PARENT' })
+      toast.success(t('parentRegisteredSuccess'))
+      login(data)
+      setShowParentModal(false)
+      navigate('/parent')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Registration failed')
+    } finally {
+      setParentRegistering(false)
+    }
+  }
 
   const onChange = (e) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -204,6 +233,18 @@ export default function LoginPage() {
             {t('troubleSignIn')}
           </p>
 
+          {/* ── Parent Account Self-Registration ── */}
+          <div className="mt-5 pt-4 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500 mb-2">{t('areYouAParent')}</p>
+            <button
+              type="button"
+              onClick={() => setShowParentModal(true)}
+              className="btn-ghost text-xs font-semibold text-brand hover:bg-brand/5 border border-brand/20 py-1.5 px-3 rounded-lg"
+            >
+              👨‍👩‍👧 {t('createParentAccount')}
+            </button>
+          </div>
+
           {/* Language toggle */}
           <div className="mt-4 flex justify-center">
             <button onClick={toggleLang}
@@ -213,6 +254,80 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Parent Registration Modal */}
+      {showParentModal && (
+        <Modal title={t('createParentAccount')} onClose={() => setShowParentModal(false)}>
+          <form onSubmit={handleParentRegister} className="space-y-3">
+            <div>
+              <label className="field-label">{t('fullName')} *</label>
+              <input
+                className="field"
+                placeholder="e.g. Abebe Bekele"
+                value={parentForm.fullName}
+                onChange={e => setParentForm(f => ({ ...f, fullName: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="field-label">{t('email')} *</label>
+                <input
+                  type="email"
+                  className="field"
+                  placeholder="parent@example.com"
+                  value={parentForm.email}
+                  onChange={e => setParentForm(f => ({ ...f, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="field-label">{t('phone')}</label>
+                <input
+                  className="field"
+                  placeholder="0911223344"
+                  value={parentForm.phone}
+                  onChange={e => setParentForm(f => ({ ...f, phone: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="field-label">{t('username')} *</label>
+                <input
+                  className="field"
+                  placeholder="e.g. abebe2026"
+                  value={parentForm.username}
+                  onChange={e => setParentForm(f => ({ ...f, username: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="field-label">{t('password')} *</label>
+                <input
+                  type="password"
+                  className="field"
+                  placeholder="••••••••"
+                  value={parentForm.password}
+                  onChange={e => setParentForm(f => ({ ...f, password: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              {t('trackChild')}
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" className="btn-ghost text-xs" onClick={() => setShowParentModal(false)}>
+                {t('cancel')}
+              </button>
+              <button type="submit" disabled={parentRegistering} className="btn-primary text-xs py-2 px-4">
+                {parentRegistering ? t('saving') : t('createParentAccount')}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   )
 }

@@ -62,8 +62,14 @@ public class AuthService {
                     "Failed login attempt");
             throw e;
         }
-        User user = userRepository.findByUsername(req.username())
-                .or(() -> userRepository.findByEmail(req.username()))
+        String raw = req.username() != null ? req.username().trim() : "";
+        String normalized = raw.toLowerCase().replace("-", "");
+        User user = userRepository.findByUsername(raw)
+                .or(() -> userRepository.findByUsername(normalized))
+                .or(() -> userRepository.findByUsername(raw.toLowerCase()))
+                .or(() -> userRepository.findByUsername(raw.toUpperCase()))
+                .or(() -> userRepository.findByEmail(raw))
+                .or(() -> userRepository.findByEmail(raw.toLowerCase()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
         auditService.log(user.getUsername(), user.getRole().name(), "LOGIN", "AUTH", user.getUsername(),
                 "Logged in");

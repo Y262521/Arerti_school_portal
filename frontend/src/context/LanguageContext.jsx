@@ -45,6 +45,9 @@ const translations = {
     gradesAttendance: 'Grades, attendance, materials',
     viewResults: 'View results, get materials',
     trackChild: "Track your child's progress",
+    areYouAParent: 'Are you a parent or guardian?',
+    createParentAccount: 'Create Parent Account',
+    parentRegisteredSuccess: 'Parent account created successfully! Signing in…',
 
     // ── Common actions ───────────────────────────────────────────────────────
     save: 'Save',
@@ -748,6 +751,9 @@ const translations = {
     gradesAttendance: 'ውጤቶች፣ ክትትልና ቁሳቁሶች',
     viewResults: 'ውጤቶችን ይዩ፣ ቁሳቁሶች ያግኙ',
     trackChild: 'የልጅዎን እድገት ይከታተሉ',
+    areYouAParent: 'ወላጅ ወይም አሳዳጊ ነዎት?',
+    createParentAccount: 'የወላጅ መለያ ይፍጠሩ',
+    parentRegisteredSuccess: 'የወላጅ መለያ በተሳካ ሁኔታ ተፈጥሯል! በመግባት ላይ…',
 
     // ── Common actions ───────────────────────────────────────────────────────
     save: 'አስቀምጥ',
