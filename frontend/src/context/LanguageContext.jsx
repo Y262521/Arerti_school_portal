@@ -141,7 +141,7 @@ const translations = {
     noAttendanceRecords: 'No attendance records yet.',
     noteLabel: 'Note',
     markedByLabel: 'Marked By',
-    studentProfileNotSetup: 'Your student profile is not set up yet. Contact the administrator.',
+    studentProfileNotSetup: 'Your student profile is not set up yet. Contact the director.',
 
     // ── Notice Board ─────────────────────────────────────────────────────────
     titleLabel: 'Title',

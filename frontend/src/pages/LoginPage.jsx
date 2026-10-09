@@ -125,7 +125,7 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={onChange}
                 className="input"
-                placeholder="e.g. admin or name@email.com"
+                placeholder="e.g. director or name@email.com"
                 autoComplete="username"
                 autoFocus
               />
