@@ -195,9 +195,8 @@ export default function LoginPage() {
 
           {/* ── Error message displayed directly BELOW the form ── */}
           {errorMessage && (
-            <div className="mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5 animate-fadeIn">
-              <span className="text-base leading-none mt-0.5">⚠️</span>
-              <span className="font-medium flex-1">{errorMessage}</span>
+            <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium text-center animate-fadeIn">
+              {errorMessage}
             </div>
           )}
 

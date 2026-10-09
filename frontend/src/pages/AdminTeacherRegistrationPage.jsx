@@ -54,7 +54,7 @@ function CredentialsCard({ teacher, onRegisterAnother }) {
                     <p><span className="text-slate-500">{t('email')}:</span> <strong>{teacher.email}</strong></p>
                 </div>
 
-                <p className="text-xs text-slate-500">⚠️ {t('passwordShownOnce')}</p>
+                <p className="text-xs text-slate-500">{t('passwordShownOnce')}</p>
 
                 <div className="flex justify-between gap-2 pt-2">
                     <button className="btn-ghost" onClick={copy}>

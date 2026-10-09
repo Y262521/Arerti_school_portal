@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { classService, curriculumService } from '../services/classService'
 import { teacherService } from '../services/teacherService'
@@ -154,7 +154,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                     </p>
                     {unassigned > 0 && (
                         <p className="text-xs text-orange-600 font-medium mt-1">
-                            ⚠️ {unassigned} {t('subjectsNeedTeacher')}
+                            {unassigned} {t('subjectsNeedTeacher')}
                         </p>
                     )}
                 </div>
@@ -349,7 +349,7 @@ function EndTermModal({ onClose }) {
     return (
         <div className="space-y-4">
             <div className="rounded-lg bg-orange-50 border border-orange-200 p-4 text-sm text-orange-800">
-                <strong>⚠️ {t('endOfYearAction')}</strong>
+                <strong>{t('endOfYearAction')}</strong>
                 <ul className="mt-2 space-y-1 list-disc list-inside">
                     <li>{t('endTermNote1')}</li>
                     <li>{t('endTermNote2')}</li>
@@ -374,7 +374,7 @@ function EndTermModal({ onClose }) {
                     <div className="flex justify-end gap-2 pt-2">
                         <button className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                         <button className="btn-danger" onClick={handleEndTerm} disabled={loading || !year}>
-                            {loading ? t('processing') : `⚠️ ${t('endTerm')}`}
+                            {loading ? t('processing') : t('endTerm')}
                         </button>
                     </div>
                 </>

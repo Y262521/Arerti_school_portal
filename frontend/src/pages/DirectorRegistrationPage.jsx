@@ -472,7 +472,7 @@ export default function DirectorRegistrationPage() {
                 <Modal title={t('closeRegistrationWindow')} onClose={() => setConfirmClose(null)}>
                     <div className="space-y-4">
                         <div className="rounded-lg bg-orange-50 border border-orange-200 p-3 text-sm text-orange-800">
-                            ⚠️ {t('closeWindowWarning')}
+                            {t('closeWindowWarning')}
                         </div>
                         <p className="text-sm text-slate-700">{t('closeWindowConfirm')} <strong>{confirmClose.academicYear}</strong>?</p>
                         <div className="flex justify-end gap-2">

@@ -96,7 +96,7 @@ function CredentialsModal({ student, onClose }) {
                 <p><span className="text-slate-500">{t('password')}:</span> <strong>{student.generatedPassword}</strong></p>
                 <p><span className="text-slate-500">{t('email')}:</span> <strong>{student.email}</strong></p>
             </div>
-            <p className="text-xs text-slate-500">⚠️ {t('passwordShownOnce')}</p>
+            <p className="text-xs text-slate-500">{t('passwordShownOnce')}</p>
             <div className="flex justify-end gap-2">
                 <button className="btn-ghost" onClick={handleCopy}>{copied ? `✓ ${t('copied')}` : t('copyToClipboard')}</button>
                 <button className="btn-primary" onClick={onClose}>{t('done')}</button>

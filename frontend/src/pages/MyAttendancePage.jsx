@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { attendanceService } from '../services/attendanceService'
 import { studentService } from '../services/studentService'
@@ -103,7 +103,7 @@ export default function MyAttendancePage() {
             {/* Attendance warning */}
             {total > 0 && pct < 75 && (
                 <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    ⚠️ {t('attendanceLowWarning')}
+                    {t('attendanceLowWarning')}
                 </div>
             )}
 

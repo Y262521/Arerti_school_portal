@@ -23,9 +23,6 @@ function OpenWindowForm({ onSubmit, onClose, loading }) {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
-                ⚠️ {t('openGradeEntryWarning')}
-            </div>
             <div className="grid grid-cols-2 gap-3">
                 <div>
                     <label className="field-label">{t('academicYear')} *</label>
@@ -164,7 +161,7 @@ export default function GradeEntryWindowPage() {
                         <div>
                             <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
-                                {t('activeWindows')} ({active.length})
+                                {t('activeGradeEntries')} ({active.length})
                             </h2>
                             <div className="space-y-3">
                                 {active.map(w => (
@@ -212,13 +209,13 @@ export default function GradeEntryWindowPage() {
                     {closed.length > 0 && (
                         <div>
                             <h2 className="font-semibold text-slate-500 mb-2 text-sm uppercase tracking-wide">
-                                {t('pastWindows')} ({closed.length})
+                                {t('pastGradeEntries')} ({closed.length})
                             </h2>
                             <div className="space-y-2">
                                 {closed.map(w => (
                                     <div key={w.id} className="card opacity-60">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{t('registrationClosed')}</span>
+                                            <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{t('closed')}</span>
                                             <span className="text-sm text-slate-700">{w.academicYear} — {t('semester')} {w.semester}</span>
                                             <span className="text-xs text-slate-400">
                                                 {new Date(w.startDatetime).toLocaleDateString()} → {new Date(w.endDatetime).toLocaleDateString()}
@@ -249,7 +246,7 @@ export default function GradeEntryWindowPage() {
                 <Modal title={t('closeGradeEntry')} onClose={() => setConfirmClose(null)}>
                     <div className="space-y-4">
                         <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-800">
-                            ⚠️ {t('closeGradeEntryWarning')}
+                            {t('closeGradeEntryWarning')}
                         </div>
                         <p className="text-sm text-slate-700">
                             {t('closeGradeEntryConfirm')} <strong>{confirmClose.academicYear} — {t('semester')} {confirmClose.semester}</strong>?
