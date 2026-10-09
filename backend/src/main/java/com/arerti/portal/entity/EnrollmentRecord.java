@@ -75,17 +75,17 @@ public class EnrollmentRecord {
     @Column(name = "photo_url", length = 500)
     private String photoUrl;           // student photo
 
-    @Column(name = "id_doc_url", length = 500)
-    private String idDocUrl;           // resident ID / birth certificate
+    @Column(name = "id_doc_url", columnDefinition = "TEXT")
+    private String idDocUrl;           // resident ID / birth certificate (supports multiple photos)
 
-    @Column(name = "grade8_certificate_url", length = 500)
-    private String grade8CertificateUrl;  // Grade 8 transcript/certificate
+    @Column(name = "grade8_certificate_url", columnDefinition = "TEXT")
+    private String grade8CertificateUrl;  // Grade 8 transcript/certificate (supports multiple photos)
 
-    @Column(name = "release_letter_url", length = 500)
-    private String releaseLetterUrl;   // transfer release letter
+    @Column(name = "release_letter_url", columnDefinition = "TEXT")
+    private String releaseLetterUrl;   // transfer release letter (supports multiple photos)
 
-    @Column(name = "payment_receipt_url", length = 500)
-    private String paymentReceiptUrl;  // bank/payment receipt photo
+    @Column(name = "payment_receipt_url", columnDefinition = "TEXT")
+    private String paymentReceiptUrl;  // bank/payment receipt photo (supports multiple photos)
 
     // ── Academic history ──────────────────────────────────────────────────────
     @Column(name = "grade8_score")

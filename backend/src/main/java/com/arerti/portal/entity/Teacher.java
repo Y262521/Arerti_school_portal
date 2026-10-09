@@ -61,9 +61,9 @@ public class Teacher {
     @Column(name = "photo_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
     private String photoUrl;
 
-    @Column(name = "qualification_cert_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
+    @Column(name = "qualification_cert_url", columnDefinition = "TEXT")
     private String qualificationCertUrl;
 
-    @Column(name = "id_doc_url", length = 500, columnDefinition = "VARCHAR(500) DEFAULT NULL")
+    @Column(name = "id_doc_url", columnDefinition = "TEXT")
     private String idDocUrl;
 }

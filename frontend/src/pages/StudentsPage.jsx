@@ -21,71 +21,59 @@ const STREAMS = [
 const PAYMENT_METHODS = ['TELEBIRR', 'CBE', 'BANK_TRANSFER']
 const ENROLLMENT_TYPES = ['NEW', 'TRANSFER', 'PROMOTED', 'REPEATER']
 
-function FileUploadField({ label, required, folder, value, onChange, accept = 'image/*,.pdf' }) {
-    const { t } = useLanguage()
-    const [uploading, setUploading] = useState(false)
-    const ref = useRef()
+import DocumentUploadField from '../components/DocumentUploadField'
 
-    const handleChange = async (e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setUploading(true)
-        try {
-            const url = await registrationService.uploadFile(file, folder)
-            onChange(url)
-            toast.success(`${label} ${t('uploaded')}`)
-        } catch {
-            toast.error(`${t('failedToUpload')} ${label}`)
-        } finally {
-            setUploading(false)
-        }
-    }
-
-    return (
-        <div>
-            <label className="field-label">{label} {required && <span className="text-red-500">*</span>}</label>
-            <div className="flex gap-2 items-center">
-                <button type="button" className="btn-ghost text-xs py-1.5" onClick={() => ref.current?.click()}>
-                    {uploading ? t('uploading') : value ? t('changeFile') : t('uploadFile')}
-                </button>
-                {value && (
-                    <a href={value} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">
-                        {t('view')}
-                    </a>
-                )}
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleChange} />
-            </div>
-            {required && !value && <p className="text-xs text-slate-400 mt-0.5">{t('required')}</p>}
-        </div>
-    )
+function FileUploadField(props) {
+    return <DocumentUploadField {...props} />
 }
 
 function DocItem({ url, icon, label }) {
     const { t } = useLanguage()
     if (!url) return null
-    const isImage = /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(url) || url.includes('cloudinary')
+    const urlList = url.split(',').map(u => u.trim()).filter(Boolean)
+    if (!urlList.length) return null
+
+    const isImage = (u) => /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(u) || u.includes('cloudinary')
+
     return (
-        <div className="space-y-1">
-            <p className="text-xs text-slate-500 font-medium">{icon} {label}</p>
-            {isImage ? (
-                <a href={url} target="_blank" rel="noreferrer" className="block">
-                    <img
-                        src={url}
-                        alt={label}
-                        className="h-28 w-auto max-w-[180px] rounded-lg border border-slate-200 object-cover hover:opacity-80 transition"
-                        onError={e => {
-                            e.currentTarget.style.display = 'none'
-                            e.currentTarget.nextSibling?.classList?.remove('hidden')
-                        }}
-                    />
-                    <span className="hidden text-xs text-brand hover:underline">🔗 {t('view')}</span>
-                </a>
-            ) : (
-                <a href={url} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-brand hover:underline bg-brand/5 px-3 py-1.5 rounded-lg">
-                    📄 {t('view')}
-                </a>
-            )}
+        <div className="space-y-1.5">
+            <p className="text-xs text-slate-500 font-medium">
+                {icon} {label} {urlList.length > 1 && <span className="text-[10px] text-brand font-bold bg-brand/10 px-1.5 py-0.5 rounded-full ml-1">{urlList.length} photos</span>}
+            </p>
+            <div className="flex flex-wrap gap-2">
+                {urlList.map((singleUrl, idx) => (
+                    <div key={idx} className="relative group">
+                        {isImage(singleUrl) ? (
+                            <a href={singleUrl} target="_blank" rel="noreferrer" className="block">
+                                <img
+                                    src={singleUrl}
+                                    alt={`${label} ${idx + 1}`}
+                                    className="h-24 w-24 rounded-lg border border-slate-200 object-cover group-hover:opacity-85 transition shadow-sm"
+                                    onError={e => {
+                                        e.currentTarget.style.display = 'none'
+                                        e.currentTarget.nextSibling?.classList?.remove('hidden')
+                                    }}
+                                />
+                                <span className="hidden text-xs text-brand hover:underline">🔗 {t('view')}</span>
+                                {urlList.length > 1 && (
+                                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded backdrop-blur font-mono">
+                                        #{idx + 1}
+                                    </span>
+                                )}
+                            </a>
+                        ) : (
+                            <a
+                                href={singleUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs text-brand hover:underline bg-brand/5 px-3 py-2 rounded-lg border border-brand/20"
+                            >
+                                📄 {t('view')} {urlList.length > 1 ? `#${idx + 1}` : ''}
+                            </a>
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
@@ -319,11 +307,11 @@ function StudentForm({ initial, sections, onSubmit, onClose, loading, isEdit }) 
                     <span>📁</span> {t('documentsSection')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <FileUploadField label={t('studentPhoto')} folder="student-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" />
-                    <FileUploadField label={t('idDoc') || 'Resident ID / Birth Cert'} folder="student-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} accept="image/*,.pdf" />
-                    <FileUploadField label={t('grade8Certificate')} folder="student-docs" value={form.grade8CertificateUrl} onChange={v => set('grade8CertificateUrl', v)} accept="image/*,.pdf" />
-                    <FileUploadField label={t('releaseLetter')} folder="student-docs" value={form.releaseLetterUrl} onChange={v => set('releaseLetterUrl', v)} accept="image/*,.pdf" />
-                    <FileUploadField label={t('paymentReceipt') || 'Payment Receipt'} folder="student-receipts" value={form.paymentReceiptUrl} onChange={v => set('paymentReceiptUrl', v)} accept="image/*,.pdf" />
+                    <FileUploadField label={t('studentPhoto')} folder="student-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" multiple={false} />
+                    <FileUploadField label={t('idDoc') || 'Resident ID / Birth Cert'} folder="student-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} accept="image/*,.pdf" multiple={true} />
+                    <FileUploadField label={t('grade8Certificate')} folder="student-docs" value={form.grade8CertificateUrl} onChange={v => set('grade8CertificateUrl', v)} accept="image/*,.pdf" multiple={true} />
+                    <FileUploadField label={t('releaseLetter')} folder="student-docs" value={form.releaseLetterUrl} onChange={v => set('releaseLetterUrl', v)} accept="image/*,.pdf" multiple={true} />
+                    <FileUploadField label={t('paymentReceipt') || 'Payment Receipt'} folder="student-receipts" value={form.paymentReceiptUrl} onChange={v => set('paymentReceiptUrl', v)} accept="image/*,.pdf" multiple={true} />
                 </div>
             </div>
 

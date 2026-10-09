@@ -99,15 +99,15 @@ public class Student {
     @Column(name = "photo_url", length = 500)
     private String photoUrl;
 
-    @Column(name = "id_doc_url", length = 500)
+    @Column(name = "id_doc_url", columnDefinition = "TEXT")
     private String idDocUrl;
 
-    @Column(name = "grade8_certificate_url", length = 500)
+    @Column(name = "grade8_certificate_url", columnDefinition = "TEXT")
     private String grade8CertificateUrl;
 
-    @Column(name = "release_letter_url", length = 500)
+    @Column(name = "release_letter_url", columnDefinition = "TEXT")
     private String releaseLetterUrl;
 
-    @Column(name = "payment_receipt_url", length = 500)
+    @Column(name = "payment_receipt_url", columnDefinition = "TEXT")
     private String paymentReceiptUrl;
 }

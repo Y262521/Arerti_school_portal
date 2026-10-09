@@ -19,39 +19,11 @@ const EMPTY = {
     photoUrl: '', qualificationCertUrl: '', idDocUrl: ''
 }
 
+import DocumentUploadField from '../components/DocumentUploadField'
+
 // ── File upload field ──────────────────────────────────────────────────────────
-function FileUploadField({ label, required, folder, value, onChange, accept = 'image/*,.pdf' }) {
-    const { t } = useLanguage()
-    const [uploading, setUploading] = useState(false)
-    const ref = useRef()
-    const handleChange = async (e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setUploading(true)
-        try {
-            const url = await registrationService.uploadFile(file, folder)
-            onChange(url)
-            toast.success(`${label} ${t('uploaded')}`)
-        } catch { toast.error(`${t('failedToUpload')} ${label}`) }
-        finally { setUploading(false) }
-    }
-    return (
-        <div>
-            <label className="field-label">{label} {required && <span className="text-red-500">*</span>}</label>
-            <div className="flex gap-2 items-center">
-                <button type="button" className="btn-ghost text-xs py-1.5" onClick={() => ref.current?.click()}>
-                    {uploading ? t('uploading') : value ? t('changeFile') : t('uploadFile')}
-                </button>
-                {value && (
-                    <a href={value} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">
-                        {t('view')}
-                    </a>
-                )}
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleChange} />
-            </div>
-            {required && !value && <p className="text-xs text-slate-400 mt-0.5">{t('required')}</p>}
-        </div>
-    )
+function FileUploadField(props) {
+    return <DocumentUploadField {...props} />
 }
 
 // ── Credentials display after successful registration ─────────────────────────
@@ -205,13 +177,14 @@ function TeacherRegistrationForm({ onSuccess }) {
             {/* Documents */}
             <div className="card space-y-4">
                 <h3 className="font-semibold text-slate-700 text-sm border-b border-slate-100 pb-2">{t('documentsSection')}</h3>
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FileUploadField
                         label={t('teacherPhoto')}
                         folder="teacher-photos"
                         value={form.photoUrl}
                         onChange={v => set('photoUrl', v)}
                         accept="image/jpeg,image/png"
+                        multiple={false}
                     />
                     <FileUploadField
                         label={t('qualificationCert')}
@@ -219,6 +192,7 @@ function TeacherRegistrationForm({ onSuccess }) {
                         value={form.qualificationCertUrl}
                         onChange={v => set('qualificationCertUrl', v)}
                         accept="image/*,.pdf"
+                        multiple={true}
                     />
                     <FileUploadField
                         label={t('idDocument')}
@@ -226,6 +200,7 @@ function TeacherRegistrationForm({ onSuccess }) {
                         value={form.idDocUrl}
                         onChange={v => set('idDocUrl', v)}
                         accept="image/*,.pdf"
+                        multiple={true}
                     />
                 </div>
             </div>

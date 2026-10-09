@@ -21,32 +21,11 @@ const PAYMENT_METHODS = [
 
 const RELATIONSHIP_OPTS = ['Mother','Father','Uncle','Aunt','Other']
 
+import DocumentUploadField from '../components/DocumentUploadField'
+
 // ── File upload field ──────────────────────────────────────────────────────────
-function FileUploadField({ label, required, folder, value, onChange, accept = 'image/*,.pdf' }) {
-    const { t } = useLanguage()
-    const [uploading, setUploading] = useState(false)
-    const ref = useRef()
-    const handleChange = async (e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setUploading(true)
-        try { const url = await registrationService.uploadFile(file, folder); onChange(url); toast.success(`${label} ${t('uploaded')}`) }
-        catch { toast.error(`${t('failedToUpload')} ${label}`) }
-        finally { setUploading(false) }
-    }
-    return (
-        <div>
-            <label className="field-label">{label} {required && <span className="text-red-500">*</span>}</label>
-            <div className="flex gap-2 items-center">
-                <button type="button" className="btn-ghost text-xs py-1.5" onClick={() => ref.current?.click()}>
-                    {uploading ? t('uploading') : value ? t('changeFile') : t('uploadFile')}
-                </button>
-                {value && <a href={value} target="_blank" rel="noreferrer" className="text-xs text-brand hover:underline">{t('view')}</a>}
-                <input ref={ref} type="file" accept={accept} className="hidden" onChange={handleChange} />
-            </div>
-            {required && !value && <p className="text-xs text-slate-400 mt-0.5">{t('required')}</p>}
-        </div>
-    )
+function FileUploadField(props) {
+    return <DocumentUploadField {...props} />
 }
 
 // ── Step indicator ─────────────────────────────────────────────────────────────
@@ -218,12 +197,12 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                         <div><label className="field-label">{t('houseNo')}</label>
                             <input className="field" value={form.houseNo} onChange={e => set('houseNo', e.target.value)} /></div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <F field="photoUrl" errors={errors}>
-                            <FileUploadField label={`${t('studentPhoto')} *`} required folder="student-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" />
+                            <FileUploadField label={`${t('studentPhoto')} *`} required folder="student-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" multiple={false} />
                         </F>
                         <F field="idDocUrl" errors={errors}>
-                            <FileUploadField label={`${t('idDocument')} *`} required folder="id-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} />
+                            <FileUploadField label={`${t('idDocument')} *`} required folder="id-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} multiple={true} />
                         </F>
                     </div>
                 </div>
@@ -246,13 +225,13 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                                 <option value="SOCIAL_SCIENCE">{t('socialScience')}</option>
                             </select></F>
                     )}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <F field="grade8CertificateUrl" errors={errors}>
-                            <FileUploadField label={`${t('grade8Certificate')} *`} required folder="certificates" value={form.grade8CertificateUrl} onChange={v => set('grade8CertificateUrl', v)} />
+                            <FileUploadField label={`${t('grade8Certificate')} *`} required folder="certificates" value={form.grade8CertificateUrl} onChange={v => set('grade8CertificateUrl', v)} multiple={true} />
                         </F>
                         {enrollmentType === 'TRANSFER' && (
                             <F field="releaseLetterUrl" errors={errors}>
-                                <FileUploadField label={`${t('releaseLetter')} *`} required folder="release-letters" value={form.releaseLetterUrl} onChange={v => set('releaseLetterUrl', v)} />
+                                <FileUploadField label={`${t('releaseLetter')} *`} required folder="release-letters" value={form.releaseLetterUrl} onChange={v => set('releaseLetterUrl', v)} multiple={true} />
                             </F>
                         )}
                     </div>
@@ -291,7 +270,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
                             <input className={`field ${errors.bankTransactionRef ? 'border-red-400' : ''}`} value={form.bankTransactionRef} placeholder="e.g. REC-2026-001234" onChange={e => set('bankTransactionRef', e.target.value)} /></F>
                     </div>
                     <F field="paymentReceiptUrl" errors={errors}>
-                        <FileUploadField label={`${t('paymentReceipt')} *`} required folder="payment-receipts" value={form.paymentReceiptUrl} onChange={v => set('paymentReceiptUrl', v)} accept="image/jpeg,image/png,application/pdf" />
+                        <FileUploadField label={`${t('paymentReceipt')} *`} required folder="payment-receipts" value={form.paymentReceiptUrl} onChange={v => set('paymentReceiptUrl', v)} accept="image/jpeg,image/png,application/pdf" multiple={true} />
                     </F>
                     {/* Summary */}
                     <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 text-sm space-y-1">
