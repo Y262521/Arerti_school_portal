@@ -610,10 +610,10 @@ const translations = {
     loginBrandTitle1: 'Arerti General Secondary',
     loginBrandTitle2: '& Preparatory School',
     loginDigitalPortal: 'Digital Portal',
-    loginErrorFallback: 'Login failed — check your ID and password',
+    loginErrorFallback: 'Please enter valid user name and password!',
     loginWelcome: 'Welcome,',
     copyrightText: 'Arerti General Secondary & Preparatory School',
-    pleaseUseEmail: 'Please fill email and password to login',
+    pleaseUseEmail: 'Please enter user name and password!',
     networkError: 'Please check your internet connection.',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────
@@ -1291,10 +1291,10 @@ const translations = {
     loginBrandTitle1: 'አረርቲ አጠቃላይ ሁለተኛ ደረጃ',
     loginBrandTitle2: 'እና ቅድመ-ዩኒቨርሲቲ ትምህርት ቤት',
     loginDigitalPortal: 'ዲጂታል ፖርታል',
-    loginErrorFallback: 'መግቢያ አልተቻለም — ​​ID እና የይለፍ ቃልዎን ያረጋግጡ',
+    loginErrorFallback: 'እባክዎ ትክክለኛ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!',
     loginWelcome: 'እንኳን ደህና መጡ,',
     copyrightText: 'አረርቲ አጠቃላይ ሁለተኛ ደረጃ እና ቅድመ-ዩኒቨርሲቲ ትምህርት ቤት',
-    pleaseUseEmail: 'ለመግባት ኢሜይል እና የይለፍ ቃል ይሙሉ',
+    pleaseUseEmail: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!',
     networkError: 'የኢንተርኔት ግንኙነትዎን ያረጋግጡ።',
 
     // ── Missing from Dashboards ─────────────────────────────────────────────

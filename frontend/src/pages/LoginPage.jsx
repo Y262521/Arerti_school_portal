@@ -35,26 +35,35 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const onChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  const onChange = (e) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    if (errorMessage) setErrorMessage('')
+  }
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    if (!form.username || !form.password) {
-      toast.error(t('pleaseUseEmail'))
+
+    // Rule 1: If neither field or only one field is filled
+    if (!form.username?.trim() || !form.password?.trim()) {
+      setErrorMessage(t('pleaseUseEmail'))
       return
     }
+
+    setErrorMessage('')
     setLoading(true)
+
     try {
-      const data = await login(form.username, form.password)
+      const data = await login(form.username.trim(), form.password)
       toast.success(`${t('loginWelcome')} ${data.fullName}!`)
       navigate(from || HOME_BY_ROLE[data.role] || '/', { replace: true })
     } catch (err) {
-      // No response = network/connection problem (offline or server unreachable)
+      // Rule 2 & 3: Network offline or invalid credentials
       if (!err.response) {
-        toast.error(t('networkError'))
+        setErrorMessage(t('networkError'))
       } else {
-        toast.error(err.response?.data?.message || t('loginErrorFallback'))
+        setErrorMessage(t('loginErrorFallback'))
       }
     } finally {
       setLoading(false)
@@ -62,60 +71,83 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-dark via-brand to-brand-light text-white flex-col justify-between p-12">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-50">
+      {/* ── Mobile top green branded section (visible on mobile & tablets < lg) ── */}
+      <div className="lg:hidden bg-gradient-to-br from-brand-dark via-brand to-brand-light text-white px-6 pt-8 pb-10 shadow-md text-center">
+        <div className="flex flex-col items-center max-w-sm mx-auto">
+          <img
+            src="/logo.png"
+            className="h-28 w-28 rounded-full bg-white p-2 shadow-xl shrink-0 object-contain mb-3 border-2 border-white/20"
+            alt="Arerti School Logo"
+          />
+          <h1 className="font-display text-xl sm:text-2xl font-bold leading-tight">
+            {t('loginBrandTitle1')} {t('loginBrandTitle2')}
+          </h1>
+          <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mt-2 backdrop-blur-sm">
+            {t('loginDigitalPortal')}
+          </span>
+          <p className="mt-2.5 text-xs sm:text-sm text-white/90">
+            {t('welcomeSubtitle')}
+          </p>
+        </div>
+      </div>
+
+      {/* ── Desktop left brand panel (visible on lg and larger screens) ── */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-dark via-brand to-brand-light text-white flex-col justify-between p-12 xl:p-16">
         <div>
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" className="h-14 w-14 rounded-full bg-white p-1 shrink-0" alt="logo" />
+          <div className="flex items-center gap-4">
+            <img
+              src="/logo.png"
+              className="h-24 w-24 rounded-full bg-white p-2 shrink-0 shadow-lg object-contain border-2 border-white/20"
+              alt="Arerti School Logo"
+            />
             <div>
-              <div className="font-display text-xl font-bold leading-tight">{t('loginBrandTitle1')}</div>
-              <div className="font-display text-xl font-bold leading-tight">{t('loginBrandTitle2')}</div>
-              <div className="text-sm text-white/80 mt-1">{t('loginDigitalPortal')}</div>
+              <div className="font-display text-2xl font-bold leading-tight">{t('loginBrandTitle1')}</div>
+              <div className="font-display text-2xl font-bold leading-tight">{t('loginBrandTitle2')}</div>
+              <div className="text-sm text-white/80 mt-1 font-medium">{t('loginDigitalPortal')}</div>
             </div>
           </div>
         </div>
+
         <div>
           <h1 className="font-display text-4xl xl:text-5xl font-bold leading-tight">
             {t('welcomeTitle')}
           </h1>
-          <p className="mt-4 text-white/80 max-w-md">
+          <p className="mt-4 text-white/85 text-base max-w-md leading-relaxed">
             {t('welcomeSubtitle')}
           </p>
           <div className="mt-8 grid grid-cols-2 gap-4 max-w-md text-sm">
-            <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">{t('forDirectors')}</div>
-              <div className="text-white/70 text-xs">{t('manageSchool')}</div>
+            <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur border border-white/10">
+              <div className="font-semibold text-white">{t('forDirectors')}</div>
+              <div className="text-white/70 text-xs mt-0.5">{t('manageSchool')}</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">{t('forTeachers')}</div>
-              <div className="text-white/70 text-xs">{t('gradesAttendance')}</div>
+            <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur border border-white/10">
+              <div className="font-semibold text-white">{t('forTeachers')}</div>
+              <div className="text-white/70 text-xs mt-0.5">{t('gradesAttendance')}</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">{t('forStudents')}</div>
-              <div className="text-white/70 text-xs">{t('viewResults')}</div>
+            <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur border border-white/10">
+              <div className="font-semibold text-white">{t('forStudents')}</div>
+              <div className="text-white/70 text-xs mt-0.5">{t('viewResults')}</div>
             </div>
-            <div className="rounded-lg bg-white/10 p-3 backdrop-blur">
-              <div className="font-semibold">{t('forParents')}</div>
-              <div className="text-white/70 text-xs">{t('trackChild')}</div>
+            <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur border border-white/10">
+              <div className="font-semibold text-white">{t('forParents')}</div>
+              <div className="text-white/70 text-xs mt-0.5">{t('trackChild')}</div>
             </div>
           </div>
         </div>
+
         <div className="text-xs text-white/60">
           © {new Date().getFullYear()} {t('copyrightText')}
         </div>
       </div>
 
-      {/* Right form panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden flex justify-center mb-6">
-            <img src="/logo.png" alt="logo" className="h-16 w-16 rounded-full" />
-          </div>
-          <h2 className="font-display text-3xl font-bold text-slate-900">{t('signIn')}</h2>
-          <p className="text-slate-500 mt-1">{t('signInSubtitle')}</p>
+      {/* ── Form panel (centered on desktop, clean card on mobile) ── */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 -mt-4 lg:mt-0">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl lg:shadow-none p-6 sm:p-8 border border-slate-100 lg:border-none lg:bg-transparent">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">{t('signIn')}</h2>
+          <p className="text-slate-500 mt-1 text-sm">{t('signInSubtitle')}</p>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 {t('usernameEmail')}
@@ -156,19 +188,27 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={loading} className="btn-primary w-full">
+            <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 text-sm font-semibold">
               {loading ? t('signingIn') : t('signIn')}
             </button>
           </form>
+
+          {/* ── Error message displayed directly BELOW the form ── */}
+          {errorMessage && (
+            <div className="mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5 animate-fadeIn">
+              <span className="text-base leading-none mt-0.5">⚠️</span>
+              <span className="font-medium flex-1">{errorMessage}</span>
+            </div>
+          )}
 
           <p className="mt-6 text-xs text-slate-500 text-center">
             {t('troubleSignIn')}
           </p>
 
-          {/* Language toggle on login page */}
+          {/* Language toggle */}
           <div className="mt-4 flex justify-center">
             <button onClick={toggleLang}
-              className="text-xs text-slate-400 hover:text-brand transition">
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand hover:text-brand text-slate-600 transition">
               {lang === 'en' ? '🇪🇹 አማርኛ' : '🇬🇧 English'}
             </button>
           </div>
