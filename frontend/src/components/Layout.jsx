@@ -172,7 +172,7 @@ export default function Layout({ children }) {
 
           {/* Logo & School Name */}
           <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 mr-2 min-w-0">
-            <img src="/logo.png" alt="Arerti" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0 shadow-sm" />
+            <img src="/logo.png" alt="Arerti" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-contain shrink-0 shadow-sm" />
             <div className="leading-tight min-w-0">
               <div className="font-display font-bold text-brand text-xs sm:text-sm whitespace-nowrap">Arerti General Secondary</div>
               <div className="font-display font-bold text-brand text-[10px] sm:text-xs whitespace-nowrap text-slate-500">& Preparatory School</div>

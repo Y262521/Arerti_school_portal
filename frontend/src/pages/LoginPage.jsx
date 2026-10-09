@@ -77,7 +77,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center max-w-sm mx-auto">
           <img
             src="/logo.png"
-            className="h-28 w-28 rounded-full bg-white p-2 shadow-xl shrink-0 object-contain mb-3 border-2 border-white/20"
+            className="h-28 w-28 sm:h-32 sm:w-32 shrink-0 object-contain drop-shadow-lg mb-3"
             alt="Arerti School Logo"
           />
           <h1 className="font-display text-xl sm:text-2xl font-bold leading-tight">
@@ -98,7 +98,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-4">
             <img
               src="/logo.png"
-              className="h-24 w-24 rounded-full bg-white p-2 shrink-0 shadow-lg object-contain border-2 border-white/20"
+              className="h-24 w-24 xl:h-28 xl:w-28 shrink-0 object-contain drop-shadow-lg"
               alt="Arerti School Logo"
             />
             <div>
