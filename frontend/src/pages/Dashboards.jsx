@@ -65,7 +65,7 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-        <NavCard to="/admin/registration" labelKey="studentRegistrationCard" descKey="studentRegistrationDesc" highlight />
+        <NavCard to="/admin/registration" labelKey="studentRegistrationCard" descKey="studentRegistrationDesc" />
         <NavCard to="/admin/grades" labelKey="gradebookCard" descKey="gradebookDesc" />
         <NavCard to="/admin/attendance" labelKey="attendanceCard" descKey="attendanceDesc" />
         <NavCard to="/admin/subjects" labelKey="subjectsCard" descKey="subjectsDesc" />
