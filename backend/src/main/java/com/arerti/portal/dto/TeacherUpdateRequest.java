@@ -1,15 +1,27 @@
 package com.arerti.portal.dto;
 
 import jakarta.validation.constraints.*;
-
 import java.time.LocalDate;
 
 /** Update existing teacher — username stays the same, password optional. */
 public record TeacherUpdateRequest(
         @NotBlank @Email String email,
-        @NotBlank String fullName,
+        String fullName,
+        String firstName,
+        String fatherName,
+        String grandfatherName,
+        String gender,
+        LocalDate dateOfBirth,
         String phone,
-        String qualification,
+        String region,
+        String city,
+        String kebele,
+        String houseNo,
+        @NotBlank String qualification,
         String specialization,
-        LocalDate hireDate
+        LocalDate hireDate,
+        String photoUrl,
+        String qualificationCertUrl,
+        String idDocUrl
 ) {}
+

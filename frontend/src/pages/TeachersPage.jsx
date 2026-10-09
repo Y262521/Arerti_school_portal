@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { teacherService } from '../services/teacherService'
 import Modal from '../components/Modal'
@@ -388,24 +388,36 @@ export default function TeachersPage() {
             </div>
 
             {modal?.mode === 'detail' && (
-                <Modal title={t('teacherDetails')} onClose={() => setModal(null)}>
+                <Modal title={t('teacherDetails')} onClose={() => setModal(null)} size="lg">
                     <TeacherDetailModal teacher={modal.teacher} onClose={() => setModal(null)} onEdit={() => setModal({ mode: 'edit', teacher: modal.teacher })} />
                 </Modal>
             )}
 
             {(modal?.mode === 'add' || modal?.mode === 'edit') && (
-                <Modal title={modal.mode === 'add' ? t('registerTeacher') : t('editTeacher')} onClose={() => setModal(null)}>
+                <Modal title={modal.mode === 'add' ? t('registerTeacher') : t('editTeacher')} onClose={() => setModal(null)} size="xl">
                     <TeacherForm
-                        initial={modal.mode === 'edit' ? {
-                            firstName: modal.teacher.firstName || '', fatherName: modal.teacher.fatherName || '',
-                            grandfatherName: modal.teacher.grandfatherName || '', gender: modal.teacher.gender || '',
-                            dateOfBirth: '', email: modal.teacher.email || '', phone: modal.teacher.phone || '',
-                            region: modal.teacher.region || '', city: modal.teacher.city || '',
-                            kebele: modal.teacher.kebele || '', houseNo: modal.teacher.houseNo || '',
-                            qualification: modal.teacher.qualification || '', specialization: modal.teacher.specialization || '',
-                            hireDate: modal.teacher.hireDate || '', photoUrl: modal.teacher.photoUrl || '',
-                            qualificationCertUrl: modal.teacher.qualificationCertUrl || '', idDocUrl: modal.teacher.idDocUrl || '',
-                        } : EMPTY}
+                        initial={modal.mode === 'edit' ? (() => {
+                            const nameParts = (modal.teacher.fullName || '').trim().split(/\s+/)
+                            return {
+                                firstName: modal.teacher.firstName || nameParts[0] || '',
+                                fatherName: modal.teacher.fatherName || nameParts[1] || '',
+                                grandfatherName: modal.teacher.grandfatherName || nameParts[2] || '',
+                                gender: modal.teacher.gender || '',
+                                dateOfBirth: modal.teacher.dateOfBirth || '',
+                                email: modal.teacher.email || '',
+                                phone: modal.teacher.phone || '',
+                                region: modal.teacher.region || '',
+                                city: modal.teacher.city || '',
+                                kebele: modal.teacher.kebele || '',
+                                houseNo: modal.teacher.houseNo || '',
+                                qualification: modal.teacher.qualification || '',
+                                specialization: modal.teacher.specialization || '',
+                                hireDate: modal.teacher.hireDate || '',
+                                photoUrl: modal.teacher.photoUrl || '',
+                                qualificationCertUrl: modal.teacher.qualificationCertUrl || '',
+                                idDocUrl: modal.teacher.idDocUrl || '',
+                            }
+                        })() : EMPTY}
                         onSubmit={handleSave} onClose={() => setModal(null)} loading={saving} isEdit={modal.mode === 'edit'}
                     />
                 </Modal>

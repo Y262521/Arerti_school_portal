@@ -75,6 +75,11 @@ public class TeacherService {
                 .fatherName(req.fatherName())
                 .grandfatherName(req.grandfatherName())
                 .gender(req.gender())
+                .dateOfBirth(req.dateOfBirth())
+                .region(req.region())
+                .city(req.city())
+                .kebele(req.kebele())
+                .houseNo(req.houseNo())
                 .qualification(req.qualification())
                 .specialization(req.specialization())
                 .hireDate(req.hireDate() != null ? req.hireDate() : LocalDate.now())
@@ -96,14 +101,33 @@ public class TeacherService {
         if (!user.getEmail().equals(req.email()) && userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
+        String fullName = req.fullName();
+        if ((fullName == null || fullName.isBlank()) && req.firstName() != null) {
+            fullName = (req.firstName() + " " + (req.fatherName() != null ? req.fatherName() : "")).trim();
+        }
+
         user.setEmail(req.email());
-        user.setFullName(req.fullName());
+        if (fullName != null && !fullName.isBlank()) {
+            user.setFullName(fullName);
+        }
         user.setPhone(req.phone());
         userRepository.save(user);
 
+        if (req.firstName() != null) teacher.setFirstName(req.firstName());
+        if (req.fatherName() != null) teacher.setFatherName(req.fatherName());
+        if (req.grandfatherName() != null) teacher.setGrandfatherName(req.grandfatherName());
+        if (req.gender() != null) teacher.setGender(req.gender());
+        teacher.setDateOfBirth(req.dateOfBirth());
+        teacher.setRegion(req.region());
+        teacher.setCity(req.city());
+        teacher.setKebele(req.kebele());
+        teacher.setHouseNo(req.houseNo());
         teacher.setQualification(req.qualification());
         teacher.setSpecialization(req.specialization());
         if (req.hireDate() != null) teacher.setHireDate(req.hireDate());
+        if (req.photoUrl() != null) teacher.setPhotoUrl(req.photoUrl());
+        if (req.qualificationCertUrl() != null) teacher.setQualificationCertUrl(req.qualificationCertUrl());
+        if (req.idDocUrl() != null) teacher.setIdDocUrl(req.idDocUrl());
         teacherRepository.save(teacher);
 
         return TeacherResponse.from(teacher);

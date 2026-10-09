@@ -14,6 +14,8 @@ public interface EnrollmentRecordRepository extends JpaRepository<EnrollmentReco
 
     Optional<EnrollmentRecord> findByStudentAndAcademicYear(Student student, String academicYear);
 
+    Optional<EnrollmentRecord> findTopByStudentOrderByIdDesc(Student student);
+
     List<EnrollmentRecord> findByAcademicYearAndGradeOrderByCreatedAtDesc(String academicYear, Integer grade);
 
     List<EnrollmentRecord> findByAcademicYearOrderByCreatedAtDesc(String academicYear);

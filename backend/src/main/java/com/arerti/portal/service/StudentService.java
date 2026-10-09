@@ -6,6 +6,8 @@ import com.arerti.portal.dto.StudentResponse;
 import com.arerti.portal.entity.Role;
 import com.arerti.portal.entity.Student;
 import com.arerti.portal.entity.User;
+import com.arerti.portal.entity.EnrollmentRecord;
+import com.arerti.portal.repository.EnrollmentRecordRepository;
 import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
@@ -28,26 +30,32 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final GradeSectionRepository gradeSectionRepository;
+    private final EnrollmentRecordRepository enrollmentRecordRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
 
     public List<StudentResponse> findAll() {
         return studentRepository.findAll().stream()
-                .map(s -> StudentResponse.from(s, sectionLabel(s.getSectionId())))
+                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public StudentResponse findById(Long id) {
         Student s = studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
-        return StudentResponse.from(s, sectionLabel(s.getSectionId()));
+        return toResponse(s);
     }
 
     public StudentResponse findByUsername(String username) {
         Student s = studentRepository.findByUser_Username(username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Your student profile is not set up yet. Contact the administrator."));
-        return StudentResponse.from(s, sectionLabel(s.getSectionId()));
+        return toResponse(s);
+    }
+
+    private StudentResponse toResponse(Student s) {
+        EnrollmentRecord rec = enrollmentRecordRepository.findTopByStudentOrderByIdDesc(s).orElse(null);
+        return StudentResponse.from(s, sectionLabel(s.getSectionId()), rec);
     }
 
     @Transactional
@@ -105,20 +113,80 @@ public class StudentService {
         if (!user.getEmail().equals(req.email()) && userRepository.existsByEmail(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
+        String fullName = req.fullName();
+        if ((fullName == null || fullName.isBlank()) && req.firstName() != null) {
+            fullName = (req.firstName() + " " + (req.fatherName() != null ? req.fatherName() : "")).trim();
+        }
+
         user.setEmail(req.email());
-        user.setFullName(req.fullName());
+        if (fullName != null && !fullName.isBlank()) {
+            user.setFullName(fullName);
+        }
         user.setPhone(req.phone());
         userRepository.save(user);
 
+        if (req.firstName() != null) student.setFirstName(req.firstName());
+        if (req.fatherName() != null) student.setFatherName(req.fatherName());
+        if (req.grandfatherName() != null) student.setGrandfatherName(req.grandfatherName());
         student.setDateOfBirth(req.dateOfBirth());
         student.setGender(req.gender());
+        student.setRegion(req.region());
+        student.setCity(req.city());
+        student.setKebele(req.kebele());
+        student.setHouseNo(req.houseNo());
         student.setGuardianName(req.parentName());
+        student.setParentRelationship(req.parentRelationship());
         student.setGuardianPhone(req.parentPhone());
         if (req.enrollmentYear() != null) student.setEnrollmentYear(req.enrollmentYear());
+        student.setAcademicYear(req.academicYear());
+        if (req.grade() != null) student.setGrade(req.grade());
         student.setSectionId(req.sectionId());
+        student.setCurrentStream(req.stream());
+        if (req.enrollmentType() != null) student.setEnrollmentType(req.enrollmentType());
+        student.setPreviousSchool(req.previousSchool());
+        student.setGrade8Score(req.grade8Score());
+        student.setPaymentMethod(req.paymentMethod());
+        student.setBankTransactionRef(req.bankTransactionRef());
+        if (req.photoUrl() != null) student.setPhotoUrl(req.photoUrl());
+        if (req.idDocUrl() != null) student.setIdDocUrl(req.idDocUrl());
+        if (req.grade8CertificateUrl() != null) student.setGrade8CertificateUrl(req.grade8CertificateUrl());
+        if (req.releaseLetterUrl() != null) student.setReleaseLetterUrl(req.releaseLetterUrl());
+        if (req.paymentReceiptUrl() != null) student.setPaymentReceiptUrl(req.paymentReceiptUrl());
         studentRepository.save(student);
 
-        return StudentResponse.from(student, sectionLabel(student.getSectionId()));
+        // Also update latest enrollment record if it exists
+        enrollmentRecordRepository.findTopByStudentOrderByIdDesc(student).ifPresent(rec -> {
+            if (req.firstName() != null) rec.setFirstName(req.firstName());
+            if (req.fatherName() != null) rec.setFatherName(req.fatherName());
+            if (req.grandfatherName() != null) rec.setGrandfatherName(req.grandfatherName());
+            if (req.gender() != null) rec.setGender(req.gender());
+            rec.setDateOfBirth(req.dateOfBirth());
+            rec.setRegion(req.region());
+            rec.setCity(req.city());
+            rec.setKebele(req.kebele());
+            rec.setHouseNo(req.houseNo());
+            rec.setParentName(req.parentName());
+            rec.setParentRelationship(req.parentRelationship());
+            rec.setParentPhone(req.parentPhone());
+            if (req.academicYear() != null) rec.setAcademicYear(req.academicYear());
+            if (req.grade() != null) rec.setGrade(req.grade());
+            if (req.stream() != null) rec.setStream(req.stream());
+            rec.setPreviousSchool(req.previousSchool());
+            rec.setGrade8Score(req.grade8Score());
+            rec.setPaymentMethod(req.paymentMethod());
+            rec.setBankTransactionRef(req.bankTransactionRef());
+            if (req.photoUrl() != null) rec.setPhotoUrl(req.photoUrl());
+            if (req.idDocUrl() != null) rec.setIdDocUrl(req.idDocUrl());
+            if (req.grade8CertificateUrl() != null) rec.setGrade8CertificateUrl(req.grade8CertificateUrl());
+            if (req.releaseLetterUrl() != null) rec.setReleaseLetterUrl(req.releaseLetterUrl());
+            if (req.paymentReceiptUrl() != null) rec.setPaymentReceiptUrl(req.paymentReceiptUrl());
+            enrollmentRecordRepository.save(rec);
+        });
+
+        auditService.log(actorUsername(), actorRole(), "UPDATE", "STUDENT", student.getStudentUid(),
+                "Updated student " + student.getStudentUid() + " (" + user.getFullName() + ")");
+
+        return toResponse(student);
     }
 
     @Transactional

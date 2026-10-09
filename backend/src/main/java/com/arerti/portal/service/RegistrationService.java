@@ -220,19 +220,33 @@ public class RegistrationService {
                 .build();
         userRepository.save(user);
 
-        Student student = Student.builder()
-                .studentUid(uid).user(user)
-                .dateOfBirth(req.dateOfBirth()).gender(req.gender())
-                .guardianName(req.parentName()).guardianPhone(req.parentPhone())
-                .enrollmentYear(Year.now().getValue())
-                .sectionId(req.sectionId())  // null if not assigned yet
-                .currentStream(req.stream())
-                .photoUrl(req.photoUrl())
-                .build();
-        studentRepository.save(student);
-
         int grade = section != null ? section.getGrade() : req.targetGrade();
         String academicYear = section != null ? section.getAcademicYear() : req.academicYear();
+
+        Student student = Student.builder()
+                .studentUid(uid).user(user)
+                .firstName(req.firstName()).fatherName(req.fatherName()).grandfatherName(req.grandfatherName())
+                .dateOfBirth(req.dateOfBirth()).gender(req.gender())
+                .region(req.region()).city(req.city()).kebele(req.kebele()).houseNo(req.houseNo())
+                .guardianName(req.parentName()).guardianPhone(req.parentPhone())
+                .parentRelationship(req.parentRelationship())
+                .enrollmentYear(Year.now().getValue())
+                .academicYear(academicYear)
+                .grade(grade)
+                .enrollmentType(type.name())
+                .sectionId(req.sectionId())  // null if not assigned yet
+                .currentStream(req.stream())
+                .previousSchool(req.previousSchool())
+                .grade8Score(req.grade8Score())
+                .paymentMethod(req.paymentMethod())
+                .bankTransactionRef(req.bankTransactionRef())
+                .photoUrl(req.photoUrl())
+                .idDocUrl(req.idDocUrl())
+                .grade8CertificateUrl(req.grade8CertificateUrl())
+                .releaseLetterUrl(req.releaseLetterUrl())
+                .paymentReceiptUrl(req.paymentReceiptUrl())
+                .build();
+        studentRepository.save(student);
 
         EnrollmentRecord record = EnrollmentRecord.builder()
                 .student(student).academicYear(academicYear)

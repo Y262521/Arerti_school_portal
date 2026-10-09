@@ -32,6 +32,21 @@ public class Teacher {
     @Column(length = 10, columnDefinition = "VARCHAR(10) DEFAULT NULL")
     private String gender;
 
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(length = 80)
+    private String region;
+
+    @Column(length = 80)
+    private String city;
+
+    @Column(length = 80)
+    private String kebele;
+
+    @Column(name = "house_no", length = 30)
+    private String houseNo;
+
     // ── Academic ────────────────────────────────────────────────────────────────
     @Column(length = 80)
     private String qualification;
