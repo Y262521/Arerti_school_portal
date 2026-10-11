@@ -4,6 +4,7 @@ import com.arerti.portal.dto.AuthResponse;
 import com.arerti.portal.dto.ChangePasswordRequest;
 import com.arerti.portal.dto.LoginRequest;
 import com.arerti.portal.dto.RegisterRequest;
+import com.arerti.portal.entity.Role;
 import com.arerti.portal.entity.User;
 import com.arerti.portal.repository.UserRepository;
 import com.arerti.portal.security.JwtService;
