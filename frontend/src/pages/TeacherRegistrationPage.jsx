@@ -304,7 +304,10 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
 function CredentialsModal({ student, onClose }) {
     const { t } = useLanguage()
     const [copied, setCopied] = useState(false)
-    const text = `Name: ${student.fullName}\nUID: ${student.studentUid}\nUsername: ${student.generatedUsername}\nPassword: ${student.generatedPassword}`
+    let text = `Name: ${student.fullName}\nUID: ${student.studentUid}\nStudent Username: ${student.generatedUsername}\nStudent Password: ${student.generatedPassword}`
+    if (student.generatedParentUsername) {
+        text += `\n\nParent Account:\nUsername: ${student.generatedParentUsername}\nPassword: ${student.generatedParentPassword}`
+    }
     const copy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
     return (
         <div className="space-y-4">
@@ -313,11 +316,21 @@ function CredentialsModal({ student, onClose }) {
             </div>
             {student.photoUrl && <img src={student.photoUrl} alt="Student" className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 mx-auto" />}
             <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
+                <p className="font-sans font-semibold text-slate-700 text-xs uppercase tracking-wider mb-1">🎓 {t('studentCredentials')}</p>
                 <p><span className="text-slate-500">{t('nameLabel')}:</span> <strong>{student.fullName}</strong></p>
                 <p><span className="text-slate-500">UID:</span> <strong>{student.studentUid}</strong></p>
                 <p><span className="text-slate-500">{t('username')}:</span> <strong>{student.generatedUsername}</strong></p>
                 <p><span className="text-slate-500">{t('password')}:</span> <strong>{student.generatedPassword}</strong></p>
             </div>
+            {student.generatedParentUsername && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 font-mono text-sm space-y-1">
+                    <p className="font-sans font-semibold text-emerald-800 text-xs uppercase tracking-wider mb-1">👨‍👩‍👧 {t('parentAccountCredentials')}</p>
+                    <p><span className="text-slate-500">{t('username')}:</span> <strong>{student.generatedParentUsername}</strong></p>
+                    {student.generatedParentPassword && (
+                        <p><span className="text-slate-500">{t('password')}:</span> <strong>{student.generatedParentPassword}</strong></p>
+                    )}
+                </div>
+            )}
             <p className="text-xs text-slate-500">{t('passwordShownOnce')}</p>
             <div className="flex justify-end gap-2">
                 <button className="btn-ghost" onClick={copy}>{copied ? `✓ ${t('copied')}` : t('copyToClipboard')}</button>
@@ -465,7 +478,12 @@ export default function TeacherRegistrationPage() {
         Promise.all([registrationService.getMyWindow(), classService.getAll()])
             .then(([w, secs]) => {
                 setWindow_(w); setSections(secs)
-                if (w) { const grades = w.assignments?.[0]?.allowedGradeList || []; if (grades.length === 1) setSelectedGrade(grades[0]) }
+                if (w) {
+                    const grades = Array.from(new Set(
+                        (w.assignments || []).flatMap(a => a.allowedGradeList || [])
+                    )).sort((a, b) => a - b)
+                    if (grades.length === 1) setSelectedGrade(grades[0])
+                }
             })
             .catch(() => {})
             .finally(() => setLoading(false))
@@ -484,8 +502,9 @@ export default function TeacherRegistrationPage() {
         </div>
     )
 
-    const myAssignment = window_.assignments?.[0]
-    const allowedGrades = myAssignment?.allowedGradeList || []
+    const allowedGrades = Array.from(new Set(
+        (window_.assignments || []).flatMap(a => a.allowedGradeList || [])
+    )).sort((a, b) => a - b)
     const newYear = window_.academicYear
     const prevYear = (() => { const [start] = newYear.split('/'); return `${Number(start) - 1}/${start}` })()
 

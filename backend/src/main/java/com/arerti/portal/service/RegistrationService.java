@@ -31,6 +31,7 @@ public class RegistrationService {
     private final PassingCriteriaService passingCriteria;
     private final AuditService auditService;
     private final com.arerti.portal.repository.GradeEntryRepository gradeEntryRepository;
+    private final ParentLinkRepository parentLinkRepository;
 
     // ── Auto-close expired windows ───────────────────────────────────────────
 
@@ -108,9 +109,14 @@ public class RegistrationService {
         Teacher teacher = teacherRepository.findById(req.teacherId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
 
-        if (assignmentRepository.existsByWindowAndTeacher(w, teacher)) {
-            RegistrationAssignment existing = assignmentRepository.findByWindowAndTeacher(w, teacher).get();
+        List<RegistrationAssignment> existingList = assignmentRepository.findByWindowAndTeacher(w, teacher);
+        if (!existingList.isEmpty()) {
+            RegistrationAssignment existing = existingList.get(0);
             existing.setAllowedGrades(req.allowedGrades());
+            // If duplicate assignments exist, prune them
+            for (int i = 1; i < existingList.size(); i++) {
+                assignmentRepository.delete(existingList.get(i));
+            }
             return RegistrationAssignmentResponse.from(assignmentRepository.save(existing));
         }
 
@@ -132,18 +138,22 @@ public class RegistrationService {
         Teacher teacher = teacherRepository.findByUser_Username(teacherUsername).orElse(null);
         if (teacher == null) return null;
 
-        // Window active right now (within datetime range and status OPEN)
-        RegistrationWindow activeWindow = windowRepository.findActive(java.time.LocalDateTime.now())
-                .orElse(null);
-        if (activeWindow == null) return null;
+        List<RegistrationAssignment> teacherAssignments = assignmentRepository.findByTeacher(teacher);
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
 
-        RegistrationAssignment assignment = assignmentRepository
-                .findByWindowAndTeacher(activeWindow, teacher).orElse(null);
-        if (assignment == null) return null;
-
-        return RegistrationWindowResponse.from(activeWindow, List.of(
-                RegistrationAssignmentResponse.from(assignment)
-        ));
+        for (RegistrationAssignment ta : teacherAssignments) {
+            RegistrationWindow w = ta.getWindow();
+            if (w != null && w.getStatus() == RegistrationWindow.WindowStatus.OPEN) {
+                if (w.getEndDatetime() == null || !now.isAfter(w.getEndDatetime())) {
+                    List<RegistrationAssignment> windowAssignments = assignmentRepository.findByWindowAndTeacher(w, teacher);
+                    List<RegistrationAssignmentResponse> assignmentResponses = windowAssignments.stream()
+                            .map(RegistrationAssignmentResponse::from)
+                            .toList();
+                    return RegistrationWindowResponse.from(w, assignmentResponses);
+                }
+            }
+        }
+        return null;
     }
 
     // ── Pass status for re-enrollment list ───────────────────────────────────
@@ -248,6 +258,75 @@ public class RegistrationService {
                 .build();
         studentRepository.save(student);
 
+        // ── Auto-generate & link parent account ──
+        String genParentUsername = null;
+        String genParentPassword = null;
+        if (req.parentPhone() != null && !req.parentPhone().isBlank()) {
+            String digits = req.parentPhone().trim().replaceAll("\\D", "");
+            if (digits.startsWith("251")) digits = digits.substring(3);
+            if (digits.startsWith("0")) digits = digits.substring(1);
+            final String cleanDigits = digits;
+
+            User existingParent = userRepository.findAll().stream()
+                    .filter(u -> u.getRole() == Role.PARENT && u.getPhone() != null)
+                    .filter(u -> {
+                        String p = u.getPhone().replaceAll("\\D", "");
+                        if (p.startsWith("251")) p = p.substring(3);
+                        if (p.startsWith("0")) p = p.substring(1);
+                        return cleanDigits.length() >= 8 && p.equals(cleanDigits);
+                    })
+                    .findFirst().orElse(null);
+
+            if (existingParent != null) {
+                if (!parentLinkRepository.existsByParentIdAndStudentId(existingParent.getId(), student.getId())) {
+                    ParentLink link = ParentLink.builder()
+                            .parent(existingParent)
+                            .student(student)
+                            .relationship(req.parentRelationship() != null ? req.parentRelationship() : "Guardian")
+                            .build();
+                    parentLinkRepository.save(link);
+                }
+                genParentUsername = existingParent.getUsername();
+                genParentPassword = "(Existing account linked)";
+            } else {
+                String pUsername = "p_" + username;
+                int pNum = 1;
+                while (userRepository.existsByUsername(pUsername)) {
+                    pUsername = "p_" + username + "_" + pNum;
+                    pNum++;
+                }
+                String pPassword = generatePassword();
+                String pEmail = "parent." + username + "@arerti.edu.et";
+                int eNum = 1;
+                while (userRepository.existsByEmail(pEmail)) {
+                    pEmail = "parent." + username + eNum + "@arerti.edu.et";
+                    eNum++;
+                }
+
+                User parentUser = User.builder()
+                        .username(pUsername)
+                        .email(pEmail)
+                        .password(passwordEncoder.encode(pPassword))
+                        .fullName(req.parentName() != null ? req.parentName() : "Guardian")
+                        .phone(req.parentPhone())
+                        .role(Role.PARENT)
+                        .enabled(true)
+                        .mustChangePassword(true)
+                        .build();
+                userRepository.save(parentUser);
+
+                ParentLink link = ParentLink.builder()
+                        .parent(parentUser)
+                        .student(student)
+                        .relationship(req.parentRelationship() != null ? req.parentRelationship() : "Guardian")
+                        .build();
+                parentLinkRepository.save(link);
+
+                genParentUsername = pUsername;
+                genParentPassword = pPassword;
+            }
+        }
+
         EnrollmentRecord record = EnrollmentRecord.builder()
                 .student(student).academicYear(academicYear)
                 .grade(grade).enrollmentType(type)
@@ -269,13 +348,15 @@ public class RegistrationService {
                 .build();
         enrollmentRepository.save(record);
 
-        auditService.log(teacherUsername, "TEACHER", "ENROLL_" + type.name(), "STUDENT", uid,
+        String roleLabel = teacher != null ? "TEACHER" : "ADMIN";
+        auditService.log(teacherUsername, roleLabel, "ENROLL_" + type.name(), "STUDENT", uid,
                 type.name() + " student enrolled: " + req.firstName() + " " + req.fatherName());
 
         String sectionLabel = section != null
                 ? "Grade " + section.getGrade() + " - " + section.getSection()
                 : "Grade " + req.targetGrade() + " (section pending assignment)";
-        return StudentResponse.fromWithCredentials(student, sectionLabel, username, plainPassword);
+        return StudentResponse.fromWithCredentials(student, sectionLabel, username, plainPassword,
+                genParentUsername, genParentPassword);
     }
 
     // ── PROMOTED / REPEATER: Quick re-enrollment ──────────────────────────────
@@ -355,7 +436,8 @@ public class RegistrationService {
                 .build();
         enrollmentRepository.save(record);
 
-        auditService.log(teacherUsername, "TEACHER", "RE_ENROLL_" + type.name(), "STUDENT",
+        String roleLabel = teacher != null ? "TEACHER" : "ADMIN";
+        auditService.log(teacherUsername, roleLabel, "RE_ENROLL_" + type.name(), "STUDENT",
                 student.getStudentUid(), type.name() + " → Grade " + newGrade);
 
         return EnrollmentRecordResponse.from(record);
@@ -508,13 +590,25 @@ public class RegistrationService {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void validateTeacherGradeAccess(RegistrationWindow window, Teacher teacher, Integer grade) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) {
+            return; // Administrator has universal access to all grades
+        }
+
         if (teacher == null)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only teachers can register students");
-        RegistrationAssignment assignment = assignmentRepository
-                .findByWindowAndTeacher(window, teacher)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
-                        "You are not assigned to this registration window"));
-        if (!assignment.getAllowedGradeList().contains(grade))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only authorized teachers or administrators can register students");
+
+        List<RegistrationAssignment> assignments = assignmentRepository
+                .findByWindowAndTeacher(window, teacher);
+        if (assignments.isEmpty())
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "You are not assigned to this registration window");
+
+        boolean gradeAllowed = assignments.stream()
+                .anyMatch(a -> a.getAllowedGradeList().contains(grade));
+        if (!gradeAllowed)
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "You are not authorized to register Grade " + grade + " students");
     }

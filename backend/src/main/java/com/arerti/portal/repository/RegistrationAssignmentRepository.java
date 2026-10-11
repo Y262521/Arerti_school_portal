@@ -12,7 +12,7 @@ public interface RegistrationAssignmentRepository extends JpaRepository<Registra
 
     List<RegistrationAssignment> findByWindow(RegistrationWindow window);
 
-    Optional<RegistrationAssignment> findByWindowAndTeacher(RegistrationWindow window, Teacher teacher);
+    List<RegistrationAssignment> findByWindowAndTeacher(RegistrationWindow window, Teacher teacher);
 
     boolean existsByWindowAndTeacher(RegistrationWindow window, Teacher teacher);
 

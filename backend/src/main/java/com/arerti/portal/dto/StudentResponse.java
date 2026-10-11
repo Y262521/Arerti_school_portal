@@ -43,23 +43,37 @@ public record StudentResponse(
         String paymentReceiptUrl,
         // Only set on creation — contains the auto-generated plain-text credentials for admin to share
         String generatedUsername,
-        String generatedPassword
+        String generatedPassword,
+        String generatedParentUsername,
+        String generatedParentPassword
 ) {
     public static StudentResponse from(Student s, String sectionLabel) {
-        return from(s, sectionLabel, null, null, null);
+        return from(s, sectionLabel, null, null, null, null, null);
     }
 
     public static StudentResponse from(Student s, String sectionLabel, EnrollmentRecord rec) {
-        return from(s, sectionLabel, rec, null, null);
+        return from(s, sectionLabel, rec, null, null, null, null);
     }
 
     public static StudentResponse fromWithCredentials(Student s, String sectionLabel,
                                                        String genUsername, String genPassword) {
-        return from(s, sectionLabel, null, genUsername, genPassword);
+        return from(s, sectionLabel, null, genUsername, genPassword, null, null);
+    }
+
+    public static StudentResponse fromWithCredentials(Student s, String sectionLabel,
+                                                       String genUsername, String genPassword,
+                                                       String genParentUsername, String genParentPassword) {
+        return from(s, sectionLabel, null, genUsername, genPassword, genParentUsername, genParentPassword);
     }
 
     public static StudentResponse from(Student s, String sectionLabel, EnrollmentRecord rec,
                                         String genUsername, String genPassword) {
+        return from(s, sectionLabel, rec, genUsername, genPassword, null, null);
+    }
+
+    public static StudentResponse from(Student s, String sectionLabel, EnrollmentRecord rec,
+                                        String genUsername, String genPassword,
+                                        String genParentUsername, String genParentPassword) {
         String fn = s.getFirstName() != null ? s.getFirstName() : (rec != null ? rec.getFirstName() : null);
         String fatN = s.getFatherName() != null ? s.getFatherName() : (rec != null ? rec.getFatherName() : null);
         String gfN = s.getGrandfatherName() != null ? s.getGrandfatherName() : (rec != null ? rec.getGrandfatherName() : null);
@@ -133,7 +147,9 @@ public record StudentResponse(
                 relLetter,
                 payReceipt,
                 genUsername,
-                genPassword
+                genPassword,
+                genParentUsername,
+                genParentPassword
         );
     }
 }

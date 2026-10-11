@@ -102,7 +102,7 @@ public class RegistrationController {
     // ── Teacher: check active window ─────────────────────────────────────────
 
     @GetMapping("/my-window")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<RegistrationWindowResponse> myWindow(Authentication auth) {
         RegistrationWindowResponse w = registrationService.getMyActiveWindow(auth.getName());
         if (w == null) return ResponseEntity.noContent().build();
@@ -118,13 +118,13 @@ public class RegistrationController {
             @RequestParam String previousAcademicYear,
             @RequestParam String newAcademicYear) {
         return ResponseEntity.ok(registrationService.getPassStatusForGrade(
-                grade, previousAcademicYear, newAcademicYear));
+            grade, previousAcademicYear, newAcademicYear));
     }
 
     // ── Full enrollment (NEW / TRANSFER) ─────────────────────────────────────
 
     @PostMapping("/windows/{windowId}/enroll")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<StudentResponse> enrollFull(
             @PathVariable Long windowId,
             @Valid @RequestBody FullEnrollRequest req,
@@ -136,7 +136,7 @@ public class RegistrationController {
     // ── Quick re-enrollment (PROMOTED / REPEATER) ────────────────────────────
 
     @PostMapping("/windows/{windowId}/enroll-existing")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
     public ResponseEntity<EnrollmentRecordResponse> enrollExisting(
             @PathVariable Long windowId,
             @Valid @RequestBody ExistingStudentEnrollRequest req,

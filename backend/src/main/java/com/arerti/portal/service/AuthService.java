@@ -29,32 +29,8 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest req) {
-        if (userRepository.existsByUsername(req.username())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
-        }
-        if (userRepository.existsByEmail(req.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
-        }
-
-        // Public self-registration is strictly restricted to PARENT accounts.
-        // Staff and student accounts are provisioned exclusively by school administration.
-        Role assignedRole = Role.PARENT;
-
-        User user = User.builder()
-                .username(req.username())
-                .email(req.email())
-                .password(passwordEncoder.encode(req.password()))
-                .fullName(req.fullName())
-                .phone(req.phone())
-                .role(assignedRole)
-                .enabled(true)
-                .mustChangePassword(false)
-                .build();
-
-        userRepository.save(user);
-        auditService.log(user.getUsername(), user.getRole().name(), "REGISTER", "AUTH", user.getUsername(),
-                "Account registered");
-        return issueToken(user);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "Public self-registration is disabled for security reasons. Parent and student accounts are provisioned exclusively by school administration during student registration.");
     }
 
     public AuthResponse login(LoginRequest req) {

@@ -468,11 +468,21 @@ export default function StudentEnrollmentWizard({ windowData, onSuccess, onClose
             <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">✅ {t('studentRegisteredSuccess')}</div>
             {credResult.photoUrl && <img src={credResult.photoUrl} alt="Student" className="w-20 h-20 rounded-full object-cover border-2 border-slate-200 mx-auto" />}
             <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
+                <p className="font-sans font-semibold text-slate-700 text-xs uppercase tracking-wider mb-1">🎓 {t('studentCredentials')}</p>
                 <p><span className="text-slate-500">{t('nameLabel')}:</span> <strong>{credResult.fullName}</strong></p>
                 {credResult.studentUid && <p><span className="text-slate-500">UID:</span> <strong>{credResult.studentUid}</strong></p>}
                 {credResult.generatedUsername && <p><span className="text-slate-500">{t('username')}:</span> <strong>{credResult.generatedUsername}</strong></p>}
                 {credResult.generatedPassword && <p><span className="text-slate-500">{t('password')}:</span> <strong>{credResult.generatedPassword}</strong></p>}
             </div>
+            {credResult.generatedParentUsername && (
+                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 font-mono text-sm space-y-1">
+                    <p className="font-sans font-semibold text-emerald-800 text-xs uppercase tracking-wider mb-1">👨‍👩‍👧 {t('parentAccountCredentials')}</p>
+                    <p><span className="text-slate-500">{t('username')}:</span> <strong>{credResult.generatedParentUsername}</strong></p>
+                    {credResult.generatedParentPassword && (
+                        <p><span className="text-slate-500">{t('password')}:</span> <strong>{credResult.generatedParentPassword}</strong></p>
+                    )}
+                </div>
+            )}
             <p className="text-xs text-slate-500">{t('passwordShownOnce')}</p>
             <div className="flex justify-end gap-2">
                 <button className="btn-ghost" onClick={() => { setCredResult(null); setPhase(0); setGrade(null); setEnrollmentType(null) }}>{t('registerAnother')}</button>

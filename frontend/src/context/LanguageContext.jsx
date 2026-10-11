@@ -706,6 +706,8 @@ const translations = {
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'Grade 11 and 12 sections with the same letter but different streams (Natural/Social) are allowed as separate classes.',
     inactivityLogoutMsg: 'You were automatically logged out after 5 minutes of inactivity for your security.',
+    parentAccountCredentials: 'Parent Account Credentials',
+    parentAccountNotice: 'Parent accounts are issued by the school administration upon student registration. Please use your credentials or contact the school office.',
   },
 
   am: {
@@ -1411,6 +1413,8 @@ const translations = {
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'ለ11-12 ክፍሎች ተመሳሳይ ፊደል ያላቸው ነገር ግን ዘርፋቸው የተለያየ (ተፈጥሮ/ማህበራዊ) ክፍሎች ተፈቅዷሉ።',
     inactivityLogoutMsg: 'ለደህንነትዎ ሲባል ከ 5 ደቂቃ እንቅስቃሴ አለማድረግ በኋላ በራስ-ሰር ወጥተዋል።',
+    parentAccountCredentials: 'የወላጅ አካውንት መረጃዎች',
+    parentAccountNotice: 'የወላጅ አካውንቶች ተማሪው ሲመዘገብ በትምህርት ቤቱ አስተዳደር ይሰጣሉ። እባክዎ በትምህርት ቤቱ የተሰጡዎትን መረጃዎች ይጠቀሙ ወይም ቢሮውን ያነጋግሩ።',
   }
 }
 
