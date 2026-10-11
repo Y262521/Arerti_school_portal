@@ -27,9 +27,7 @@ public class HealthController {
                 "status", "UP",
                 "service", "arerti-portal-backend",
                 "time", Instant.now().toString(),
-                "cloudinary_cloud_name", cloudName,
-                "cloudinary_api_key_set", !apiKey.equals("NOT_SET"),
-                "cloudinary_secret_set", !apiSecret.equals("NOT_SET") && !apiSecret.isBlank()
+                "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
     }
 }

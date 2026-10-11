@@ -1,7 +1,9 @@
 package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.ReportCardResponse;
+import com.arerti.portal.entity.Student;
 import com.arerti.portal.repository.ParentLinkRepository;
+import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
 import com.arerti.portal.service.ReportCardService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class ReportCardController {
     private final ReportCardService reportCardService;
     private final ParentLinkRepository parentLinkRepository;
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
 
     @GetMapping("/{studentId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT') or hasRole('PARENT')")
@@ -36,6 +39,15 @@ public class ReportCardController {
                     .getId();
             if (!parentLinkRepository.existsByParentIdAndStudentId(parentId, studentId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This student is not linked to your account");
+            }
+        }
+        boolean isStudent = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"));
+        if (isStudent) {
+            Student s = studentRepository.findByUser_Username(auth.getName())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Student profile not found"));
+            if (!s.getId().equals(studentId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are only permitted to view your own report card");
             }
         }
         return ResponseEntity.ok(reportCardService.generate(studentId, term, academicYear));

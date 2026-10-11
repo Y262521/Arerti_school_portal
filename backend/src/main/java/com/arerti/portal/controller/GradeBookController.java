@@ -2,17 +2,21 @@ package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.GradeEntryRequest;
 import com.arerti.portal.dto.GradeEntryResponse;
+import com.arerti.portal.entity.Student;
 import com.arerti.portal.entity.Teacher;
 import com.arerti.portal.repository.RegradePermissionRepository;
+import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import com.arerti.portal.service.GradeBookService;
 import com.arerti.portal.service.RegradeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class GradeBookController {
 
     private final GradeBookService gradeBookService;
     private final TeacherRepository teacherRepository;
+    private final StudentRepository studentRepository;
     private final RegradePermissionRepository regradePermissionRepository;
     private final RegradeService regradeService;
 
@@ -30,7 +35,15 @@ public class GradeBookController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<List<GradeEntryResponse>> forStudent(
             @PathVariable Long studentId,
-            @RequestParam String academicYear) {
+            @RequestParam String academicYear,
+            Authentication auth) {
+        if (hasRole(auth, "STUDENT")) {
+            Student s = studentRepository.findByUser_Username(auth.getName())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Student profile not found"));
+            if (!s.getId().equals(studentId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are only permitted to view your own grades");
+            }
+        }
         return ResponseEntity.ok(gradeBookService.getForStudent(studentId, academicYear));
     }
 

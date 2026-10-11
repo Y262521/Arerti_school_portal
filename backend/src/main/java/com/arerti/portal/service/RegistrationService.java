@@ -302,11 +302,23 @@ public class RegistrationService {
             newGrade = newSection.getGrade();
             validateCapacity(newSection);
         } else {
-            // Determine grade from current section + 1 (for PROMOTED) or same (for REPEATER)
-            GradeSection currentSection = student.getSectionId() != null
-                    ? sectionRepository.findById(student.getSectionId()).orElse(null) : null;
-            int currentGrade = currentSection != null ? currentSection.getGrade() : 9;
+            // Determine grade from student's current grade or latest enrollment
+            int currentGrade = 9;
+            if (student.getGrade() != null) {
+                currentGrade = student.getGrade();
+            } else if (student.getSectionId() != null) {
+                currentGrade = sectionRepository.findById(student.getSectionId())
+                        .map(GradeSection::getGrade).orElse(9);
+            } else {
+                currentGrade = enrollmentRepository.findTopByStudentOrderByIdDesc(student)
+                        .map(EnrollmentRecord::getGrade).orElse(9);
+            }
             newGrade = req.enrollmentType().equals("PROMOTED") ? currentGrade + 1 : currentGrade;
+        }
+
+        if (newGrade > 12) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Student has completed Grade 12 (graduated). High school levels are Grade 9-12 only.");
         }
 
         validateTeacherGradeAccess(window, teacher, newGrade);
@@ -326,7 +338,8 @@ public class RegistrationService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Student already enrolled for " + window.getAcademicYear());
 
-        // Update student section + stream (only if section assigned)
+        // Update student grade, section + stream
+        student.setGrade(newGrade);
         if (req.newSectionId() != null) student.setSectionId(req.newSectionId());
         if (req.stream() != null) student.setCurrentStream(req.stream());
         studentRepository.save(student);
@@ -422,21 +435,54 @@ public class RegistrationService {
         }).sorted(java.util.Comparator.comparingDouble(StudentWithScore::score).reversed())
           .collect(Collectors.toList());
 
-        // Round-robin assignment
+        // Round-robin assignment (stream-aware for Grade 11-12)
         java.util.Map<String, Integer> sectionCounts = new java.util.LinkedHashMap<>();
-        sections.forEach(s -> sectionCounts.put(
-                "Grade " + s.getGrade() + " - " + s.getSection(), 0));
-
-        int sectionIndex = 0;
         int assigned = 0;
-        for (StudentWithScore sw : scored) {
-            GradeSection section = sections.get(sectionIndex % sections.size());
-            sw.student().setSectionId(section.getId());
-            studentRepository.save(sw.student());
-            String key = "Grade " + section.getGrade() + " - " + section.getSection();
-            sectionCounts.merge(key, 1, Integer::sum);
-            sectionIndex++;
-            assigned++;
+
+        if (req.grade() >= 11) {
+            java.util.Map<String, List<GradeSection>> sectionsByStream = sections.stream()
+                    .filter(s -> s.getStream() != null)
+                    .collect(Collectors.groupingBy(GradeSection::getStream));
+
+            java.util.Map<String, List<StudentWithScore>> studentsByStream = scored.stream()
+                    .collect(Collectors.groupingBy(sw -> sw.student().getCurrentStream() != null
+                            ? sw.student().getCurrentStream() : "NATURAL_SCIENCE"));
+
+            sections.forEach(s -> sectionCounts.put(
+                    "Grade " + s.getGrade() + " - " + s.getSection() + (s.getStream() != null ? " (" + s.getStream() + ")" : ""), 0));
+
+            for (java.util.Map.Entry<String, List<StudentWithScore>> entry : studentsByStream.entrySet()) {
+                String streamName = entry.getKey();
+                List<StudentWithScore> streamStudents = entry.getValue();
+                List<GradeSection> targetSections = sectionsByStream.get(streamName);
+                if (targetSections == null || targetSections.isEmpty()) {
+                    targetSections = sections;
+                }
+                int idx = 0;
+                for (StudentWithScore sw : streamStudents) {
+                    GradeSection section = targetSections.get(idx % targetSections.size());
+                    sw.student().setSectionId(section.getId());
+                    studentRepository.save(sw.student());
+                    String key = "Grade " + section.getGrade() + " - " + section.getSection() + (section.getStream() != null ? " (" + section.getStream() + ")" : "");
+                    sectionCounts.merge(key, 1, Integer::sum);
+                    idx++;
+                    assigned++;
+                }
+            }
+        } else {
+            sections.forEach(s -> sectionCounts.put(
+                    "Grade " + s.getGrade() + " - " + s.getSection(), 0));
+
+            int sectionIndex = 0;
+            for (StudentWithScore sw : scored) {
+                GradeSection section = sections.get(sectionIndex % sections.size());
+                sw.student().setSectionId(section.getId());
+                studentRepository.save(sw.student());
+                String key = "Grade " + section.getGrade() + " - " + section.getSection();
+                sectionCounts.merge(key, 1, Integer::sum);
+                sectionIndex++;
+                assigned++;
+            }
         }
 
         auditService.log(actorUsername(), "ADMIN", "AUTO_ASSIGN", "REGISTRATION",

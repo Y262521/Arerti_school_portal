@@ -66,7 +66,7 @@ public class GradeEntry {
     private Double testQuiz;       // out of 10
 
     /** Computed total (sum of components, max 100). Updated by recalculateScore(). */
-    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0")
+    @Column(nullable = false, columnDefinition = "DOUBLE PRECISION DEFAULT 0")
     private Double score = 0.0;
 
     @Column(length = 500)

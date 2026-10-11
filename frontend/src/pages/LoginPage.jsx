@@ -54,9 +54,9 @@ export default function LoginPage() {
     }
     setParentRegistering(true)
     try {
-      const data = await authService.register({ ...parentForm, role: 'PARENT' })
+      await authService.register({ ...parentForm, role: 'PARENT' })
       toast.success(t('parentRegisteredSuccess'))
-      login(data)
+      await login(parentForm.username, parentForm.password)
       setShowParentModal(false)
       navigate('/parent')
     } catch (err) {

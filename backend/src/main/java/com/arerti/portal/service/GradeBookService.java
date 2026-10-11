@@ -126,14 +126,11 @@ public class GradeBookService {
         entry.setRecordedBy(teacher);
         entry.recalculateScore();
 
-        // Lock after first save by subject teacher (not admin)
-        if (!isAdmin && isNewEntry) {
-            entry.setLocked(true);
-        }
-
-        // If this was a regrade edit, re-lock after saving
-        if (!isAdmin && !isNewEntry && isRegradeAllowed) {
-            entry.setLocked(true);
+        // Lock once the final exam is submitted by the subject teacher, or re-lock after an approved regrade edit
+        if (!isAdmin) {
+            if (isRegradeAllowed || entry.getFinalExam() != null) {
+                entry.setLocked(true);
+            }
         }
 
         return GradeEntryResponse.from(gradeEntryRepository.save(entry));

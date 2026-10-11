@@ -46,6 +46,14 @@ public class ParentLinkService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This child is already linked to your account");
         }
 
+        // Verify relationship to prevent unauthorized student linking
+        boolean phoneMatches = phonesMatch(parent.getPhone(), student.getGuardianPhone());
+        boolean nameMatches = namesMatch(parent.getFullName(), student.getGuardianName());
+        if (!phoneMatches && !nameMatches) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Verification failed: Your phone number or name does not match the guardian records on file for this student. Please contact the school office to verify or update your contact information.");
+        }
+
         ParentLink link = ParentLink.builder()
                 .parent(parent)
                 .student(student)
@@ -57,6 +65,24 @@ public class ParentLinkService {
                 "Linked child " + student.getStudentUid() + " (" + student.getUser().getFullName() + ")");
 
         return ParentLinkResponse.from(link, sectionLabel(student.getSectionId()));
+    }
+
+    private boolean phonesMatch(String p1, String p2) {
+        if (p1 == null || p2 == null || p1.isBlank() || p2.isBlank()) return false;
+        String d1 = p1.replaceAll("\\D", "");
+        String d2 = p2.replaceAll("\\D", "");
+        if (d1.startsWith("251")) d1 = d1.substring(3);
+        if (d2.startsWith("251")) d2 = d2.substring(3);
+        if (d1.startsWith("0")) d1 = d1.substring(1);
+        if (d2.startsWith("0")) d2 = d2.substring(1);
+        return d1.length() >= 8 && d1.equals(d2);
+    }
+
+    private boolean namesMatch(String n1, String n2) {
+        if (n1 == null || n2 == null || n1.isBlank() || n2.isBlank()) return false;
+        String s1 = n1.trim().toLowerCase();
+        String s2 = n2.trim().toLowerCase();
+        return s1.contains(s2) || s2.contains(s1);
     }
 
     @Transactional

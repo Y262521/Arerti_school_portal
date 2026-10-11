@@ -705,6 +705,7 @@ const translations = {
     audienceParents: 'Parents',
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'Grade 11 and 12 sections with the same letter but different streams (Natural/Social) are allowed as separate classes.',
+    inactivityLogoutMsg: 'You were automatically logged out after 5 minutes of inactivity for your security.',
   },
 
   am: {
@@ -1409,6 +1410,7 @@ const translations = {
     audienceParents: 'ወላጆች',
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'ለ11-12 ክፍሎች ተመሳሳይ ፊደል ያላቸው ነገር ግን ዘርፋቸው የተለያየ (ተፈጥሮ/ማህበራዊ) ክፍሎች ተፈቅዷሉ።',
+    inactivityLogoutMsg: 'ለደህንነትዎ ሲባል ከ 5 ደቂቃ እንቅስቃሴ አለማድረግ በኋላ በራስ-ሰር ወጥተዋል።',
   }
 }
 

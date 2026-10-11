@@ -2,7 +2,7 @@
 
 A security-first school management system for **Arerti General Secondary & Preparatory School**.
 
-**Stack:** Java Spring Boot · React (Vite + Tailwind) · MySQL · MongoDB · JWT
+**Stack:** Java Spring Boot · React (Vite + Tailwind) · PostgreSQL · MongoDB · JWT
 
 ---
 
@@ -10,7 +10,7 @@ A security-first school management system for **Arerti General Secondary & Prepa
 
 ```
 arerti-portal/
-├── backend/                Spring Boot 3 (Java 17, Maven)
+├── backend/                Spring Boot 3 (Java 21, Maven)
 │   ├── pom.xml
 │   └── src/main/...
 └── frontend/               React 18 + Vite + Tailwind
@@ -23,14 +23,14 @@ arerti-portal/
 ## 🚀 Run locally
 
 ### Prereqs
-- **Java 17+**
+- **Java 21+**
 - **Maven 3.9+**
 - **Node 18+** and **npm**
-- **MySQL 8** (running on `localhost:3306`)
+- **PostgreSQL 15+** (running on `localhost:5432`)
 - **MongoDB 6+** (running on `localhost:27017`)
 
 ### 1. Start the databases
-Make sure MySQL and MongoDB are running. The Spring app will auto-create the `arerti_portal` database on first run.
+Make sure PostgreSQL and MongoDB are running. The Spring app will auto-create the schema on first run.
 
 ### 2. Start the backend
 ```bash

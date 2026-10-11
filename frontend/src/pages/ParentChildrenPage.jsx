@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { parentService } from '../services/parentService'
 import Modal from '../components/Modal'
@@ -109,7 +110,10 @@ export default function ParentChildrenPage() {
                             {c.relationship && (
                                 <p className="text-xs text-slate-400 mt-1">{t('relationship')}: {c.relationship}</p>
                             )}
-                            <div className="flex gap-3 mt-3 pt-3 border-t border-slate-100">
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                                <Link to="/parent/report-cards" className="text-xs text-brand font-semibold hover:underline">
+                                    📊 {t('reportCards')} →
+                                </Link>
                                 <button className="text-xs text-red-500 hover:underline"
                                     onClick={() => setConfirmUnlink(c)}>
                                     {t('unlink')}

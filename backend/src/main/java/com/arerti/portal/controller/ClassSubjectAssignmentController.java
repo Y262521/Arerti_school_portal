@@ -5,6 +5,8 @@ import com.arerti.portal.dto.ClassSubjectAssignmentResponse;
 import com.arerti.portal.dto.GradeCurriculumResponse;
 import com.arerti.portal.service.ClassSubjectAssignmentService;
 import com.arerti.portal.service.StudentService;
+import com.arerti.portal.entity.GradeSection;
+import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.StudentRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ public class ClassSubjectAssignmentController {
 
     private final ClassSubjectAssignmentService assignmentService;
     private final StudentRepository studentRepository;
+    private final GradeSectionRepository gradeSectionRepository;
 
     // ----------------------------------------------------------------
     // Grade curriculum management  (ADMIN only)
@@ -104,9 +109,13 @@ public class ClassSubjectAssignmentController {
     public ResponseEntity<Map<String, Object>> endTerm(@RequestParam String academicYear) {
         int archivedAssignments = assignmentService.endTerm(academicYear);
 
-        // Unassign all students from their sections for this year
+        // Unassign only students enrolled in sections of this academic year
+        Set<Long> yearSectionIds = gradeSectionRepository.findByAcademicYear(academicYear).stream()
+                .map(GradeSection::getId)
+                .collect(Collectors.toSet());
+
         var students = studentRepository.findAll().stream()
-                .filter(s -> s.getSectionId() != null)
+                .filter(s -> s.getSectionId() != null && yearSectionIds.contains(s.getSectionId()))
                 .toList();
         students.forEach(s -> s.setSectionId(null));
         studentRepository.saveAll(students);

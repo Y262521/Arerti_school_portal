@@ -22,4 +22,10 @@ public interface AttendanceRepository extends JpaRepository<AttendanceRecord, Lo
 
     @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.student = :student")
     long countTotalByStudent(Student student);
+
+    @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.student = :student AND a.status = 'PRESENT' AND a.date >= :startDate AND a.date <= :endDate")
+    long countPresentByStudentBetween(Student student, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.student = :student AND a.date >= :startDate AND a.date <= :endDate")
+    long countTotalByStudentBetween(Student student, LocalDate startDate, LocalDate endDate);
 }

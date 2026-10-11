@@ -35,13 +35,17 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
         }
 
+        // Public self-registration is strictly restricted to PARENT accounts.
+        // Staff and student accounts are provisioned exclusively by school administration.
+        Role assignedRole = Role.PARENT;
+
         User user = User.builder()
                 .username(req.username())
                 .email(req.email())
                 .password(passwordEncoder.encode(req.password()))
                 .fullName(req.fullName())
                 .phone(req.phone())
-                .role(req.role())
+                .role(assignedRole)
                 .enabled(true)
                 .mustChangePassword(false)
                 .build();

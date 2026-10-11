@@ -35,8 +35,16 @@ public class ReportCardService {
         Double average = grades.isEmpty() ? null :
                 grades.stream().mapToDouble(GradeEntryResponse::score).average().orElse(0);
 
-        long totalDays = attendanceRepository.countTotalByStudent(student);
-        long presentDays = attendanceRepository.countPresentByStudent(student);
+        long totalDays;
+        long presentDays;
+        java.time.LocalDate[] dateRange = getDateRange(academicYear, term);
+        if (dateRange != null) {
+            totalDays = attendanceRepository.countTotalByStudentBetween(student, dateRange[0], dateRange[1]);
+            presentDays = attendanceRepository.countPresentByStudentBetween(student, dateRange[0], dateRange[1]);
+        } else {
+            totalDays = attendanceRepository.countTotalByStudent(student);
+            presentDays = attendanceRepository.countPresentByStudent(student);
+        }
         double attendancePct = totalDays == 0 ? 0 : (presentDays * 100.0 / totalDays);
 
         String sectionLabel = student.getSectionId() != null
@@ -82,5 +90,32 @@ public class ReportCardService {
         if (avg >= 60) return "C";
         if (avg >= 50) return "D";
         return "F";
+    }
+
+    private java.time.LocalDate[] getDateRange(String academicYear, Integer term) {
+        if (academicYear == null) return null;
+        try {
+            String[] parts = academicYear.split("/");
+            int startYear = Integer.parseInt(parts[0].trim());
+            int endYear = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : startYear + 1;
+            if (term != null && term == 1) {
+                return new java.time.LocalDate[]{
+                        java.time.LocalDate.of(startYear, 9, 1),
+                        java.time.LocalDate.of(endYear, 2, 15)
+                };
+            } else if (term != null && term == 2) {
+                return new java.time.LocalDate[]{
+                        java.time.LocalDate.of(endYear, 2, 16),
+                        java.time.LocalDate.of(endYear, 7, 31)
+                };
+            } else {
+                return new java.time.LocalDate[]{
+                        java.time.LocalDate.of(startYear, 9, 1),
+                        java.time.LocalDate.of(endYear, 7, 31)
+                };
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

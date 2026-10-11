@@ -2,19 +2,22 @@ import axios from 'axios'
 
 // Always point to the Render backend in production.
 // Vite's proxy handles /api → localhost:8080 in local dev only.
-const baseURL = import.meta.env.DEV
+const baseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV
   ? '/api'
-  : 'https://arerti-school-backend.onrender.com/api'
+  : 'https://arerti-school-backend.onrender.com/api')
 
 const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' }
 })
 
-// Attach JWT to every request if present
+// Attach JWT to every request if present & refresh user activity timestamp
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('arerti_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+    localStorage.setItem('arerti_last_activity', Date.now().toString())
+  }
   return config
 })
 
@@ -25,6 +28,7 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem('arerti_token')
       localStorage.removeItem('arerti_user')
+      localStorage.removeItem('arerti_last_activity')
       if (!location.pathname.startsWith('/login')) {
         location.href = '/login'
       }

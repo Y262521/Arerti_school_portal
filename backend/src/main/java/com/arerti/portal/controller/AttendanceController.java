@@ -2,14 +2,18 @@ package com.arerti.portal.controller;
 
 import com.arerti.portal.dto.AttendanceRequest;
 import com.arerti.portal.dto.AttendanceResponse;
+import com.arerti.portal.entity.Student;
+import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,10 +24,22 @@ import java.util.List;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final StudentRepository studentRepository;
 
     @GetMapping("/student/{studentId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
-    public ResponseEntity<List<AttendanceResponse>> forStudent(@PathVariable Long studentId) {
+    public ResponseEntity<List<AttendanceResponse>> forStudent(
+            @PathVariable Long studentId,
+            Authentication auth) {
+        boolean isStudent = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"));
+        if (isStudent) {
+            Student s = studentRepository.findByUser_Username(auth.getName())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Student profile not found"));
+            if (!s.getId().equals(studentId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are only permitted to view your own attendance");
+            }
+        }
         return ResponseEntity.ok(attendanceService.getForStudent(studentId));
     }
 
