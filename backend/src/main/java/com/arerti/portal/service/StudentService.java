@@ -17,6 +17,7 @@ import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class StudentService {
     private final RegradePermissionRepository regradePermissionRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
+    private final JdbcTemplate jdbc;
 
     public List<StudentResponse> findAll() {
         return studentRepository.findAll().stream()
@@ -201,54 +203,40 @@ public class StudentService {
     public void delete(Long id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        Long studentId = student.getId();
+        Long studentUserId = student.getUser() != null ? student.getUser().getId() : null;
         String uid = student.getStudentUid();
-        User studentUser = student.getUser();
 
-        // 1. Delete parent links and clean up orphan parent user accounts
-        List<com.arerti.portal.entity.ParentLink> parentLinks = parentLinkRepository.findByStudent(student);
-        for (com.arerti.portal.entity.ParentLink link : parentLinks) {
-            User parentUser = link.getParent();
-            parentLinkRepository.delete(link);
-            if (parentUser != null) {
-                List<com.arerti.portal.entity.ParentLink> remaining = parentLinkRepository.findByParentId(parentUser.getId());
-                boolean onlyThisStudent = remaining.isEmpty() ||
-                        remaining.stream().allMatch(l -> l.getStudent() != null && l.getStudent().getId().equals(student.getId()));
-                if (onlyThisStudent && (parentUser.getUsername().startsWith("p_") || parentUser.getRole() == Role.PARENT)) {
-                    userRepository.delete(parentUser);
+        // 1. Find parent users linked to this student
+        List<Long> parentUserIds = jdbc.queryForList(
+                "SELECT parent_user_id FROM parent_links WHERE student_id = ?", Long.class, studentId);
+
+        // 2. Delete parent links referencing this student
+        jdbc.update("DELETE FROM parent_links WHERE student_id = ?", studentId);
+
+        // 3. Clean up orphan parent accounts if they have no other children
+        for (Long pId : parentUserIds) {
+            if (pId != null) {
+                Integer remaining = jdbc.queryForObject(
+                        "SELECT COUNT(*) FROM parent_links WHERE parent_user_id = ?", Integer.class, pId);
+                if (remaining == null || remaining == 0) {
+                    jdbc.update("DELETE FROM users WHERE id = ? AND (username LIKE 'p_%' OR role = 'PARENT')", pId);
                 }
             }
         }
 
-        // 2. Delete enrollment records
-        List<EnrollmentRecord> enrollmentRecords = enrollmentRecordRepository.findByStudent(student);
-        if (!enrollmentRecords.isEmpty()) {
-            enrollmentRecordRepository.deleteAll(enrollmentRecords);
-        }
+        // 4. Delete dependent student records
+        jdbc.update("DELETE FROM enrollment_records_v2 WHERE student_id = ?", studentId);
+        jdbc.update("DELETE FROM grade_entries WHERE student_id = ?", studentId);
+        jdbc.update("DELETE FROM attendance_records WHERE student_id = ?", studentId);
+        jdbc.update("DELETE FROM regrade_permissions WHERE student_id = ?", studentId);
 
-        // 3. Delete grade entries
-        List<com.arerti.portal.entity.GradeEntry> gradeEntries = gradeEntryRepository.findByStudent(student);
-        if (!gradeEntries.isEmpty()) {
-            gradeEntryRepository.deleteAll(gradeEntries);
-        }
+        // 5. Delete student record
+        jdbc.update("DELETE FROM students WHERE id = ?", studentId);
 
-        // 4. Delete attendance records
-        List<com.arerti.portal.entity.AttendanceRecord> attendanceRecords = attendanceRepository.findByStudentOrderByDateDesc(student);
-        if (!attendanceRecords.isEmpty()) {
-            attendanceRepository.deleteAll(attendanceRecords);
-        }
-
-        // 5. Delete regrade permissions
-        List<com.arerti.portal.entity.RegradePermission> regradePermissions = regradePermissionRepository.findByStudent(student);
-        if (!regradePermissions.isEmpty()) {
-            regradePermissionRepository.deleteAll(regradePermissions);
-        }
-
-        // 6. Delete student
-        studentRepository.delete(student);
-
-        // 7. Delete student user account
-        if (studentUser != null) {
-            userRepository.delete(studentUser);
+        // 6. Delete student user account
+        if (studentUserId != null) {
+            jdbc.update("DELETE FROM users WHERE id = ?", studentUserId);
         }
 
         auditService.log(actorUsername(), actorRole(), "DELETE", "STUDENT", uid,

@@ -10,6 +10,7 @@ import com.arerti.portal.entity.*;
 import com.arerti.portal.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class TeacherService {
     private final GradeEntryRepository gradeEntryRepository;
     private final AuditService auditService;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbc;
 
     public List<TeacherResponse> findAll() {
         return teacherRepository.findAll().stream()
@@ -146,62 +148,37 @@ public class TeacherService {
     public void delete(Long id) {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
+        Long teacherId = teacher.getId();
+        Long teacherUserId = teacher.getUser() != null ? teacher.getUser().getId() : null;
         String empId = teacher.getEmployeeId();
-        User teacherUser = teacher.getUser();
 
-        // 1. Unassign as homeroom teacher
-        List<GradeSection> homeroomSections = gradeSectionRepository.findByHomeroomTeacher(teacher);
-        if (!homeroomSections.isEmpty()) {
-            homeroomSections.forEach(s -> s.setHomeroomTeacher(null));
-            gradeSectionRepository.saveAll(homeroomSections);
-        }
+        // 1. Unassign as homeroom teacher in grade_sections
+        jdbc.update("UPDATE grade_sections SET homeroom_teacher_id = NULL WHERE homeroom_teacher_id = ?", teacherId);
 
-        // 2. Unassign from subject assignments
-        List<ClassSubjectAssignment> subjectAssignments = assignmentRepository.findByTeacher(teacher);
-        if (!subjectAssignments.isEmpty()) {
-            subjectAssignments.forEach(a -> a.setTeacher(null));
-            assignmentRepository.saveAll(subjectAssignments);
-        }
+        // 2. Unassign from class_subject_assignments
+        jdbc.update("UPDATE class_subject_assignments SET teacher_id = NULL WHERE teacher_id = ?", teacherId);
 
         // 3. Remove registration assignments
-        List<RegistrationAssignment> regAssignments = registrationAssignmentRepository.findByTeacher(teacher);
-        if (!regAssignments.isEmpty()) {
-            registrationAssignmentRepository.deleteAll(regAssignments);
-        }
+        jdbc.update("DELETE FROM registration_assignments_v2 WHERE teacher_id = ?", teacherId);
 
         // 4. Remove regrade permissions
-        List<RegradePermission> regrades = regradePermissionRepository.findByTeacher(teacher);
-        if (!regrades.isEmpty()) {
-            regradePermissionRepository.deleteAll(regrades);
-        }
+        jdbc.update("DELETE FROM regrade_permissions WHERE teacher_id = ?", teacherId);
 
         // 5. Unlink attendance records marked by this teacher
-        List<AttendanceRecord> attendanceRecords = attendanceRepository.findByMarkedBy(teacher);
-        if (!attendanceRecords.isEmpty()) {
-            attendanceRecords.forEach(ar -> ar.setMarkedBy(null));
-            attendanceRepository.saveAll(attendanceRecords);
-        }
+        jdbc.update("UPDATE attendance_records SET marked_by = NULL WHERE marked_by = ?", teacherId);
 
         // 6. Unlink enrollment records registered by this teacher
-        List<EnrollmentRecord> regRecords = enrollmentRecordRepository.findByRegisteredBy(teacher);
-        if (!regRecords.isEmpty()) {
-            regRecords.forEach(er -> er.setRegisteredBy(null));
-            enrollmentRecordRepository.saveAll(regRecords);
-        }
+        jdbc.update("UPDATE enrollment_records_v2 SET registered_by = NULL WHERE registered_by = ?", teacherId);
 
         // 7. Unlink grade entries recorded by this teacher
-        List<GradeEntry> recordedGrades = gradeEntryRepository.findByRecordedBy(teacher);
-        if (!recordedGrades.isEmpty()) {
-            recordedGrades.forEach(ge -> ge.setRecordedBy(null));
-            gradeEntryRepository.saveAll(recordedGrades);
-        }
+        jdbc.update("UPDATE grade_entries SET recorded_by = NULL WHERE recorded_by = ?", teacherId);
 
         // 8. Delete teacher
-        teacherRepository.delete(teacher);
+        jdbc.update("DELETE FROM teachers WHERE id = ?", teacherId);
 
         // 9. Delete user account
-        if (teacherUser != null) {
-            userRepository.delete(teacherUser);
+        if (teacherUserId != null) {
+            jdbc.update("DELETE FROM users WHERE id = ?", teacherUserId);
         }
 
         auditService.log(actorUsername(), actorRole(), "DELETE", "TEACHER", empId,

@@ -102,7 +102,6 @@ export default function SubjectsPage() {
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            toast.error(msg)
             load(true)
         } finally {
             setDeleting(false)

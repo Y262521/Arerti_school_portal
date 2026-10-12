@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class SubjectService {
     private final GradeEntryRepository gradeEntryRepository;
     private final RegradePermissionRepository regradePermissionRepository;
     private final AuditService auditService;
+    private final JdbcTemplate jdbc;
 
     @Cacheable("subjects")
     public List<SubjectResponse> findAll() {
@@ -70,33 +72,22 @@ public class SubjectService {
     @CacheEvict(value = {"subjects", "classes"}, allEntries = true)
     public void delete(Long id) {
         Subject s = get(id);
+        Long subjectId = s.getId();
 
         // 1. Delete curriculum definitions referencing this subject
-        List<GradeCurriculum> curricula = curriculumRepository.findBySubject(s);
-        if (!curricula.isEmpty()) {
-            curriculumRepository.deleteAll(curricula);
-        }
+        jdbc.update("DELETE FROM grade_curricula WHERE subject_id = ?", subjectId);
 
         // 2. Delete class subject assignments referencing this subject
-        List<ClassSubjectAssignment> assignments = assignmentRepository.findBySubject(s);
-        if (!assignments.isEmpty()) {
-            assignmentRepository.deleteAll(assignments);
-        }
+        jdbc.update("DELETE FROM class_subject_assignments WHERE subject_id = ?", subjectId);
 
         // 3. Delete regrade permissions referencing this subject
-        List<RegradePermission> regrades = regradePermissionRepository.findBySubject(s);
-        if (!regrades.isEmpty()) {
-            regradePermissionRepository.deleteAll(regrades);
-        }
+        jdbc.update("DELETE FROM regrade_permissions WHERE subject_id = ?", subjectId);
 
         // 4. Delete grade entries referencing this subject
-        List<GradeEntry> grades = gradeEntryRepository.findBySubject(s);
-        if (!grades.isEmpty()) {
-            gradeEntryRepository.deleteAll(grades);
-        }
+        jdbc.update("DELETE FROM grade_entries WHERE subject_id = ?", subjectId);
 
         // 5. Delete subject
-        subjectRepository.delete(s);
+        jdbc.update("DELETE FROM subjects WHERE id = ?", subjectId);
 
         auditService.log(actorUsername(), actorRole(), "DELETE", "SUBJECT", String.valueOf(s.getId()),
                 "Deleted subject " + s.getName());
