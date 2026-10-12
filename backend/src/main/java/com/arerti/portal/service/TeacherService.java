@@ -7,6 +7,7 @@ import com.arerti.portal.entity.Role;
 import com.arerti.portal.entity.Teacher;
 import com.arerti.portal.entity.User;
 import com.arerti.portal.entity.*;
+import com.arerti.portal.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;

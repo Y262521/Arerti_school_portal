@@ -7,10 +7,10 @@ import Modal from '../components/Modal'
 import { authService } from '../services/authService'
 
 const HOME_BY_ROLE = {
-  ADMIN:   '/admin',
+  ADMIN: '/admin',
   TEACHER: '/teacher',
   STUDENT: '/student',
-  PARENT:  '/parent'
+  PARENT: '/parent'
 }
 
 // Eye icons
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={onChange}
                 className="input"
-                placeholder="e.g. director or name@email.com"
+                placeholder="e.g. name or name@email.com"
                 autoComplete="username"
                 autoFocus
               />
