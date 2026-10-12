@@ -15,7 +15,10 @@ import com.arerti.portal.repository.ParentLinkRepository;
 import com.arerti.portal.repository.RegradePermissionRepository;
 import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StudentService {
 
     private final StudentRepository studentRepository;
@@ -43,6 +47,8 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final JdbcTemplate jdbc;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<StudentResponse> findAll() {
         return studentRepository.findAll().stream()
@@ -207,14 +213,21 @@ public class StudentService {
         Long studentUserId = student.getUser() != null ? student.getUser().getId() : null;
         String uid = student.getStudentUid();
 
-        // 1. Find parent users linked to this student
+        // 1. Drop obsolete legacy tables if they still exist
+        try {
+            jdbc.execute("DROP TABLE IF EXISTS enrollment_records CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_assignments CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_windows CASCADE");
+        } catch (Exception ignored) {}
+
+        // 2. Find parent users linked to this student
         List<Long> parentUserIds = jdbc.queryForList(
                 "SELECT parent_user_id FROM parent_links WHERE student_id = ?", Long.class, studentId);
 
-        // 2. Delete parent links referencing this student
+        // 3. Delete parent links referencing this student
         jdbc.update("DELETE FROM parent_links WHERE student_id = ?", studentId);
 
-        // 3. Clean up orphan parent accounts if they have no other children
+        // 4. Clean up orphan parent accounts if they have no other children
         for (Long pId : parentUserIds) {
             if (pId != null) {
                 Integer remaining = jdbc.queryForObject(
@@ -225,18 +238,60 @@ public class StudentService {
             }
         }
 
-        // 4. Delete dependent student records
+        // 5. Delete dependent student records
         jdbc.update("DELETE FROM enrollment_records_v2 WHERE student_id = ?", studentId);
         jdbc.update("DELETE FROM grade_entries WHERE student_id = ?", studentId);
         jdbc.update("DELETE FROM attendance_records WHERE student_id = ?", studentId);
         jdbc.update("DELETE FROM regrade_permissions WHERE student_id = ?", studentId);
 
-        // 5. Delete student record
+        // 6. Dynamically clear ANY remaining foreign key pointing to students
+        try {
+            jdbc.execute(
+                "DO $$ DECLARE r RECORD; " +
+                "BEGIN " +
+                "  FOR r IN ( " +
+                "    SELECT tc.table_name, kcu.column_name " +
+                "    FROM information_schema.table_constraints AS tc " +
+                "    JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name " +
+                "    JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name " +
+                "    WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = 'students' " +
+                "  ) LOOP " +
+                "    EXECUTE 'DELETE FROM ' || quote_ident(r.table_name) || ' WHERE ' || quote_ident(r.column_name) || ' = " + studentId + "'; " +
+                "  END LOOP; " +
+                "END $$;"
+            );
+        } catch (Exception e) {
+            log.warn("Dynamic student FK cleanup: {}", e.getMessage());
+        }
+
+        // 7. Delete student record
         jdbc.update("DELETE FROM students WHERE id = ?", studentId);
 
-        // 6. Delete student user account
+        // 8. Delete student user account
         if (studentUserId != null) {
+            try {
+                jdbc.execute(
+                    "DO $$ DECLARE r RECORD; " +
+                    "BEGIN " +
+                    "  FOR r IN ( " +
+                    "    SELECT tc.table_name, kcu.column_name " +
+                    "    FROM information_schema.table_constraints AS tc " +
+                    "    JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name " +
+                    "    JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name " +
+                    "    WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = 'users' " +
+                    "  ) LOOP " +
+                    "    EXECUTE 'DELETE FROM ' || quote_ident(r.table_name) || ' WHERE ' || quote_ident(r.column_name) || ' = " + studentUserId + "'; " +
+                    "  END LOOP; " +
+                    "END $$;"
+                );
+            } catch (Exception e) {
+                log.warn("Dynamic student user FK cleanup: {}", e.getMessage());
+            }
             jdbc.update("DELETE FROM users WHERE id = ?", studentUserId);
+        }
+
+        if (entityManager != null) {
+            entityManager.clear();
         }
 
         auditService.log(actorUsername(), actorRole(), "DELETE", "STUDENT", uid,

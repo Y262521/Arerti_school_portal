@@ -7,8 +7,10 @@ import com.arerti.portal.entity.Role;
 import com.arerti.portal.entity.Teacher;
 import com.arerti.portal.entity.User;
 import com.arerti.portal.entity.*;
-import com.arerti.portal.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TeacherService {
 
     private final TeacherRepository teacherRepository;
@@ -38,6 +41,8 @@ public class TeacherService {
     private final AuditService auditService;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbc;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<TeacherResponse> findAll() {
         return teacherRepository.findAll().stream()
@@ -152,33 +157,87 @@ public class TeacherService {
         Long teacherUserId = teacher.getUser() != null ? teacher.getUser().getId() : null;
         String empId = teacher.getEmployeeId();
 
-        // 1. Unassign as homeroom teacher in grade_sections
+        // 1. Drop obsolete legacy tables if they still exist
+        try {
+            jdbc.execute("DROP TABLE IF EXISTS enrollment_records CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_assignments CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_windows CASCADE");
+        } catch (Exception ignored) {}
+
+        // 2. Unassign as homeroom teacher in grade_sections
         jdbc.update("UPDATE grade_sections SET homeroom_teacher_id = NULL WHERE homeroom_teacher_id = ?", teacherId);
 
-        // 2. Unassign from class_subject_assignments
+        // 3. Unassign from class_subject_assignments
         jdbc.update("UPDATE class_subject_assignments SET teacher_id = NULL WHERE teacher_id = ?", teacherId);
 
-        // 3. Remove registration assignments
+        // 4. Remove registration assignments
         jdbc.update("DELETE FROM registration_assignments_v2 WHERE teacher_id = ?", teacherId);
 
-        // 4. Remove regrade permissions
+        // 5. Remove regrade permissions
         jdbc.update("DELETE FROM regrade_permissions WHERE teacher_id = ?", teacherId);
 
-        // 5. Unlink attendance records marked by this teacher
+        // 6. Unlink attendance records marked by this teacher
         jdbc.update("UPDATE attendance_records SET marked_by = NULL WHERE marked_by = ?", teacherId);
 
-        // 6. Unlink enrollment records registered by this teacher
+        // 7. Unlink enrollment records registered by this teacher
         jdbc.update("UPDATE enrollment_records_v2 SET registered_by = NULL WHERE registered_by = ?", teacherId);
 
-        // 7. Unlink grade entries recorded by this teacher
+        // 8. Unlink grade entries recorded by this teacher
         jdbc.update("UPDATE grade_entries SET recorded_by = NULL WHERE recorded_by = ?", teacherId);
 
-        // 8. Delete teacher
+        // 9. Dynamically clear ANY remaining foreign key pointing to teachers
+        try {
+            jdbc.execute(
+                "DO $$ DECLARE r RECORD; " +
+                "BEGIN " +
+                "  FOR r IN ( " +
+                "    SELECT tc.table_name, kcu.column_name, c.is_nullable " +
+                "    FROM information_schema.table_constraints AS tc " +
+                "    JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name " +
+                "    JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name " +
+                "    JOIN information_schema.columns AS c ON c.table_name = tc.table_name AND c.column_name = kcu.column_name " +
+                "    WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = 'teachers' " +
+                "  ) LOOP " +
+                "    IF r.is_nullable = 'YES' THEN " +
+                "      EXECUTE 'UPDATE ' || quote_ident(r.table_name) || ' SET ' || quote_ident(r.column_name) || ' = NULL WHERE ' || quote_ident(r.column_name) || ' = " + teacherId + "'; " +
+                "    ELSE " +
+                "      EXECUTE 'DELETE FROM ' || quote_ident(r.table_name) || ' WHERE ' || quote_ident(r.column_name) || ' = " + teacherId + "'; " +
+                "    END IF; " +
+                "  END LOOP; " +
+                "END $$;"
+            );
+        } catch (Exception e) {
+            log.warn("Dynamic teacher FK cleanup: {}", e.getMessage());
+        }
+
+        // 10. Delete teacher record
         jdbc.update("DELETE FROM teachers WHERE id = ?", teacherId);
 
-        // 9. Delete user account
+        // 11. Delete teacher user account
         if (teacherUserId != null) {
+            try {
+                jdbc.execute(
+                    "DO $$ DECLARE r RECORD; " +
+                    "BEGIN " +
+                    "  FOR r IN ( " +
+                    "    SELECT tc.table_name, kcu.column_name " +
+                    "    FROM information_schema.table_constraints AS tc " +
+                    "    JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name " +
+                    "    JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name " +
+                    "    WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = 'users' " +
+                    "  ) LOOP " +
+                    "    EXECUTE 'DELETE FROM ' || quote_ident(r.table_name) || ' WHERE ' || quote_ident(r.column_name) || ' = " + teacherUserId + "'; " +
+                    "  END LOOP; " +
+                    "END $$;"
+                );
+            } catch (Exception e) {
+                log.warn("Dynamic teacher user FK cleanup: {}", e.getMessage());
+            }
             jdbc.update("DELETE FROM users WHERE id = ?", teacherUserId);
+        }
+
+        if (entityManager != null) {
+            entityManager.clear();
         }
 
         auditService.log(actorUsername(), actorRole(), "DELETE", "TEACHER", empId,

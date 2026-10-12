@@ -25,6 +25,18 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         migrateGradeSectionUniqueConstraint();
+        dropLegacyObsoleteTables();
+    }
+
+    private void dropLegacyObsoleteTables() {
+        try {
+            jdbc.execute("DROP TABLE IF EXISTS enrollment_records CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_assignments CASCADE");
+            jdbc.execute("DROP TABLE IF EXISTS registration_windows CASCADE");
+            log.info("Successfully cleaned up obsolete legacy tables.");
+        } catch (Exception e) {
+            log.warn("Could not drop legacy tables: {}", e.getMessage());
+        }
     }
 
     /**
