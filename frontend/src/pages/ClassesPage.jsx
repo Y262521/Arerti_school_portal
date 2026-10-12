@@ -399,8 +399,8 @@ export default function ClassesPage() {
     const [modal, setModal] = useState(null)
     const [confirmDelete, setConfirmDelete] = useState(null)
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try {
             const [c, trs] = await Promise.all([classService.getAll(), teacherService.getAll()])
             setClasses(c)
@@ -408,7 +408,7 @@ export default function ClassesPage() {
         } catch {
             toast.error(t('failedToLoadClasses'))
         } finally {
-            setLoading(false)
+            if (!silent) setLoading(false)
         }
     }
 
@@ -425,7 +425,7 @@ export default function ClassesPage() {
                 toast.success(t('classUpdated'))
             }
             setModal(null)
-            load()
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))
         } finally {
@@ -436,11 +436,13 @@ export default function ClassesPage() {
     const handleDelete = async (id) => {
         try {
             await classService.remove(id)
+            setClasses(prev => prev.filter(c => c.id !== id))
             toast.success(t('classDeleted'))
             setConfirmDelete(null)
-            load()
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('deleteFailed'))
+            load(true)
         }
     }
 

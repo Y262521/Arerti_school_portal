@@ -14,6 +14,8 @@ public interface GradeEntryRepository extends JpaRepository<GradeEntry, Long> {
 
     List<GradeEntry> findByRecordedBy(com.arerti.portal.entity.Teacher teacher);
 
+    List<GradeEntry> findBySubject(com.arerti.portal.entity.Subject subject);
+
     List<GradeEntry> findByStudentAndAcademicYear(Student student, String academicYear);
 
     List<GradeEntry> findByStudentAndTermAndAcademicYear(Student student, Integer term, String academicYear);

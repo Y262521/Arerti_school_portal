@@ -269,11 +269,11 @@ export default function TeachersPage() {
     const [search, setSearch] = useState('')
     const [confirmDelete, setConfirmDelete] = useState(null)
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try { setTeachers(await teacherService.getAll()) }
         catch { toast.error(t('failedToLoadTeachers')) }
-        finally { setLoading(false) }
+        finally { if (!silent) setLoading(false) }
     }
     useEffect(() => { load() }, [])
 
@@ -290,7 +290,7 @@ export default function TeachersPage() {
                 toast.success(t('teacherUpdated'))
                 setModal(null)
             }
-            load()
+            load(true)
         } catch (err) { toast.error(err.response?.data?.message || t('saveFailed')) }
         finally { setSaving(false) }
     }
@@ -298,10 +298,13 @@ export default function TeachersPage() {
     const handleDelete = async (id) => {
         try {
             await teacherService.remove(id)
+            setTeachers(prev => prev.filter(t => t.id !== id))
             toast.success(t('teacherDeleted'))
-            setConfirmDelete(null); load()
+            setConfirmDelete(null)
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('deleteFailed'))
+            load(true)
         }
     }
 

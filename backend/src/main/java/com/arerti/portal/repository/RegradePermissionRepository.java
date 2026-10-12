@@ -18,6 +18,8 @@ public interface RegradePermissionRepository extends JpaRepository<RegradePermis
 
     List<RegradePermission> findByTeacher(com.arerti.portal.entity.Teacher teacher);
 
+    List<RegradePermission> findBySubject(com.arerti.portal.entity.Subject subject);
+
     List<RegradePermission> findByStatusOrderByCreatedAtDesc(RegradePermission.RegradeStatus status);
 
     List<RegradePermission> findByTeacher_IdOrderByCreatedAtDesc(Long teacherId);

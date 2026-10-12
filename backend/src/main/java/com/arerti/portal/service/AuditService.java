@@ -22,18 +22,20 @@ public class AuditService {
 
     public void log(String actorUsername, String actorRole, String action,
                      String entityType, String entityId, String details) {
-        try {
-            auditLogRepository.save(AuditLog.builder()
-                    .actorUsername(actorUsername)
-                    .actorRole(actorRole)
-                    .action(action)
-                    .entityType(entityType)
-                    .entityId(entityId)
-                    .details(details)
-                    .build());
-        } catch (Exception e) {
-            log.warn("Failed to write audit log [{} {} {}]: {}", action, entityType, entityId, e.getMessage());
-        }
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                auditLogRepository.save(AuditLog.builder()
+                        .actorUsername(actorUsername)
+                        .actorRole(actorRole)
+                        .action(action)
+                        .entityType(entityType)
+                        .entityId(entityId)
+                        .details(details)
+                        .build());
+            } catch (Exception e) {
+                log.warn("Failed to write audit log [{} {} {}]: {}", action, entityType, entityId, e.getMessage());
+            }
+        });
     }
 
     public Page<AuditLogResponse> findAll(Pageable pageable) {

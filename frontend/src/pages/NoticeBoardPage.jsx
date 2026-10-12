@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { noticeService } from '../services/noticeService'
 import { useAuth } from '../context/AuthContext'
@@ -87,11 +87,11 @@ export default function NoticeBoardPage() {
     const PRIORITY_LABELS = { LOW: t('priorityLow'), MEDIUM: t('priorityMedium'), HIGH: t('priorityHigh') }
     const AUDIENCE_LABELS = { GENERAL: t('audienceGeneral'), STUDENT: t('STUDENT'), TEACHER: t('TEACHER'), PARENT: t('PARENT') }
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try { setNotices(await noticeService.getAll()) }
         catch { toast.error(t('failedToLoadNotices')) }
-        finally { setLoading(false) }
+        finally { if (!silent) setLoading(false) }
     }
 
     useEffect(() => { load() }, [])
@@ -106,7 +106,8 @@ export default function NoticeBoardPage() {
                 await noticeService.update(modal.notice.id, payload)
                 toast.success(t('noticeUpdated'))
             }
-            setModal(null); load()
+            setModal(null)
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
@@ -115,9 +116,14 @@ export default function NoticeBoardPage() {
     const handleDelete = async (id) => {
         try {
             await noticeService.remove(id)
+            setNotices(prev => prev.filter(n => n.id !== id))
             toast.success(t('noticeDeleted'))
-            setConfirmDelete(null); load()
-        } catch { toast.error(t('deleteFailed')) }
+            setConfirmDelete(null)
+            load(true)
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
+            load(true)
+        }
     }
 
     return (

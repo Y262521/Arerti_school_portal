@@ -27,6 +27,8 @@ public interface GradeCurriculumRepository extends JpaRepository<GradeCurriculum
 
     void deleteByGradeAndStreamAndSubjectId(Integer grade, String stream, Long subjectId);
 
+    List<GradeCurriculum> findBySubject(com.arerti.portal.entity.Subject subject);
+
     // Backward compat for existing code
     default List<GradeCurriculum> findByGradeOrderBySortOrderAscCompat(Integer grade, String stream) {
         if (grade >= 11 && stream != null) {

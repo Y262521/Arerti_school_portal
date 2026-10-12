@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { resourceService } from '../services/resourceService'
 import { useAuth } from '../context/AuthContext'
@@ -102,11 +102,11 @@ export default function ResourcesPage() {
     const [modal, setModal] = useState(false)
     const [confirmDelete, setConfirmDelete] = useState(null)
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try { setResources(await resourceService.getAll()) }
         catch { toast.error(t('failedToLoadResources')) }
-        finally { setLoading(false) }
+        finally { if (!silent) setLoading(false) }
     }
 
     useEffect(() => { load() }, [])
@@ -116,7 +116,8 @@ export default function ResourcesPage() {
         try {
             await resourceService.upload(formData)
             toast.success(t('resourceUploaded'))
-            setModal(false); load()
+            setModal(false)
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('uploadFailed'))
         } finally { setUploading(false) }
@@ -134,9 +135,14 @@ export default function ResourcesPage() {
     const handleDelete = async (id) => {
         try {
             await resourceService.remove(id)
+            setResources(prev => prev.filter(r => r.id !== id))
             toast.success(t('resourceDeleted'))
-            setConfirmDelete(null); load()
-        } catch { toast.error(t('deleteFailed')) }
+            setConfirmDelete(null)
+            load(true)
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
+            load(true)
+        }
     }
 
     return (

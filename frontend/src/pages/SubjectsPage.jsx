@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { subjectService } from '../services/gradeService'
 import Modal from '../components/Modal'
@@ -62,11 +62,11 @@ export default function SubjectsPage() {
     const [confirmDelete, setConfirmDelete] = useState(null)
     const [search, setSearch] = useState('')
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try { setSubjects(await subjectService.getAll()) }
         catch { toast.error(t('failedToLoadSubjects')) }
-        finally { setLoading(false) }
+        finally { if (!silent) setLoading(false) }
     }
 
     useEffect(() => { load() }, [])
@@ -82,7 +82,7 @@ export default function SubjectsPage() {
                 toast.success(t('subjectUpdated'))
             }
             setModal(null)
-            load()
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
@@ -91,10 +91,13 @@ export default function SubjectsPage() {
     const handleDelete = async (id) => {
         try {
             await subjectService.remove(id)
+            setSubjects(prev => prev.filter(s => s.id !== id))
             toast.success(t('subjectDeleted'))
             setConfirmDelete(null)
-            load()
-        } catch { toast.error(t('deleteFailed')) }
+            load(true)
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
+        }
     }
 
     const filtered = subjects.filter(s =>

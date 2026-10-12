@@ -34,8 +34,9 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
+        org.springframework.security.core.Authentication auth;
         try {
-            authenticationManager.authenticate(
+            auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
         } catch (Exception e) {
@@ -43,15 +44,7 @@ public class AuthService {
                     "Failed login attempt");
             throw e;
         }
-        String raw = req.username() != null ? req.username().trim() : "";
-        String normalized = raw.toLowerCase().replace("-", "");
-        User user = userRepository.findByUsername(raw)
-                .or(() -> userRepository.findByUsername(normalized))
-                .or(() -> userRepository.findByUsername(raw.toLowerCase()))
-                .or(() -> userRepository.findByUsername(raw.toUpperCase()))
-                .or(() -> userRepository.findByEmail(raw))
-                .or(() -> userRepository.findByEmail(raw.toLowerCase()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+        User user = (User) auth.getPrincipal();
         auditService.log(user.getUsername(), user.getRole().name(), "LOGIN", "AUTH", user.getUsername(),
                 "Logged in");
         return issueToken(user);

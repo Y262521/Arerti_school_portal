@@ -21,12 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         String clean = username.trim();
         String normalized = clean.toLowerCase().replace("-", "");
 
-        return userRepository.findByUsername(clean)
-                .or(() -> userRepository.findByUsername(normalized))
-                .or(() -> userRepository.findByUsername(clean.toLowerCase()))
-                .or(() -> userRepository.findByUsername(clean.toUpperCase()))
-                .or(() -> userRepository.findByEmail(clean))
-                .or(() -> userRepository.findByEmail(clean.toLowerCase()))
+        return userRepository.findByIdentifier(clean, normalized)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 }

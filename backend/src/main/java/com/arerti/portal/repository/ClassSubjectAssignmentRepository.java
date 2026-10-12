@@ -21,4 +21,6 @@ public interface ClassSubjectAssignmentRepository extends JpaRepository<ClassSub
     List<ClassSubjectAssignment> findByAcademicYearAndArchivedFalse(String academicYear);
 
     List<ClassSubjectAssignment> findByTeacher(com.arerti.portal.entity.Teacher teacher);
+
+    List<ClassSubjectAssignment> findBySubject(com.arerti.portal.entity.Subject subject);
 }

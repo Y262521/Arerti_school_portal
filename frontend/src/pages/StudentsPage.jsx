@@ -532,8 +532,8 @@ export default function StudentsPage() {
     const [confirmDelete, setConfirmDelete] = useState(null)
     const { t } = useLanguage()
 
-    const load = async () => {
-        setLoading(true)
+    const load = async (silent = false) => {
+        if (!silent) setLoading(true)
         try {
             const [s, c, windows] = await Promise.all([
                 studentService.getAll(),
@@ -545,7 +545,7 @@ export default function StudentsPage() {
             const open = windows.find(w => w.status === 'OPEN')
             setActiveWindow(open || null)
         } catch { toast.error(t('failedToLoad')) }
-        finally { setLoading(false) }
+        finally { if (!silent) setLoading(false) }
     }
 
     useEffect(() => { load() }, [])
@@ -556,7 +556,7 @@ export default function StudentsPage() {
             await studentService.update(modal.student.id, payload)
             toast.success(t('studentUpdated'))
             setModal(null)
-            load()
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
@@ -565,10 +565,13 @@ export default function StudentsPage() {
     const handleDelete = async (id) => {
         try {
             await studentService.remove(id)
+            setStudents(prev => prev.filter(s => s.id !== id))
             toast.success(t('studentDeleted'))
-            setConfirmDelete(null); load()
+            setConfirmDelete(null)
+            load(true)
         } catch (err) {
             toast.error(err.response?.data?.message || t('deleteFailed'))
+            load(true)
         }
     }
 
