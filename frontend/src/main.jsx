@@ -14,25 +14,54 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <App />
           <Toaster
-            position="bottom-right"
-            containerStyle={{ zIndex: 99999 }}
+            position="top-center"
+            containerStyle={{
+              top: '50%',
+              left: '50%',
+              right: 'auto',
+              bottom: 'auto',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 99999999,
+              pointerEvents: 'none',
+            }}
             toastOptions={{
               duration: 4500,
-              style: { maxWidth: '520px', fontSize: '14px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' },
+              style: {
+                pointerEvents: 'auto',
+                minWidth: '340px',
+                maxWidth: '560px',
+                padding: '16px 24px',
+                borderRadius: '16px',
+                fontSize: '15px',
+                fontWeight: '600',
+                lineHeight: '1.45',
+                textAlign: 'center',
+                boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+              },
               success: {
                 duration: 3500,
-                style: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' },
+                style: {
+                  background: '#ffffff',
+                  color: '#15803d',
+                  border: '2px solid #22c55e',
+                  boxShadow: '0 25px 60px -15px rgba(34, 197, 94, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.15)',
+                },
+                iconTheme: { primary: '#16a34a', secondary: '#ffffff' },
               },
               error: {
-                duration: 6000,
+                duration: 6500,
                 style: {
-                  background: '#fef2f2',
-                  color: '#991b1b',
-                  border: '1px solid #fecaca',
-                  fontWeight: '500',
-                  padding: '14px 18px',
+                  background: '#ffffff',
+                  color: '#b91c1c',
+                  border: '2px solid #ef4444',
+                  boxShadow: '0 25px 60px -15px rgba(239, 68, 68, 0.35), 0 10px 25px -5px rgba(0, 0, 0, 0.15)',
                 },
-                iconTheme: { primary: '#dc2626', secondary: '#fff' },
+                iconTheme: { primary: '#dc2626', secondary: '#ffffff' },
               },
             }}
           />

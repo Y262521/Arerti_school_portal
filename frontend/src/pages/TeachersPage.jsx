@@ -268,6 +268,8 @@ export default function TeachersPage() {
     const [credentialsModal, setCredentialsModal] = useState(null)
     const [search, setSearch] = useState('')
     const [confirmDelete, setConfirmDelete] = useState(null)
+    const [deleteError, setDeleteError] = useState(null)
+    const [deleting, setDeleting] = useState(false)
 
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
@@ -296,6 +298,8 @@ export default function TeachersPage() {
     }
 
     const handleDelete = async (id) => {
+        setDeleteError(null)
+        setDeleting(true)
         try {
             await teacherService.remove(id)
             setTeachers(prev => prev.filter(t => t.id !== id))
@@ -303,8 +307,12 @@ export default function TeachersPage() {
             setConfirmDelete(null)
             load(true)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('deleteFailed'))
+            const msg = err.response?.data?.message || t('deleteFailed')
+            setDeleteError(msg)
+            toast.error(msg)
             load(true)
+        } finally {
+            setDeleting(false)
         }
     }
 
@@ -434,11 +442,19 @@ export default function TeachersPage() {
             )}
 
             {confirmDelete && (
-                <Modal title={t('confirmDelete')} onClose={() => setConfirmDelete(null)}>
+                <Modal title={t('confirmDelete')} onClose={() => { setConfirmDelete(null); setDeleteError(null) }}>
+                    {deleteError && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-start gap-2">
+                            <span className="font-bold text-red-500">✕</span>
+                            <span>{deleteError}</span>
+                        </div>
+                    )}
                     <p className="text-slate-700">{t('deleteTeacherConfirm')} <strong>{confirmDelete.fullName}</strong> ({confirmDelete.employeeId})?</p>
                     <div className="flex justify-end gap-2 mt-4">
-                        <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>{t('cancel')}</button>
-                        <button className="btn-danger" onClick={() => handleDelete(confirmDelete.id)}>{t('delete')}</button>
+                        <button className="btn-ghost" disabled={deleting} onClick={() => { setConfirmDelete(null); setDeleteError(null) }}>{t('cancel')}</button>
+                        <button className="btn-danger" disabled={deleting} onClick={() => handleDelete(confirmDelete.id)}>
+                            {deleting ? (t('deleting') || 'Deleting…') : t('delete')}
+                        </button>
                     </div>
                 </Modal>
             )}
