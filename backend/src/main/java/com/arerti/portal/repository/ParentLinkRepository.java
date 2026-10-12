@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface ParentLinkRepository extends JpaRepository<ParentLink, Long> {
     List<ParentLink> findByParentId(Long parentUserId);
+    List<ParentLink> findByStudent(com.arerti.portal.entity.Student student);
     Optional<ParentLink> findByParentIdAndStudentId(Long parentUserId, Long studentId);
     boolean existsByParentIdAndStudentId(Long parentUserId, Long studentId);
 }

@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public interface GradeEntryRepository extends JpaRepository<GradeEntry, Long> {
 
+    List<GradeEntry> findByStudent(Student student);
+
+    List<GradeEntry> findByRecordedBy(com.arerti.portal.entity.Teacher teacher);
+
     List<GradeEntry> findByStudentAndAcademicYear(Student student, String academicYear);
 
     List<GradeEntry> findByStudentAndTermAndAcademicYear(Student student, Integer term, String academicYear);

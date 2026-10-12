@@ -567,7 +567,9 @@ export default function StudentsPage() {
             await studentService.remove(id)
             toast.success(t('studentDeleted'))
             setConfirmDelete(null); load()
-        } catch { toast.error(t('deleteFailed')) }
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
+        }
     }
 
     const filtered = students.filter(s =>

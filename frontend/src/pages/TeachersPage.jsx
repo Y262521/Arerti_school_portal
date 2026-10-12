@@ -296,8 +296,13 @@ export default function TeachersPage() {
     }
 
     const handleDelete = async (id) => {
-        try { await teacherService.remove(id); toast.success(t('teacherDeleted')); setConfirmDelete(null); load() }
-        catch { toast.error(t('deleteFailed')) }
+        try {
+            await teacherService.remove(id)
+            toast.success(t('teacherDeleted'))
+            setConfirmDelete(null); load()
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
+        }
     }
 
     const filtered = teachers.filter(tr =>

@@ -7,8 +7,12 @@ import com.arerti.portal.entity.Role;
 import com.arerti.portal.entity.Student;
 import com.arerti.portal.entity.User;
 import com.arerti.portal.entity.EnrollmentRecord;
+import com.arerti.portal.repository.AttendanceRepository;
 import com.arerti.portal.repository.EnrollmentRecordRepository;
+import com.arerti.portal.repository.GradeEntryRepository;
 import com.arerti.portal.repository.GradeSectionRepository;
+import com.arerti.portal.repository.ParentLinkRepository;
+import com.arerti.portal.repository.RegradePermissionRepository;
 import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +35,10 @@ public class StudentService {
     private final UserRepository userRepository;
     private final GradeSectionRepository gradeSectionRepository;
     private final EnrollmentRecordRepository enrollmentRecordRepository;
+    private final ParentLinkRepository parentLinkRepository;
+    private final GradeEntryRepository gradeEntryRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final RegradePermissionRepository regradePermissionRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
 
@@ -194,8 +202,55 @@ public class StudentService {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
         String uid = student.getStudentUid();
+        User studentUser = student.getUser();
+
+        // 1. Delete parent links and clean up orphan parent user accounts
+        List<com.arerti.portal.entity.ParentLink> parentLinks = parentLinkRepository.findByStudent(student);
+        for (com.arerti.portal.entity.ParentLink link : parentLinks) {
+            User parentUser = link.getParent();
+            parentLinkRepository.delete(link);
+            if (parentUser != null) {
+                List<com.arerti.portal.entity.ParentLink> remaining = parentLinkRepository.findByParentId(parentUser.getId());
+                boolean onlyThisStudent = remaining.isEmpty() ||
+                        remaining.stream().allMatch(l -> l.getStudent() != null && l.getStudent().getId().equals(student.getId()));
+                if (onlyThisStudent && (parentUser.getUsername().startsWith("p_") || parentUser.getRole() == Role.PARENT)) {
+                    userRepository.delete(parentUser);
+                }
+            }
+        }
+
+        // 2. Delete enrollment records
+        List<EnrollmentRecord> enrollmentRecords = enrollmentRecordRepository.findByStudent(student);
+        if (!enrollmentRecords.isEmpty()) {
+            enrollmentRecordRepository.deleteAll(enrollmentRecords);
+        }
+
+        // 3. Delete grade entries
+        List<com.arerti.portal.entity.GradeEntry> gradeEntries = gradeEntryRepository.findByStudent(student);
+        if (!gradeEntries.isEmpty()) {
+            gradeEntryRepository.deleteAll(gradeEntries);
+        }
+
+        // 4. Delete attendance records
+        List<com.arerti.portal.entity.AttendanceRecord> attendanceRecords = attendanceRepository.findByStudentOrderByDateDesc(student);
+        if (!attendanceRecords.isEmpty()) {
+            attendanceRepository.deleteAll(attendanceRecords);
+        }
+
+        // 5. Delete regrade permissions
+        List<com.arerti.portal.entity.RegradePermission> regradePermissions = regradePermissionRepository.findByStudent(student);
+        if (!regradePermissions.isEmpty()) {
+            regradePermissionRepository.deleteAll(regradePermissions);
+        }
+
+        // 6. Delete student
         studentRepository.delete(student);
-        userRepository.delete(student.getUser());
+
+        // 7. Delete student user account
+        if (studentUser != null) {
+            userRepository.delete(studentUser);
+        }
+
         auditService.log(actorUsername(), actorRole(), "DELETE", "STUDENT", uid,
                 "Deleted student " + uid);
     }

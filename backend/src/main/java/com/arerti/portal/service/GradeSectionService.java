@@ -4,13 +4,17 @@ import com.arerti.portal.dto.GradeSectionRequest;
 import com.arerti.portal.dto.GradeSectionResponse;
 import com.arerti.portal.entity.GradeSection;
 import com.arerti.portal.entity.Teacher;
+import com.arerti.portal.repository.ClassSubjectAssignmentRepository;
 import com.arerti.portal.repository.GradeSectionRepository;
+import com.arerti.portal.repository.RegradePermissionRepository;
+import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +28,10 @@ public class GradeSectionService {
 
     private final GradeSectionRepository gradeSectionRepository;
     private final TeacherRepository teacherRepository;
+    private final ClassSubjectAssignmentRepository assignmentRepository;
+    private final RegradePermissionRepository regradePermissionRepository;
+    private final StudentRepository studentRepository;
+    private final AuditService auditService;
     @Lazy
     private final ClassSubjectAssignmentService assignmentService;
 
@@ -112,7 +120,31 @@ public class GradeSectionService {
     public void delete(Long id) {
         GradeSection gs = gradeSectionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found"));
+
+        // 1. Unassign all students belonging to this section so they aren't left with an invalid sectionId
+        List<com.arerti.portal.entity.Student> students = studentRepository.findBySectionId(gs.getId());
+        if (!students.isEmpty()) {
+            students.forEach(s -> s.setSectionId(null));
+            studentRepository.saveAll(students);
+        }
+
+        // 2. Remove regrade permissions referencing this section
+        List<com.arerti.portal.entity.RegradePermission> permissions = regradePermissionRepository.findBySection(gs);
+        if (!permissions.isEmpty()) {
+            regradePermissionRepository.deleteAll(permissions);
+        }
+
+        // 3. Remove all subject assignments for this section
+        List<com.arerti.portal.entity.ClassSubjectAssignment> assignments = assignmentRepository.findBySectionOrderBySubjectNameAsc(gs);
+        if (!assignments.isEmpty()) {
+            assignmentRepository.deleteAll(assignments);
+        }
+
+        // 4. Delete the class section
         gradeSectionRepository.delete(gs);
+
+        auditService.log(actorUsername(), actorRole(), "DELETE", "CLASS", String.valueOf(gs.getId()),
+                "Deleted class Grade " + gs.getGrade() + " - Section " + gs.getSection());
     }
 
     public long count() {
@@ -123,5 +155,16 @@ public class GradeSectionService {
         if (teacherId == null) return null;
         return teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
+    }
+
+    private String actorUsername() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null ? auth.getName() : "system";
+    }
+
+    private String actorRole() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getAuthorities().isEmpty()) return "UNKNOWN";
+        return auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
     }
 }

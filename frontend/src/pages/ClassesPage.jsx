@@ -439,8 +439,8 @@ export default function ClassesPage() {
             toast.success(t('classDeleted'))
             setConfirmDelete(null)
             load()
-        } catch {
-            toast.error(t('deleteFailed'))
+        } catch (err) {
+            toast.error(err.response?.data?.message || t('deleteFailed'))
         }
     }
 

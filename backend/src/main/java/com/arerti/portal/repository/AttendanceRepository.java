@@ -13,6 +13,8 @@ public interface AttendanceRepository extends JpaRepository<AttendanceRecord, Lo
 
     List<AttendanceRecord> findByStudentOrderByDateDesc(Student student);
 
+    List<AttendanceRecord> findByMarkedBy(com.arerti.portal.entity.Teacher teacher);
+
     List<AttendanceRecord> findByStudent_SectionIdAndDate(Long sectionId, LocalDate date);
 
     Optional<AttendanceRecord> findByStudentIdAndDate(Long studentId, LocalDate date);

@@ -19,4 +19,6 @@ public interface ClassSubjectAssignmentRepository extends JpaRepository<ClassSub
 
     /** All active assignments for an academic year — used for year-end rollover */
     List<ClassSubjectAssignment> findByAcademicYearAndArchivedFalse(String academicYear);
+
+    List<ClassSubjectAssignment> findByTeacher(com.arerti.portal.entity.Teacher teacher);
 }

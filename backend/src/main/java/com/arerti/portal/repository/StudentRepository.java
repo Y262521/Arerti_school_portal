@@ -12,6 +12,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     Optional<Student> findByStudentUid(String studentUid);
     boolean existsByStudentUid(String studentUid);
     Optional<Student> findByUser_Username(String username);
+    List<Student> findBySectionId(Long sectionId);
 
     @Query("SELECT s.studentUid FROM Student s WHERE s.studentUid LIKE 'AGSPS-%'")
     List<String> findAgspsUids();
