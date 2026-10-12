@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import { authService } from '../services/authService'
+import api from '../services/api'
 
 const HOME_BY_ROLE = {
   ADMIN: '/admin',
@@ -38,6 +39,23 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [coldStartNotice, setColdStartNotice] = useState(false)
+
+  // Pre-warm backend container immediately when page loads
+  useEffect(() => {
+    api.get('/health').catch(() => {})
+  }, [])
+
+  // If login is waiting for sleeping Render free tier container, show clear message after 2.5s
+  useEffect(() => {
+    let timer
+    if (loading) {
+      timer = setTimeout(() => setColdStartNotice(true), 2500)
+    } else {
+      setColdStartNotice(false)
+    }
+    return () => clearTimeout(timer)
+  }, [loading])
 
 
   const onChange = (e) => {
@@ -195,6 +213,21 @@ export default function LoginPage() {
               {loading ? t('signingIn') : t('signIn')}
             </button>
           </form>
+
+          {/* ── Cold start waking indicator for Render Free Tier ── */}
+          {loading && coldStartNotice && (
+            <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium text-center flex items-center justify-center gap-2 animate-fadeIn shadow-sm">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span>
+                {lang === 'am'
+                  ? 'ሰርቨሩ ከእንቅልፍ እየተነሳ ነው (Render Free Tier)፣ እባክዎ ጥቂት ሰከንዶች ይጠብቁ...'
+                  : 'Waking up cloud server from sleep mode (Render free tier), please hold on...'}
+              </span>
+            </div>
+          )}
 
           {/* ── Error message displayed directly BELOW the form ── */}
           {errorMessage && (
