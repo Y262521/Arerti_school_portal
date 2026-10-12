@@ -304,7 +304,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
 function CredentialsModal({ student, onClose }) {
     const { t } = useLanguage()
     const [copied, setCopied] = useState(false)
-    let text = `Name: ${student.fullName}\nUID: ${student.studentUid}\nStudent Username: ${student.generatedUsername}\nStudent Password: ${student.generatedPassword}`
+    let text = `Name: ${student.fullName}\nID: ${student.studentUid}\nStudent Username: ${student.generatedUsername}\nStudent Password: ${student.generatedPassword}`
     if (student.generatedParentUsername) {
         text += `\n\nParent Account:\nUsername: ${student.generatedParentUsername}\nPassword: ${student.generatedParentPassword}`
     }
@@ -318,7 +318,7 @@ function CredentialsModal({ student, onClose }) {
             <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
                 <p className="font-sans font-semibold text-slate-700 text-xs uppercase tracking-wider mb-1">🎓 {t('studentCredentials')}</p>
                 <p><span className="text-slate-500">{t('nameLabel')}:</span> <strong>{student.fullName}</strong></p>
-                <p><span className="text-slate-500">UID:</span> <strong>{student.studentUid}</strong></p>
+                <p><span className="text-slate-500">{t('studentUidLabel')}:</span> <strong>{student.studentUid}</strong></p>
                 <p><span className="text-slate-500">{t('username')}:</span> <strong>{student.generatedUsername}</strong></p>
                 <p><span className="text-slate-500">{t('password')}:</span> <strong>{student.generatedPassword}</strong></p>
             </div>

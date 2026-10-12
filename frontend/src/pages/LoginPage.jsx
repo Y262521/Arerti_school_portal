@@ -207,12 +207,6 @@ export default function LoginPage() {
             {t('troubleSignIn')}
           </p>
 
-          {/* ── Parent Account Information ── */}
-          <div className="mt-5 pt-4 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-500 leading-relaxed">
-              👨‍👩‍👧 {t('parentAccountNotice')}
-            </p>
-          </div>
 
           {/* Language toggle */}
           <div className="mt-4 flex justify-center">

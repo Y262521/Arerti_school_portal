@@ -329,9 +329,9 @@ const translations = {
     unlinkFailed: 'Unlink failed',
     confirmUnlink: 'Confirm Unlink',
     unlinkConfirm: 'Unlink',
-    noChildrenLinked: 'No children linked yet. Use the Student UID given to you by the school office.',
-    studentUidLabel: 'Student UID',
-    studentUidHint: "Get this ID from the school office or your child's enrollment letter.",
+    noChildrenLinked: 'No children linked yet. Enter the Student ID provided by the school.',
+    studentUidLabel: 'Student ID',
+    studentUidHint: "Enter the student's ID number (e.g. AGSPS-1000).",
     failedToLoadChildren: 'Failed to load linked children',
     relationship: 'Relationship',
 
@@ -599,7 +599,7 @@ const translations = {
     studentDeleted: 'Student deleted',
     deleteStudentConfirm: 'Delete student',
     noStudentsFound: 'No students found.',
-    studentCredentials: 'Student Login Credentials',
+    studentCredentials: 'Student Account Info',
     editStudent: 'Edit Student',
 
     // ── Teacher detail ────────────────────────────────────────────────────────
@@ -706,7 +706,7 @@ const translations = {
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'Grade 11 and 12 sections with the same letter but different streams (Natural/Social) are allowed as separate classes.',
     inactivityLogoutMsg: 'You were automatically logged out after 5 minutes of inactivity for your security.',
-    parentAccountCredentials: 'Parent Account Credentials',
+    parentAccountCredentials: 'Parent Account Info',
     parentAccountNotice: 'Parent accounts are issued by the school administration upon student registration. Please use your credentials or contact the school office.',
   },
 
@@ -1033,14 +1033,14 @@ const translations = {
     linkChild: 'ልጅ አያይዝ',
     linking: 'በማያያዝ ላይ…',
     childLinked: 'ልጅ ተያይዟል',
-    linkFailed: 'ማያያዝ አልተቻለም – UID ያረጋግጡ',
+    linkFailed: 'ማያያዝ አልተቻለም – የተማሪ መለያ ቁጥሩን ያረጋግጡ',
     childUnlinked: 'ልጅ ተለቋል',
     unlinkFailed: 'ማልቀቅ አልተቻለም',
     confirmUnlink: 'ማልቀቅ አረጋግጥ',
     unlinkConfirm: 'አፍታታ',
-    noChildrenLinked: 'እስካሁን ልጆች አልተያያዙም።',
-    studentUidLabel: 'የተማሪ UID',
-    studentUidHint: 'ይህን UID ከትምህርት ቤቱ ቢሮ ወይም ከምዝገባ ደብዳቤ ያግኙ።',
+    noChildrenLinked: 'እስካሁን የተያያዘ ተማሪ የለም። በትምህርት ቤቱ የተሰጠውን የተማሪ መለያ ቁጥር ይጠቀሙ።',
+    studentUidLabel: 'የተማሪ መለያ ቁጥር',
+    studentUidHint: 'የተማሪውን መለያ ቁጥር ያስገቡ (ምሳሌ፦ AGSPS-1000)።',
     failedToLoadChildren: 'ልጆችን ማምጣት አልተቻለም',
     relationship: 'ዝምድና',
 
@@ -1302,13 +1302,13 @@ const translations = {
 
     // ── Student ───────────────────────────────────────────────────────────────
     studentDetails: 'የተማሪ ዝርዝር',
-    studentRegisteredSuccess: 'ተማሪ ተመዝግቧል። ምስጢሮቹን ለተማሪው ያካፍሉ።',
+    studentRegisteredSuccess: 'ተማሪው በተሳካ ሁኔታ ተመዝግቧል።',
     studentRegistered: 'ተማሪ ተመዝግቧል',
     studentUpdated: 'ተማሪ ተስተካክሏል',
     studentDeleted: 'ተማሪ ተሰርዟል',
     deleteStudentConfirm: 'ተማሪ ሰርዝ',
     noStudentsFound: 'ምንም ተማሪ አልተገኘም።',
-    studentCredentials: 'የተማሪ መግቢያ ምስጢሮች',
+    studentCredentials: 'የተማሪ መግቢያ መረጃ',
     editStudent: 'ተማሪ አስተካክል',
 
     // ── Teacher ───────────────────────────────────────────────────────────────
@@ -1413,7 +1413,7 @@ const translations = {
     // ── Class stream duplicate hint ────────────────────────────────────────
     classDuplicateHint: 'ለ11-12 ክፍሎች ተመሳሳይ ፊደል ያላቸው ነገር ግን ዘርፋቸው የተለያየ (ተፈጥሮ/ማህበራዊ) ክፍሎች ተፈቅዷሉ።',
     inactivityLogoutMsg: 'ለደህንነትዎ ሲባል ከ 5 ደቂቃ እንቅስቃሴ አለማድረግ በኋላ በራስ-ሰር ወጥተዋል።',
-    parentAccountCredentials: 'የወላጅ አካውንት መረጃዎች',
+    parentAccountCredentials: 'የወላጅ መግቢያ መረጃ',
     parentAccountNotice: 'የወላጅ አካውንቶች ተማሪው ሲመዘገብ በትምህርት ቤቱ አስተዳደር ይሰጣሉ። እባክዎ በትምህርት ቤቱ የተሰጡዎትን መረጃዎች ይጠቀሙ ወይም ቢሮውን ያነጋግሩ።',
   }
 }

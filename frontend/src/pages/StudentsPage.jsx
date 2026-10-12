@@ -91,7 +91,7 @@ function CredentialsModal({ student, onClose }) {
             </div>
             <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
                 <p><span className="text-slate-500">{t('student')}:</span> <strong>{student.fullName}</strong></p>
-                <p><span className="text-slate-500">UID:</span> <strong>{student.studentUid}</strong></p>
+                <p><span className="text-slate-500">{t('studentUidLabel')}:</span> <strong>{student.studentUid}</strong></p>
                 <p><span className="text-slate-500">{t('username')}:</span> <strong>{student.generatedUsername}</strong></p>
                 <p><span className="text-slate-500">{t('password')}:</span> <strong>{student.generatedPassword}</strong></p>
                 <p><span className="text-slate-500">{t('email')}:</span> <strong>{student.email}</strong></p>

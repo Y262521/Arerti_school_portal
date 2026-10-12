@@ -470,7 +470,7 @@ export default function StudentEnrollmentWizard({ windowData, onSuccess, onClose
             <div className="rounded-lg bg-slate-100 p-4 font-mono text-sm space-y-1">
                 <p className="font-sans font-semibold text-slate-700 text-xs uppercase tracking-wider mb-1">🎓 {t('studentCredentials')}</p>
                 <p><span className="text-slate-500">{t('nameLabel')}:</span> <strong>{credResult.fullName}</strong></p>
-                {credResult.studentUid && <p><span className="text-slate-500">UID:</span> <strong>{credResult.studentUid}</strong></p>}
+                {credResult.studentUid && <p><span className="text-slate-500">{t('studentUidLabel')}:</span> <strong>{credResult.studentUid}</strong></p>}
                 {credResult.generatedUsername && <p><span className="text-slate-500">{t('username')}:</span> <strong>{credResult.generatedUsername}</strong></p>}
                 {credResult.generatedPassword && <p><span className="text-slate-500">{t('password')}:</span> <strong>{credResult.generatedPassword}</strong></p>}
             </div>
