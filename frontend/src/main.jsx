@@ -14,10 +14,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <App />
           <Toaster
-            position="top-center"
+            position="bottom-right"
+            containerStyle={{ zIndex: 99999 }}
             toastOptions={{
               duration: 4500,
-              style: { maxWidth: '520px', fontSize: '14px' },
+              style: { maxWidth: '520px', fontSize: '14px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' },
               success: {
                 duration: 3500,
                 style: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' },

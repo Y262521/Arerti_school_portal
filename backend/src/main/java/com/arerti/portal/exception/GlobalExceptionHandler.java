@@ -41,12 +41,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
 
+        String cause = ex.getMostSpecificCause().getMessage();
         String message = "This record already exists or conflicts with existing data.";
 
-        // Provide context-specific messages based on table/constraint hints
-        String cause = ex.getMostSpecificCause().getMessage();
         if (cause != null) {
-            if (cause.contains("grade_sections")) {
+            String lower = cause.toLowerCase();
+            if (lower.contains("foreign key") || lower.contains("violates foreign key") || lower.contains("is still referenced")) {
+                message = "Cannot delete or modify this item because it is referenced by other records.";
+            } else if (cause.contains("grade_sections")) {
                 message = "A class with this grade, section, and stream already exists for this academic year.";
             } else if (cause.contains("students") || cause.contains("student_uid")) {
                 message = "A student with this information already exists.";
