@@ -556,7 +556,6 @@ export default function StudentsPage() {
         setSaving(true)
         try {
             await studentService.update(modal.student.id, payload)
-            toast.success(t('studentUpdated'))
             setModal(null)
             load(true)
         } catch (err) {
@@ -570,7 +569,6 @@ export default function StudentsPage() {
         try {
             await studentService.remove(id)
             setStudents(prev => prev.filter(s => s.id !== id))
-            toast.success(t('studentDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {

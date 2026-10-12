@@ -284,12 +284,10 @@ export default function TeachersPage() {
         try {
             if (modal.mode === 'add') {
                 const newTeacher = await teacherService.create(payload)
-                toast.success(t('teacherRegistered'))
                 setModal(null)
                 if (newTeacher.generatedUsername) setCredentialsModal(newTeacher)
             } else {
                 await teacherService.update(modal.teacher.id, payload)
-                toast.success(t('teacherUpdated'))
                 setModal(null)
             }
             load(true)
@@ -303,7 +301,6 @@ export default function TeachersPage() {
         try {
             await teacherService.remove(id)
             setTeachers(prev => prev.filter(t => t.id !== id))
-            toast.success(t('teacherDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {

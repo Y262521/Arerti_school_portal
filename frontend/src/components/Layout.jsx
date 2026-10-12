@@ -287,7 +287,9 @@ export default function Layout({ children }) {
 
             {/* User info — hidden on small screens */}
             <div className="text-right hidden lg:block">
-              <div className="text-sm font-semibold text-slate-800 leading-tight">{user?.fullName}</div>
+              <div className="text-sm font-semibold text-slate-800 leading-tight">
+                {user?.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : user?.fullName}
+              </div>
               <div className="text-xs text-slate-500">{t(user?.role) || user?.role}</div>
             </div>
 
@@ -367,7 +369,9 @@ export default function Layout({ children }) {
             {/* Mobile bottom actions */}
             <div className="border-t border-slate-100 px-4 py-3 flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold text-slate-800">{user?.fullName}</div>
+                <div className="text-sm font-semibold text-slate-800">
+                  {user?.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : user?.fullName}
+                </div>
                 <div className="text-xs text-slate-500">{t(user?.role) || user?.role}</div>
               </div>
               <div className="flex items-center gap-2">

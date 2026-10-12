@@ -81,7 +81,6 @@ function TeacherRegistrationForm({ onSuccess }) {
         setSaving(true)
         try {
             const newTeacher = await teacherService.create({ ...form, hireDate: form.hireDate || null })
-            toast.success(t('teacherRegistered'))
             onSuccess(newTeacher)
         } catch (err) {
             toast.error(err.response?.data?.message || t('saveFailed'))

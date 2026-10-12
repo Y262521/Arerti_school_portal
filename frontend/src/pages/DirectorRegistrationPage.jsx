@@ -20,7 +20,6 @@ function PostponeModal({ windowId, currentEnd, onSuccess, onClose }) {
         setLoading(true)
         try {
             await registrationService.postponeWindow(windowId, { newEndDatetime: newEnd + ':00', reason })
-            toast.success(t('registrationPostponed'))
             onSuccess()
         } catch (err) { toast.error(err.response?.data?.message || t('failedToPostpone')) }
         finally { setLoading(false) }
@@ -55,7 +54,7 @@ function AutoAssignModal({ onClose }) {
     const [result, setResult] = useState(null)
     const handleAssign = async () => {
         setLoading(true)
-        try { const r = await registrationService.autoAssign(grade, academicYear); setResult(r); toast.success(r.message) }
+        try { const r = await registrationService.autoAssign(grade, academicYear); setResult(r); }
         catch (err) { toast.error(err.response?.data?.message || t('autoAssignFailed')) }
         finally { setLoading(false) }
     }
@@ -146,7 +145,6 @@ function AssignTeacherForm({ windowId, teachers, existingAssignments, onSuccess,
         setLoading(true)
         try {
             await registrationService.assignTeacher(windowId, { teacherId: Number(teacherId), allowedGrades: selected.join(',') })
-            toast.success(t('teacherAssigned'))
             onSuccess()
         } catch (err) { toast.error(err.response?.data?.message || t('failedToAssign')) }
         finally { setLoading(false) }
@@ -338,18 +336,18 @@ export default function DirectorRegistrationPage() {
 
     const handleOpenWindow = async (payload) => {
         setOpeningWindow(true)
-        try { await registrationService.openWindow(payload); toast.success(t('registrationWindowOpened')); setOpenModal(false); load() }
+        try { await registrationService.openWindow(payload); setOpenModal(false); load() }
         catch (err) { toast.error(err.response?.data?.message || t('failedToOpenWindow')) }
         finally { setOpeningWindow(false) }
     }
 
     const handleCloseWindow = async (id) => {
-        try { await registrationService.closeWindow(id); toast.success(t('registrationWindowClosed')); setConfirmClose(null); load() }
+        try { await registrationService.closeWindow(id); setConfirmClose(null); load() }
         catch { toast.error(t('failedToClose')) }
     }
 
     const handleRemoveAssignment = async (id) => {
-        try { await registrationService.removeAssignment(id); toast.success(t('assignmentRemoved')); load() }
+        try { await registrationService.removeAssignment(id); load() }
         catch { toast.error(t('failedToRemove')) }
     }
 

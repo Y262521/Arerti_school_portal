@@ -345,7 +345,6 @@ export function ExistingStudentPanel({ grade, windowId, enrollmentType, prevYear
                 bankTransactionRef: f.bankTransactionRef,
                 paymentReceiptUrl: f.paymentReceiptUrl || null,
             }, prevYear)
-            toast.success(`${student.studentName} ${t('studentEnrolled')}`)
             setStudents(prev => prev.map(s => s.studentId === student.studentId ? { ...s, alreadyEnrolled: true } : s))
         } catch (err) {
             toast.error(err.response?.data?.message || t('enrollmentFailed'))

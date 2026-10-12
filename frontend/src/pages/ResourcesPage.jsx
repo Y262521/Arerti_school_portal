@@ -117,7 +117,6 @@ export default function ResourcesPage() {
         setUploading(true)
         try {
             await resourceService.upload(formData)
-            toast.success(t('resourceUploaded'))
             setModal(false)
             load(true)
         } catch (err) {
@@ -140,7 +139,6 @@ export default function ResourcesPage() {
         try {
             await resourceService.remove(id)
             setResources(prev => prev.filter(r => r.id !== id))
-            toast.success(t('resourceDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {

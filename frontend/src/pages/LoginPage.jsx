@@ -77,7 +77,6 @@ export default function LoginPage() {
 
     try {
       const data = await login(form.username.trim(), form.password)
-      toast.success(`${t('loginWelcome')} ${data.fullName}!`)
       navigate(from || HOME_BY_ROLE[data.role] || '/', { replace: true })
     } catch (err) {
       // Rule 2 & 3: Network offline or invalid credentials
@@ -178,7 +177,7 @@ export default function LoginPage() {
                 value={form.username}
                 onChange={onChange}
                 className="input"
-                placeholder="e.g. name or name@email.com"
+                placeholder="e.g. director or name@email.com"
                 autoComplete="username"
                 autoFocus
               />

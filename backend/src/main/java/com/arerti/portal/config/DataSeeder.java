@@ -27,15 +27,15 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        String username = System.getenv().getOrDefault("SEED_ADMIN_USERNAME", "admin");
-        String password = System.getenv().getOrDefault("SEED_ADMIN_PASSWORD", "Admin@12345");
+        String username = System.getenv().getOrDefault("SEED_ADMIN_USERNAME", "director");
+        String password = System.getenv().getOrDefault("SEED_ADMIN_PASSWORD", "Director@12345");
 
-        if (!userRepository.existsByUsername(username)) {
+        if (!userRepository.existsByUsername(username) && !userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username(username)
                     .email(username + "@arerti.edu.et")
                     .password(passwordEncoder.encode(password))
-                    .fullName("System Administrator")
+                    .fullName("School Director")
                     .role(Role.ADMIN)
                     .enabled(true)
                     .mustChangePassword(true)
@@ -43,7 +43,7 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(admin);
 
             log.info("=================================================================");
-            log.info("  Seeded default ADMIN -> username: '{}'  password: '{}'", username, password);
+            log.info("  Seeded default DIRECTOR -> username: '{}'  password: '{}'", username, password);
             log.info("  CHANGE THIS PASSWORD ON FIRST LOGIN.");
             log.info("=================================================================");
         }

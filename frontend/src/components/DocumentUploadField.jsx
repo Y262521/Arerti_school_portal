@@ -44,7 +44,7 @@ export default function DocumentUploadField({
             } else {
                 onChange(uploadedUrls[0])
             }
-            toast.success(`${label} ${t('uploaded')}`, { id: toastId })
+            toast.dismiss(toastId)
         } catch (err) {
             console.error('File upload failed:', err)
             toast.error(`${t('failedToUpload')} ${label}`, { id: toastId })
@@ -66,7 +66,7 @@ export default function DocumentUploadField({
             } else {
                 onChange(url)
             }
-            toast.success(`${label} ${t('uploaded')}`, { id: toastId })
+            toast.dismiss(toastId)
         } catch (err) {
             console.error('Camera upload failed:', err)
             toast.error(`${t('failedToUpload')} ${label}`, { id: toastId })

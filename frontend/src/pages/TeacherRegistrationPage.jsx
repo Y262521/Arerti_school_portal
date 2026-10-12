@@ -373,7 +373,6 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
                 stream: f.stream || null, paymentMethod: f.paymentMethod,
                 bankTransactionRef: f.bankTransactionRef, paymentReceiptUrl: f.paymentReceiptUrl || null,
             }, prevYear)
-            toast.success(`${student.studentName} ${t('studentEnrolled')}`)
             setStudents(prev => prev.map(s => s.studentId === student.studentId ? { ...s, alreadyEnrolled: true } : s))
         } catch (err) {
             toast.error(err.response?.data?.message || t('enrollmentFailed'))

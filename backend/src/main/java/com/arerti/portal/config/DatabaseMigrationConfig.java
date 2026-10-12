@@ -26,6 +26,17 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         migrateGradeSectionUniqueConstraint();
         dropLegacyObsoleteTables();
+        migrateAdminToDirector();
+    }
+
+    private void migrateAdminToDirector() {
+        try {
+            jdbc.execute("UPDATE users SET full_name = 'School Director' WHERE full_name = 'System Administrator' OR full_name = 'Admin'");
+            jdbc.execute("UPDATE users SET username = 'director', email = 'director@arerti.edu.et' WHERE username = 'admin'");
+            log.info("Successfully updated administrator title and username to School Director.");
+        } catch (Exception e) {
+            log.warn("Could not migrate admin user to director: {}", e.getMessage());
+        }
     }
 
     private void dropLegacyObsoleteTables() {

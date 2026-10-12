@@ -116,7 +116,6 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 subjectId,
                 teacherId: teacherId ? Number(teacherId) : null
             })
-            toast.success(t('teacherAssigned'))
             load()
         } catch (err) {
             toast.error(err.response?.data?.message || t('failedToAssignTeacher'))
@@ -137,7 +136,6 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                     applied++
                 } catch { /* already assigned — skip */ }
             }
-            toast.success(`${applied} ${t('subjectsAppliedFromCurriculum')} ${cls.grade}`)
             load()
         } catch { toast.error(t('failedToApplyCurriculum')) }
     }
@@ -236,7 +234,6 @@ function CurriculumPanel({ onClose }) {
         setAdding(true)
         try {
             await curriculumService.addSubject(grade, selectedSubject, needsStream ? stream : null)
-            toast.success(t('subjectAddedToCurriculum'))
             setSelectedSubject('')
             load()
         } catch (err) {
@@ -247,7 +244,6 @@ function CurriculumPanel({ onClose }) {
     const handleRemove = async (subjectId) => {
         try {
             await curriculumService.removeSubject(grade, subjectId, needsStream ? stream : null)
-            toast.success(t('subjectRemovedFromCurriculum'))
             load()
         } catch { toast.error(t('failedToRemove')) }
     }
@@ -421,10 +417,8 @@ export default function ClassesPage() {
         try {
             if (modal.type === 'add') {
                 await classService.create(payload)
-                toast.success(t('classCreated'))
             } else {
                 await classService.update(modal.cls.id, payload)
-                toast.success(t('classUpdated'))
             }
             setModal(null)
             load(true)
@@ -441,7 +435,6 @@ export default function ClassesPage() {
         try {
             await classService.remove(id)
             setClasses(prev => prev.filter(c => c.id !== id))
-            toast.success(t('classDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {

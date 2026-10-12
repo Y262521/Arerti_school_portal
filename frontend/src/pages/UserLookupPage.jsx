@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 import Modal from '../components/Modal'
@@ -153,12 +153,12 @@ export default function UserLookupPage() {
                         <tbody>
                             {users.map(u => (
                                 <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
-                                    <td className="px-4 py-3 font-medium text-slate-900">{u.fullName}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-900">{u.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : u.fullName}</td>
                                     <td className="px-4 py-3 font-mono text-xs text-brand">{u.username}</td>
                                     <td className="px-4 py-3 text-slate-600 text-xs">{u.email}</td>
                                     <td className="px-4 py-3 text-center">
                                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ROLE_BADGE[u.role] || 'bg-slate-100 text-slate-600'}`}>
-                                            {u.role}
+                                            {t(u.role) || (u.role === 'ADMIN' ? 'School Director' : u.role)}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 text-center">

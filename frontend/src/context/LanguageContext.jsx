@@ -552,7 +552,7 @@ const translations = {
     sectionPending: 'Section will be auto-assigned by the director after registration closes.',
 
     // ── Roles ────────────────────────────────────────────────────────────────
-    ADMIN: 'Director',
+    ADMIN: 'School Director',
     TEACHER: 'Teacher',
     STUDENT: 'Student',
     PARENT: 'Parent',
@@ -1262,7 +1262,7 @@ const translations = {
     sectionPending: 'ምዝገባ ከተዘጋ በኋላ ዳይሬክተሩ ክፍልን ይመድባሉ።',
 
     // ── Roles ────────────────────────────────────────────────────────────────
-    ADMIN: 'ዳይሬክተር',
+    ADMIN: 'የትምህርት ቤት ዳይሬክተር',
     TEACHER: 'አስተማሪ',
     STUDENT: 'ተማሪ',
     PARENT: 'ወላጅ',

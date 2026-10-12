@@ -38,7 +38,7 @@ export function AdminDashboard() {
   return (
     <div>
       <DashboardHeader
-        title={`${t('welcomeAdmin')}, ${user?.fullName}`}
+        title={`${t('welcomeAdmin')}, ${user?.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : user?.fullName}`}
         subtitle={t('directorOverview')}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

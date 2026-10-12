@@ -103,10 +103,8 @@ export default function NoticeBoardPage() {
         try {
             if (modal.mode === 'add') {
                 await noticeService.create(payload)
-                toast.success(t('noticePosted'))
             } else {
                 await noticeService.update(modal.notice.id, payload)
-                toast.success(t('noticeUpdated'))
             }
             setModal(null)
             load(true)
@@ -121,7 +119,6 @@ export default function NoticeBoardPage() {
         try {
             await noticeService.remove(id)
             setNotices(prev => prev.filter(n => n.id !== id))
-            toast.success(t('noticeDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {

@@ -78,10 +78,8 @@ export default function SubjectsPage() {
         try {
             if (modal.mode === 'add') {
                 await subjectService.create(payload)
-                toast.success(t('subjectAdded'))
             } else {
                 await subjectService.update(modal.subject.id, payload)
-                toast.success(t('subjectUpdated'))
             }
             setModal(null)
             load(true)
@@ -96,7 +94,6 @@ export default function SubjectsPage() {
         try {
             await subjectService.remove(id)
             setSubjects(prev => prev.filter(s => s.id !== id))
-            toast.success(t('subjectDeleted'))
             setConfirmDelete(null)
             load(true)
         } catch (err) {
