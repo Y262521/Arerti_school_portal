@@ -1,178 +1,204 @@
 ﻿import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
-import { gradeService, reportCardService } from '../services/gradeService'
+import { gradeService } from '../services/gradeService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
 
-const currentYear = new Date().getFullYear()
-const CURRENT_YEAR = `${currentYear}/${currentYear + 1}`
-
-const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => {
-    const y = currentYear - 3 + i
-    return `${y}/${y + 1}`
-})
-
-const GRADE_COLOR = (g) => {
-    if (!g || g === '—') return 'text-slate-400'
-    if (g.startsWith('A')) return 'text-green-600'
-    if (g.startsWith('B')) return 'text-blue-600'
-    if (g.startsWith('C')) return 'text-yellow-600'
-    if (g === 'D') return 'text-orange-500'
-    return 'text-red-600'
+function toEthiopianDate(gregorianDate) {
+  if (!gregorianDate) return ''
+  const d = new Date(gregorianDate)
+  const gcYear = d.getFullYear()
+  const gcMonth = d.getMonth() + 1
+  const gcDay = d.getDate()
+  const etYear = gcMonth > 9 || (gcMonth === 9 && gcDay >= 11) ? gcYear - 7 : gcYear - 8
+  const etMonthNames = ['መስከረም','ጥቅምት','ህዳር','ታህሳስ','ጥር','የካቲት','መጋቢት','ሚያዚያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ']
+  const etMonthIdx = (gcMonth - 9 + 12) % 12
+  const etMonthName = etMonthNames[etMonthIdx]
+  return `${gcDay} ${etMonthName} ${etYear}`
 }
 
 export default function MyGradesPage() {
-    const { user } = useAuth()
-    const { t } = useLanguage()
-    const [student, setStudent] = useState(null)
-    const [report, setReport] = useState(null)
-    const [term, setTerm] = useState(1)
-    const [academicYear, setAcademicYear] = useState(CURRENT_YEAR)
-    const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const { t } = useLanguage()
+  const [student, setStudent] = useState(null)
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState({})
 
-    useEffect(() => {
-        studentService.getMe()
-            .then(setStudent)
-            .catch((err) => {
-                setStudent(null)
-            })
-            .finally(() => setLoading(false))
-    }, [user])
+  useEffect(() => {
+    studentService.getMe()
+      .then(setStudent)
+      .catch(() => setStudent(null))
+  }, [user])
 
-    useEffect(() => {
-        if (!student) return
-        setLoading(true)
-        reportCardService.get(student.id, term, academicYear)
-            .then(setReport)
-            .catch(() => setReport(null))
-            .finally(() => setLoading(false))
-    }, [student, term, academicYear])
+  useEffect(() => {
+    setLoading(true)
+    gradeService.getMyGradeHistory()
+      .then(setHistory)
+      .catch(() => setHistory([]))
+      .finally(() => setLoading(false))
+  }, [user])
 
-    if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
-    if (!student) return (
-        <div className="card p-8 text-center text-slate-500">
-            {t('studentProfileNotSetup')}
-        </div>
-    )
+  const toggleExpand = (key) => {
+    setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
-    return (
+  const latestEntry = history.length > 0 ? history[history.length - 1] : null
+
+  if (loading) return <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
         <div>
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="font-display text-2xl font-bold text-slate-900">{t('myGradesPage')}</h1>
-                    <p className="text-slate-500 mt-1">{student.studentUid} · {student.sectionLabel || t('noClassAssigned')}</p>
-                </div>
-                <div className="flex gap-3 items-end">
-                    <div>
-                        <label className="field-label">{t('semester')}</label>
-                        <select className="field w-36" value={term} onChange={e => setTerm(Number(e.target.value))}>
-                            <option value={1}>{t('semester')} 1</option>
-                            <option value={2}>{t('semester')} 2</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="field-label">{t('year')}</label>
-                        <select className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)}>
-                            {YEAR_OPTIONS.map(y => (
-                                <option key={y} value={y}>{y}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {/* Summary cards */}
-            {report && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                    <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('average')}</div>
-                        <div className={`text-3xl font-bold mt-1 ${GRADE_COLOR(report.overallGrade)}`}>
-                            {report.average ? report.average.toFixed(1) : '—'}
-                        </div>
-                        <div className={`text-sm font-semibold ${GRADE_COLOR(report.overallGrade)}`}>{report.overallGrade}</div>
-                    </div>
-                    <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('subjectsLabel')}</div>
-                        <div className="text-3xl font-bold text-brand mt-1">{report.grades.length}</div>
-                    </div>
-                    <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('attendance')}</div>
-                        <div className={`text-3xl font-bold mt-1 ${report.attendancePercent >= 75 ? 'text-green-600' : 'text-red-600'}`}>
-                            {report.attendancePercent}%
-                        </div>
-                        <div className="text-xs text-slate-400">{report.presentDays}/{report.totalDays} {t('daysLabel')}</div>
-                    </div>
-                    <div className="card text-center">
-                        <div className="text-xs text-slate-500 uppercase tracking-wide">{t('semester')}</div>
-                        <div className="text-3xl font-bold text-brand mt-1">{term}</div>
-                        <div className="text-xs text-slate-400">{academicYear}</div>
-                    </div>
-                </div>
-            )}
-
-            {/* Annual result banner — shown only when both semesters are available */}
-            {report?.hasBothSemesters && (
-                <div className={`mb-6 rounded-xl border-2 p-4 flex items-center gap-4 ${
-                    report.passed
-                        ? 'bg-green-50 border-green-400'
-                        : 'bg-red-50 border-red-400'
-                }`}>
-                    <div className={`text-4xl font-black ${report.passed ? 'text-green-600' : 'text-red-600'}`}>
-                        {report.passed ? '✓' : '✗'}
-                    </div>
-                    <div>
-                        <div className={`text-lg font-bold ${report.passed ? 'text-green-700' : 'text-red-700'}`}>
-                            {report.passed ? 'PASSED' : 'FAILED'} — {academicYear}
-                        </div>
-                        <div className="text-sm text-slate-600">
-                            Annual average: <strong>{report.annualAverage?.toFixed(1)}</strong> / 100
-                            {!report.passed && <span className="ml-2 text-red-600 font-medium">— below passing mark of 50</span>}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Grade table */}
-            {!report || report.grades.length === 0 ? (
-                <div className="card p-8 text-center text-slate-500">
-                    {t('noGradesForSemester')} {term}, {academicYear}.
-                </div>
-            ) : (
-                <div className="card overflow-x-auto p-0">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                                <th className="px-4 py-3 text-left">{t('subjectLabel')}</th>
-                                <th className="px-4 py-3 text-center">{t('scoreLabel')}</th>
-                                <th className="px-4 py-3 text-center">{t('gradeLabel')}</th>
-                                <th className="px-4 py-3 text-left">{t('commentLabel')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {report.grades.map(g => (
-                                <tr key={g.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                    <td className="px-4 py-3 font-medium text-slate-900">{g.subjectName}</td>
-                                    <td className="px-4 py-3 text-center">{g.score}/100</td>
-                                    <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(g.grade)}`}>{g.grade}</td>
-                                    <td className="px-4 py-3 text-slate-500 text-xs">{g.comment || '—'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="bg-slate-50 font-semibold">
-                                <td className="px-4 py-3 text-slate-700">{t('overallAverage')}</td>
-                                <td className={`px-4 py-3 text-center ${GRADE_COLOR(report.overallGrade)}`}>
-                                    {report.average ? report.average.toFixed(1) : '—'}/100
-                                </td>
-                                <td className={`px-4 py-3 text-center font-bold ${GRADE_COLOR(report.overallGrade)}`}>
-                                    {report.overallGrade}
-                                </td>
-                                <td />
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            )}
+          <h1 className="font-display text-2xl font-bold text-slate-900">{t('myGradesPage')}</h1>
+          {student && (
+            <p className="text-slate-500 mt-1">{student.studentUid} · {student.sectionLabel || t('noClassAssigned')}</p>
+          )}
         </div>
-    )
+      </div>
+
+      {latestEntry && latestEntry.annualAverage != null && (
+        <div className={`mb-6 rounded-xl border-2 p-4 flex items-center gap-4 ${
+          latestEntry.passed
+            ? 'bg-green-50 border-green-400'
+            : 'bg-red-50 border-red-400'
+        }`}>
+          <div className={`text-4xl font-black ${latestEntry.passed ? 'text-green-600' : 'text-red-600'}`}>
+            {latestEntry.passed ? '✓' : '✗'}
+          </div>
+          <div>
+            <div className={`text-lg font-bold ${latestEntry.passed ? 'text-green-700' : 'text-red-700'}`}>
+              {latestEntry.passed ? 'PASSED' : 'FAILED'} — {latestEntry.academicYear}
+            </div>
+            <div className="text-sm text-slate-600">
+              Annual average: <strong>{latestEntry.annualAverage?.toFixed(1)}</strong> / 100
+              {!latestEntry.passed && <span className="ml-2 text-red-600 font-medium">— below passing mark of 50</span>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {history.length === 0 ? (
+        <div className="card p-8 text-center text-slate-500">No registration history found.</div>
+      ) : (
+        <div className="card overflow-x-auto p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
+                <th className="w-8 px-2 py-3"></th>
+                <th className="px-4 py-3 text-left">Ac Year</th>
+                <th className="px-4 py-3 text-center">Batch</th>
+                <th className="px-4 py-3 text-center">Semester</th>
+                <th className="px-4 py-3 text-left">Registration Date</th>
+                <th className="px-4 py-3 text-left">Reg Remark</th>
+                <th className="px-4 py-3 text-center">Average</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((entry) => {
+                const sem1Key = `${entry.id}-1`
+                const sem2Key = `${entry.id}-2`
+
+                return (
+                  <>
+                    <tr
+                      key={sem1Key + '-row'}
+                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                      onClick={() => toggleExpand(sem1Key)}
+                    >
+                      <td className="px-2 py-3 text-center text-slate-400 select-none">
+                        {expanded[sem1Key] ? '▼' : '▶'}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {entry.academicYear}
+                      </td>
+                      <td className="px-4 py-3 text-center">{entry.batch}</td>
+                      <td className="px-4 py-3 text-center font-semibold">I</td>
+                      <td className="px-4 py-3">{toEthiopianDate(entry.registrationDate)}</td>
+                      <td className="px-4 py-3 text-slate-500 text-xs">{entry.enrollmentType}</td>
+                      <td className="px-4 py-3 text-center">
+                        {entry.sem1Average != null ? entry.sem1Average.toFixed(1) : '—'}
+                      </td>
+                    </tr>
+                    {expanded[sem1Key] && (
+                      <tr key={sem1Key + '-detail'} className="bg-slate-50">
+                        <td></td>
+                        <td colSpan={6} className="px-6 py-3">
+                          {entry.sem1Grades && entry.sem1Grades.length > 0 ? (
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="text-xs text-slate-500 uppercase">
+                                  <th className="py-1 text-left">Subject</th>
+                                  <th className="py-1 text-center">Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {entry.sem1Grades.map((g, i) => (
+                                  <tr key={i} className="border-t border-slate-200">
+                                    <td className="py-1 text-slate-700">{g.subjectName}</td>
+                                    <td className="py-1 text-center">{g.score != null ? `${g.score} / 100` : '—'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <span className="text-slate-400 text-xs">No grades recorded for Semester I.</span>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                    <tr
+                      key={sem2Key + '-row'}
+                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                      onClick={() => toggleExpand(sem2Key)}
+                    >
+                      <td className="px-2 py-3 text-center text-slate-400 select-none">
+                        {expanded[sem2Key] ? '▼' : '▶'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs"></td>
+                      <td className="px-4 py-3 text-center">{entry.batch}</td>
+                      <td className="px-4 py-3 text-center font-semibold">II</td>
+                      <td className="px-4 py-3 text-slate-400">—</td>
+                      <td className="px-4 py-3 text-slate-500 text-xs">{entry.enrollmentType}</td>
+                      <td className="px-4 py-3 text-center">
+                        {entry.sem2Average != null ? entry.sem2Average.toFixed(1) : '—'}
+                      </td>
+                    </tr>
+                    {expanded[sem2Key] && (
+                      <tr key={sem2Key + '-detail'} className="bg-slate-50">
+                        <td></td>
+                        <td colSpan={6} className="px-6 py-3">
+                          {entry.sem2Grades && entry.sem2Grades.length > 0 ? (
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="text-xs text-slate-500 uppercase">
+                                  <th className="py-1 text-left">Subject</th>
+                                  <th className="py-1 text-center">Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {entry.sem2Grades.map((g, i) => (
+                                  <tr key={i} className="border-t border-slate-200">
+                                    <td className="py-1 text-slate-700">{g.subjectName}</td>
+                                    <td className="py-1 text-center">{g.score != null ? `${g.score} / 100` : '—'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <span className="text-slate-400 text-xs">No grades recorded for Semester II.</span>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 }
