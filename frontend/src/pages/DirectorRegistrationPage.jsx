@@ -4,7 +4,6 @@ import { teacherService } from '../services/teacherService'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import StudentEnrollmentWizard from '../components/StudentEnrollmentWizard'
-import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
@@ -16,12 +15,12 @@ function PostponeModal({ windowId, currentEnd, onSuccess, onClose }) {
     const [loading, setLoading] = useState(false)
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!newEnd) { toast.error(t('newEndDateRequired')); return }
+        if (!newEnd) { return }
         setLoading(true)
         try {
             await registrationService.postponeWindow(windowId, { newEndDatetime: newEnd + ':00', reason })
             onSuccess()
-        } catch (err) { toast.error(err.response?.data?.message || t('failedToPostpone')) }
+        } catch (err) { }
         finally { setLoading(false) }
     }
     return (
@@ -55,7 +54,7 @@ function AutoAssignModal({ onClose }) {
     const handleAssign = async () => {
         setLoading(true)
         try { const r = await registrationService.autoAssign(grade, academicYear); setResult(r); }
-        catch (err) { toast.error(err.response?.data?.message || t('autoAssignFailed')) }
+        catch (err) { }
         finally { setLoading(false) }
     }
     return (
@@ -106,7 +105,7 @@ function OpenWindowForm({ onSubmit, onClose, loading }) {
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
     const handleSubmit = (e) => {
         e.preventDefault()
-        if (!form.endDatetime) { toast.error(t('endDateRequired')); return }
+        if (!form.endDatetime) { return }
         onSubmit({ ...form, startDatetime: form.startDatetime + ':00', endDatetime: form.endDatetime + ':00' })
     }
     return (
@@ -141,12 +140,12 @@ function AssignTeacherForm({ windowId, teachers, existingAssignments, onSuccess,
     const handleSubmit = async (e) => {
         e.preventDefault()
         const selected = Object.entries(grades).filter(([, v]) => v).map(([g]) => g)
-        if (selected.length === 0) { toast.error(t('selectAtLeastOneGrade')); return }
+        if (selected.length === 0) { return }
         setLoading(true)
         try {
             await registrationService.assignTeacher(windowId, { teacherId: Number(teacherId), allowedGrades: selected.join(',') })
             onSuccess()
-        } catch (err) { toast.error(err.response?.data?.message || t('failedToAssign')) }
+        } catch (err) { }
         finally { setLoading(false) }
     }
     return (
@@ -187,8 +186,7 @@ function WindowCard({ window: w, teachers, onAssign, onClose, onPostpone, onEnro
     const loadEnrollments = async () => {
         setLoadingEnroll(true)
         try { const data = await registrationService.getEnrollments(w.id); setEnrollments(data); setShowEnrollments(true) }
-        catch { toast.error(t('failedToLoadEnrollments')) }
-        finally { setLoadingEnroll(false) }
+        catch { /* silent */ }
     }
 
     const byTeacher = enrollments.reduce((acc, e) => {
@@ -329,7 +327,7 @@ export default function DirectorRegistrationPage() {
         try {
             const [wins, tList] = await Promise.all([registrationService.getWindows(), teacherService.getAll()])
             setWindows(wins); setTeachers(tList)
-        } catch { toast.error(t('failedToLoad')) }
+        } catch { /* silent */ }
         finally { setLoading(false) }
     }
     useEffect(() => { load() }, [])
@@ -337,18 +335,18 @@ export default function DirectorRegistrationPage() {
     const handleOpenWindow = async (payload) => {
         setOpeningWindow(true)
         try { await registrationService.openWindow(payload); setOpenModal(false); load() }
-        catch (err) { toast.error(err.response?.data?.message || t('failedToOpenWindow')) }
+        catch (err) { }
         finally { setOpeningWindow(false) }
     }
 
     const handleCloseWindow = async (id) => {
         try { await registrationService.closeWindow(id); setConfirmClose(null); load() }
-        catch { toast.error(t('failedToClose')) }
+        catch { /* silent */ }
     }
 
     const handleRemoveAssignment = async (id) => {
         try { await registrationService.removeAssignment(id); load() }
-        catch { toast.error(t('failedToRemove')) }
+        catch { /* silent */ }
     }
 
     // A window is active if status is not CLOSED and the end datetime has not passed

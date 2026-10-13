@@ -4,7 +4,6 @@ import { attendanceService } from '../services/attendanceService'
 import { classService } from '../services/classService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
-import toast from 'react-hot-toast'
 
 const STATUS_STYLES = {
     PRESENT: 'bg-green-100 text-green-700',
@@ -40,11 +39,8 @@ export default function AttendancePage() {
         loader
             .then(data => {
                 setSections(data)
-                if (!isAdmin && data.length === 0) {
-                    toast(t('noHomeroomAssigned'), { icon: 'ℹ️' })
-                }
             })
-            .catch(() => toast.error(t('failedToLoadClasses')))
+            .catch(() => {})
     }, [isAdmin])
 
     useEffect(() => {
@@ -56,7 +52,7 @@ export default function AttendancePage() {
         ]).then(([allStudents, recs]) => {
             setStudents(allStudents.filter(s => String(s.sectionId) === String(sectionId)))
             setRecords(recs)
-        }).catch(() => toast.error(t('failedToLoadAttendance')))
+        }).catch(() => {})
             .finally(() => setLoading(false))
     }, [sectionId, date])
 
@@ -70,7 +66,7 @@ export default function AttendancePage() {
                 const idx = prev.findIndex(r => r.studentId === studentId)
                 return idx >= 0 ? prev.map((r, i) => i === idx ? rec : r) : [...prev, rec]
             })
-        } catch { toast.error(t('failedToSaveAttendance')) }
+        } catch { /* silent */ }
         finally { setSaving(s => ({ ...s, [studentId]: false })) }
     }
 
@@ -78,7 +74,6 @@ export default function AttendancePage() {
         for (const student of students) {
             await handleMark(student.id, status)
         }
-        toast.success(`${t('allMarkedAs')} ${STATUS_LABELS[status]}`)
     }
 
     const present = records.filter(r => r.status === 'PRESENT').length

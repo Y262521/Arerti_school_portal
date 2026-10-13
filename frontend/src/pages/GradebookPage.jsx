@@ -6,7 +6,6 @@ import { gradeEntryWindowService } from '../services/registrationService'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 const cy = new Date().getFullYear()
@@ -174,8 +173,7 @@ export default function GradebookPage() {
     useEffect(() => {
         Promise.all([classService.getAll(), subjectService.getAll()])
             .then(([c, s]) => { setSections(c); setSubjects(s) })
-            .catch(() => toast.error(t('failedToLoadData')))
-        if (isTeacher) {
+            .catch(() => {})
             regradeService.myRequests().then(setMyRegradePerms).catch(() => {})
         }
     }, [isTeacher])
@@ -202,7 +200,7 @@ export default function GradebookPage() {
                 setIsHomeroomOfSection(false)
             }
         } catch {
-            toast.error(t('failedToLoadGrades'))
+            /* silent */
         } finally { setLoading(false) }
     }
 
@@ -247,13 +245,17 @@ export default function GradebookPage() {
     const handleSaveGrade = async (payload) => {
         setSaving(true)
         try {
-            await gradeService.upsert(payload)
-            toast.success(t('marksSaved'))
+            const saved = await gradeService.upsert(payload)
             setModal(null)
+            // Update grades in-place — no full reload, no flash
+            setGrades(prev => {
+                const idx = prev.findIndex(g => g.studentId === payload.studentId && g.subjectId === payload.subjectId)
+                return idx >= 0
+                    ? prev.map((g, i) => i === idx ? saved : g)
+                    : [...prev, saved]
+            })
             if (isTeacher) { const perms = await regradeService.myRequests(); setMyRegradePerms(perms) }
-            loadGrades()
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
@@ -266,12 +268,10 @@ export default function GradebookPage() {
                 sectionId: Number(sectionId),
                 term, academicYear, reason,
             })
-            toast.success(t('regradeRequestSubmitted'))
             setRegradeModal(null)
             const perms = await regradeService.myRequests()
             setMyRegradePerms(perms)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToSubmitRequest'))
         } finally { setRequestingRegrade(false) }
     }
 

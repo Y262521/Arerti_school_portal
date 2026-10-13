@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { authService } from '../services/authService'
-import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
 const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes (300,000 ms)
@@ -17,16 +16,6 @@ export function AuthProvider({ children }) {
     setUser(null)
 
     if (reason === 'inactivity') {
-      const isAmharic = localStorage.getItem('arerti_lang') === 'am'
-      const message = isAmharic
-        ? 'ለደህንነትዎ ሲባል ከ 5 ደቂቃ እንቅስቃሴ አለማድረግ በኋላ በራስ-ሰር ወጥተዋል።'
-        : 'You were automatically logged out after 5 minutes of inactivity for your security.'
-
-      toast.error(message, {
-        id: 'inactivity-logout',
-        duration: 6000
-      })
-
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'
       }

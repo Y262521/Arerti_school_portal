@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '../context/LanguageContext'
 import { parentService } from '../services/parentService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 function LinkForm({ onSubmit, onClose, loading }) {
     const { t } = useLanguage()
@@ -55,7 +54,7 @@ export default function ParentChildrenPage() {
     const load = async () => {
         setLoading(true)
         try { setChildren(await parentService.getChildren()) }
-        catch { toast.error(t('failedToLoadChildren')) }
+        catch { /* silent */ }
         finally { setLoading(false) }
     }
 
@@ -64,20 +63,19 @@ export default function ParentChildrenPage() {
     const handleLink = async (payload) => {
         setLinking(true)
         try {
-            await parentService.link(payload)
-            toast.success(t('childLinked'))
-            setModal(false); load()
+            const linked = await parentService.link(payload)
+            setModal(false)
+            setChildren(prev => [...prev, linked])
         } catch (err) {
-            toast.error(err.response?.data?.message || t('linkFailed'))
         } finally { setLinking(false) }
     }
 
     const handleUnlink = async (linkId) => {
         try {
             await parentService.unlink(linkId)
-            toast.success(t('childUnlinked'))
-            setConfirmUnlink(null); load()
-        } catch { toast.error(t('unlinkFailed')) }
+            setConfirmUnlink(null)
+            setChildren(prev => prev.filter(c => c.linkId !== linkId))
+        } catch { /* silent */ }
     }
 
     return (

@@ -3,7 +3,6 @@ import { useLanguage } from '../context/LanguageContext'
 import { gradeService, reportCardService } from '../services/gradeService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
-import toast from 'react-hot-toast'
 
 const currentYear = new Date().getFullYear()
 const CURRENT_YEAR = `${currentYear}/${currentYear + 1}`
@@ -35,7 +34,6 @@ export default function MyGradesPage() {
         studentService.getMe()
             .then(setStudent)
             .catch((err) => {
-                if (err.response?.status !== 404) toast.error(t('failedToLoadStudent'))
                 setStudent(null)
             })
             .finally(() => setLoading(false))

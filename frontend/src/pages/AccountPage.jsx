@@ -2,7 +2,6 @@
 import { useLanguage } from '../context/LanguageContext'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
-import toast from 'react-hot-toast'
 
 export default function AccountPage() {
     const { user } = useAuth()
@@ -16,22 +15,17 @@ export default function AccountPage() {
         e.preventDefault()
 
         if (form.newPassword.length < 6) {
-            toast.error(t('passwordTooShort'))
             return
         }
         if (form.newPassword !== form.confirmPassword) {
-            toast.error(t('passwordsDoNotMatch'))
             return
         }
 
         setSaving(true)
         try {
             await authService.changePassword(form.currentPassword, form.newPassword)
-            toast.success(t('passwordChanged'))
             setForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
         } catch (err) {
-            const msg = err.response?.data?.message || t('failedToChangePassword')
-            toast.error(msg)
         } finally {
             setSaving(false)
         }

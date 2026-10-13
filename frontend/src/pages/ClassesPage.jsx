@@ -4,7 +4,6 @@ import { classService, curriculumService } from '../services/classService'
 import { teacherService } from '../services/teacherService'
 import { subjectService } from '../services/gradeService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
@@ -103,7 +102,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         setLoading(true)
         classService.getAssignments(cls.id)
             .then(setAssignments)
-            .catch(() => toast.error(t('failedToLoadAssignments')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }
 
@@ -118,7 +117,6 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
             })
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToAssignTeacher'))
         } finally { setSaving(null) }
     }
 
@@ -126,7 +124,6 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
         try {
             const curriculum = await curriculumService.get(cls.grade)
             if (curriculum.length === 0) {
-                toast.error(`${t('noCurriculumForGrade')} ${cls.grade}.`)
                 return
             }
             let applied = 0
@@ -137,7 +134,7 @@ function AssignmentsPanel({ cls, teachers, onClose }) {
                 } catch { /* already assigned — skip */ }
             }
             load()
-        } catch { toast.error(t('failedToApplyCurriculum')) }
+        } catch { /* silent */ }
     }
 
     const unassigned = assignments.filter(a => !a.teacherId).length
@@ -219,7 +216,7 @@ function CurriculumPanel({ onClose }) {
         const effectiveStream = needsStream ? stream : null
         Promise.all([curriculumService.get(grade, effectiveStream), subjectService.getAll()])
             .then(([c, s]) => { setCurriculum(c); setAllSubjects(s) })
-            .catch(() => toast.error(t('failedToLoadCurriculum')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }
 
@@ -230,14 +227,13 @@ function CurriculumPanel({ onClose }) {
 
     const handleAdd = async () => {
         if (!selectedSubject) return
-        if (needsStream && !stream) { toast.error(t('selectStreamFirst')); return }
+        if (needsStream && !stream) { return }
         setAdding(true)
         try {
             await curriculumService.addSubject(grade, selectedSubject, needsStream ? stream : null)
             setSelectedSubject('')
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToAdd'))
         } finally { setAdding(false) }
     }
 
@@ -245,7 +241,7 @@ function CurriculumPanel({ onClose }) {
         try {
             await curriculumService.removeSubject(grade, subjectId, needsStream ? stream : null)
             load()
-        } catch { toast.error(t('failedToRemove')) }
+        } catch { /* silent */ }
     }
 
     return (
@@ -336,9 +332,7 @@ function EndTermModal({ onClose }) {
         try {
             const r = await classService.endTerm(year)
             setResult(r)
-            toast.success(t('termEndedSuccess'))
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToEndTerm'))
         } finally { setLoading(false) }
     }
 
@@ -404,7 +398,6 @@ export default function ClassesPage() {
             setClasses(c)
             setTeachers(trs)
         } catch {
-            toast.error(t('failedToLoadClasses'))
         } finally {
             if (!silent) setLoading(false)
         }
@@ -416,14 +409,14 @@ export default function ClassesPage() {
         setSaving(true)
         try {
             if (modal.type === 'add') {
-                await classService.create(payload)
+                const created = await classService.create(payload)
+                setClasses(prev => [...prev, created])
             } else {
-                await classService.update(modal.cls.id, payload)
+                const updated = await classService.update(modal.cls.id, payload)
+                setClasses(prev => prev.map(c => c.id === modal.cls.id ? updated : c))
             }
             setModal(null)
-            load(true)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally {
             setSaving(false)
         }
@@ -436,11 +429,9 @@ export default function ClassesPage() {
             await classService.remove(id)
             setClasses(prev => prev.filter(c => c.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

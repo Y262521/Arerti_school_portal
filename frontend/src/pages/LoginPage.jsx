@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
@@ -43,7 +42,7 @@ export default function LoginPage() {
 
   // Pre-warm backend container immediately when page loads
   useEffect(() => {
-    api.get('/health').catch(() => {})
+    api.get('/health').catch(() => { })
   }, [])
 
   // If login is waiting for sleeping Render free tier container, show clear message after 2.5s
@@ -222,11 +221,11 @@ export default function LoginPage() {
               </span>
               <span>
                 {lang === 'am'
-                  ? 'ሰርቨሩ ከእንቅልፍ እየተነሳ ነው (Render Free Tier)፣ እባክዎ ጥቂት ሰከንዶች ይጠብቁ...'
-                  : 'Waking up cloud server from sleep mode (Render free tier), please hold on...'}
+                  ? 'እባክዎ ጥቂት ሰከንዶች ይጠብቁ...'
+                  : 'Please wait for a few second...'}
               </span>
             </div>
-          )}
+          )
 
           {/* ── Error message displayed directly BELOW the form ── */}
           {errorMessage && (

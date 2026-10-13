@@ -5,7 +5,6 @@ import { registrationService } from '../services/registrationService'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import StudentEnrollmentWizard from '../components/StudentEnrollmentWizard'
-import toast from 'react-hot-toast'
 
 const ETHIOPIAN_REGIONS = [
     'Addis Ababa', 'Afar', 'Amhara', 'Benishangul-Gumuz', 'Dire Dawa',
@@ -546,7 +545,7 @@ export default function StudentsPage() {
             setSections(c)
             const open = windows.find(w => w.status === 'OPEN')
             setActiveWindow(open || null)
-        } catch { toast.error(t('failedToLoad')) }
+        } catch { /* silent */ }
         finally { if (!silent) setLoading(false) }
     }
 
@@ -555,11 +554,10 @@ export default function StudentsPage() {
     const handleSave = async (payload) => {
         setSaving(true)
         try {
-            await studentService.update(modal.student.id, payload)
+            const updated = await studentService.update(modal.student.id, payload)
+            setStudents(prev => prev.map(s => s.id === modal.student.id ? updated : s))
             setModal(null)
-            load(true)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
@@ -570,11 +568,9 @@ export default function StudentsPage() {
             await studentService.remove(id)
             setStudents(prev => prev.filter(s => s.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

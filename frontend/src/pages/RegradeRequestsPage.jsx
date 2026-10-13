@@ -2,7 +2,6 @@
 import { useLanguage } from '../context/LanguageContext'
 import { regradeService } from '../services/gradeService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const STATUS_BADGE = {
     PENDING:  'bg-yellow-100 text-yellow-800',
@@ -68,7 +67,7 @@ export default function RegradeRequestsPage() {
         setLoading(true)
         regradeService.getAll()
             .then(setRequests)
-            .catch(() => toast.error(t('failedToLoadRegrade')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }
 
@@ -76,16 +75,11 @@ export default function RegradeRequestsPage() {
 
     const handleResolve = async (id, approve, note) => {
         try {
-            if (approve) {
-                await regradeService.approve(id, note)
-                toast.success(t('regradeApproved'))
-            } else {
-                await regradeService.reject(id, note)
-                toast.success(t('regradeRejected'))
-            }
-            load()
+            const updated = approve
+                ? await regradeService.approve(id, note)
+                : await regradeService.reject(id, note)
+            setRequests(prev => prev.map(r => r.id === id ? { ...r, status: approve ? 'APPROVED' : 'REJECTED', adminNote: note } : r))
         } catch (err) {
-            toast.error(err.response?.data?.message || t('resolveFailed'))
         }
     }
 

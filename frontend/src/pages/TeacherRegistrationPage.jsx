@@ -3,7 +3,6 @@ import { useLanguage } from '../context/LanguageContext'
 import { registrationService } from '../services/registrationService'
 import { classService } from '../services/classService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const ETHIOPIAN_REGIONS = [
     'Addis Ababa','Afar','Amhara','Benishangul-Gumuz','Dire Dawa',
@@ -146,7 +145,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
     const handleSubmit = async () => {
         const e = validateStep(); setErrors(e)
         if (Object.keys(e).length > 0) return
-        if (!windowId) { toast.error(t('noActiveWindow')); return }
+        if (!windowId) { return }
         setSaving(true)
         try {
             const result = await registrationService.enrollFull(windowId, {
@@ -156,7 +155,6 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             })
             onSuccess(result)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('registrationFailed'))
         } finally { setSaving(false) }
     }
 
@@ -354,7 +352,7 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
         setLoading(true)
         registrationService.getPassStatus(grade - 1, prevYear, newYear)
             .then(setStudents)
-            .catch(() => toast.error(t('failedToLoadStudents')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }, [grade, prevYear, newYear])
 
@@ -363,9 +361,9 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
 
     const handleEnroll = async (student, type) => {
         const f = forms[student.studentId] || {}
-        if (!f.paymentMethod) { toast.error(t('selectPaymentMethod')); return }
-        if (!f.bankTransactionRef) { toast.error(t('enterTransactionRef')); return }
-        if (needsStream && !f.stream) { toast.error(t('streamRequired1112')); return }
+        if (!f.paymentMethod) { return }
+        if (!f.bankTransactionRef) { return }
+        if (needsStream && !f.stream) { return }
         setSaving(s => ({ ...s, [student.studentId]: true }))
         try {
             await registrationService.enrollExisting(windowId, {
@@ -375,7 +373,6 @@ function ExistingStudentPanel({ grade, windowId, sections, prevYear, newYear }) 
             }, prevYear)
             setStudents(prev => prev.map(s => s.studentId === student.studentId ? { ...s, alreadyEnrolled: true } : s))
         } catch (err) {
-            toast.error(err.response?.data?.message || t('enrollmentFailed'))
         } finally { setSaving(s => ({ ...s, [student.studentId]: false })) }
     }
 

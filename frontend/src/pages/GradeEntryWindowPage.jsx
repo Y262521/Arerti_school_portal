@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { gradeEntryWindowService } from '../services/registrationService'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
@@ -17,7 +16,7 @@ function OpenWindowForm({ onSubmit, onClose, loading }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        if (!form.endDatetime) { toast.error(t('endDateRequired')); return }
+        if (!form.endDatetime) { return }
         onSubmit({ ...form, semester: Number(form.semester), startDatetime: form.startDatetime + ':00', endDatetime: form.endDatetime + ':00' })
     }
 
@@ -69,11 +68,9 @@ function PostponeForm({ windowId, currentEnd, onSuccess, onClose }) {
         e.preventDefault()
         setLoading(true)
         try {
-            await gradeEntryWindowService.postpone(windowId, { newEndDatetime: newEnd + ':00', reason })
-            toast.success(t('gradeEntryWindowExtended'))
-            onSuccess()
+            const updated = await gradeEntryWindowService.postpone(windowId, { newEndDatetime: newEnd + ':00', reason })
+            onSuccess(updated)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToPostpone'))
         } finally { setLoading(false) }
     }
 
@@ -113,7 +110,7 @@ export default function GradeEntryWindowPage() {
         setLoading(true)
         gradeEntryWindowService.getAll()
             .then(setWindows)
-            .catch(() => toast.error(t('failedToLoad')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }
 
@@ -122,20 +119,19 @@ export default function GradeEntryWindowPage() {
     const handleOpen = async (payload) => {
         setOpening(true)
         try {
-            await gradeEntryWindowService.open(payload)
-            toast.success(t('gradeEntryWindowOpened'))
-            setOpenModal(false); load()
+            const created = await gradeEntryWindowService.open(payload)
+            setOpenModal(false)
+            setWindows(prev => [created, ...prev])
         } catch (err) {
-            toast.error(err.response?.data?.message || t('failedToLoad'))
         } finally { setOpening(false) }
     }
 
     const handleClose = async (id) => {
         try {
             await gradeEntryWindowService.close(id)
-            toast.success(t('gradeEntryWindowClosed'))
-            setConfirmClose(null); load()
-        } catch { toast.error(t('failedToClose')) }
+            setConfirmClose(null)
+            setWindows(prev => prev.map(w => w.id === id ? { ...w, active: false } : w))
+        } catch { /* silent */ }
     }
 
     const active = windows.filter(w => w.active)
@@ -238,7 +234,14 @@ export default function GradeEntryWindowPage() {
             {postponeModal && (
                 <Modal title={t('postponeGradeEntry')} onClose={() => setPostponeModal(null)}>
                     <PostponeForm windowId={postponeModal.id} currentEnd={postponeModal.endDatetime}
-                        onSuccess={() => { setPostponeModal(null); load() }} onClose={() => setPostponeModal(null)} />
+                        onSuccess={(updated) => {
+                            setPostponeModal(null)
+                            if (updated) {
+                                setWindows(prev => prev.map(w => w.id === postponeModal.id ? updated : w))
+                            } else {
+                                load()
+                            }
+                        }} onClose={() => setPostponeModal(null)} />
                 </Modal>
             )}
 

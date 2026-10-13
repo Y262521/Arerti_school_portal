@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { auditService } from '../services/auditService'
-import toast from 'react-hot-toast'
 
 const ENTITY_OPTS = ['', 'AUTH', 'STUDENT', 'TEACHER', 'RESOURCE', 'PARENT_LINK', 'NOTICE']
 
@@ -28,7 +27,7 @@ export default function AuditLogPage() {
     const load = async (p = page, et = entityType) => {
         setLoading(true)
         try { setData(await auditService.getPage(p, 25, et)) }
-        catch { toast.error(t('failedToLoadAuditLog')) }
+        catch { /* silent */ }
         finally { setLoading(false) }
     }
 

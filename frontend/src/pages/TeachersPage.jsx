@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { teacherService } from '../services/teacherService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 import { registrationService } from '../services/registrationService'
 
 const ETHIOPIAN_REGIONS = [
@@ -274,7 +273,7 @@ export default function TeachersPage() {
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
         try { setTeachers(await teacherService.getAll()) }
-        catch { toast.error(t('failedToLoadTeachers')) }
+        catch { /* silent */ }
         finally { if (!silent) setLoading(false) }
     }
     useEffect(() => { load() }, [])
@@ -284,14 +283,15 @@ export default function TeachersPage() {
         try {
             if (modal.mode === 'add') {
                 const newTeacher = await teacherService.create(payload)
+                setTeachers(prev => [...prev, newTeacher])
                 setModal(null)
                 if (newTeacher.generatedUsername) setCredentialsModal(newTeacher)
             } else {
-                await teacherService.update(modal.teacher.id, payload)
+                const updated = await teacherService.update(modal.teacher.id, payload)
+                setTeachers(prev => prev.map(t => t.id === modal.teacher.id ? updated : t))
                 setModal(null)
             }
-            load(true)
-        } catch (err) { toast.error(err.response?.data?.message || t('saveFailed')) }
+        } catch (err) { }
         finally { setSaving(false) }
     }
 
@@ -302,11 +302,9 @@ export default function TeachersPage() {
             await teacherService.remove(id)
             setTeachers(prev => prev.filter(t => t.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

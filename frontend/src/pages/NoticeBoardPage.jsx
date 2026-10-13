@@ -3,7 +3,6 @@ import { useLanguage } from '../context/LanguageContext'
 import { noticeService } from '../services/noticeService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const PRIORITY_BADGE = {
     HIGH: 'bg-red-100 text-red-700',
@@ -92,7 +91,7 @@ export default function NoticeBoardPage() {
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
         try { setNotices(await noticeService.getAll()) }
-        catch { toast.error(t('failedToLoadNotices')) }
+        catch { /* silent */ }
         finally { if (!silent) setLoading(false) }
     }
 
@@ -102,14 +101,14 @@ export default function NoticeBoardPage() {
         setSaving(true)
         try {
             if (modal.mode === 'add') {
-                await noticeService.create(payload)
+                const created = await noticeService.create(payload)
+                setNotices(prev => [created, ...prev])
             } else {
-                await noticeService.update(modal.notice.id, payload)
+                const updated = await noticeService.update(modal.notice.id, payload)
+                setNotices(prev => prev.map(n => n.id === modal.notice.id ? updated : n))
             }
             setModal(null)
-            load(true)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
@@ -120,11 +119,9 @@ export default function NoticeBoardPage() {
             await noticeService.remove(id)
             setNotices(prev => prev.filter(n => n.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

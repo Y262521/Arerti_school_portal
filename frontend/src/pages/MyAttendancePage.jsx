@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { attendanceService } from '../services/attendanceService'
 import { studentService } from '../services/studentService'
-import toast from 'react-hot-toast'
 
 const STATUS_STYLES = {
     PRESENT: 'bg-green-100 text-green-700',
@@ -37,7 +36,7 @@ export default function MyAttendancePage() {
                 const recs = await attendanceService.getForStudent(s.id)
                 setRecords(recs)
             })
-            .catch(() => toast.error(t('failedToLoadAttendance')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }, [])
 

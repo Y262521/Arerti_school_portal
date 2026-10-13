@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { subjectService } from '../services/gradeService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const EMPTY = { name: '', code: '', applicableGrades: '' }
 
@@ -67,7 +66,7 @@ export default function SubjectsPage() {
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
         try { setSubjects(await subjectService.getAll()) }
-        catch { toast.error(t('failedToLoadSubjects')) }
+        catch { /* silent */ }
         finally { if (!silent) setLoading(false) }
     }
 
@@ -77,14 +76,14 @@ export default function SubjectsPage() {
         setSaving(true)
         try {
             if (modal.mode === 'add') {
-                await subjectService.create(payload)
+                const created = await subjectService.create(payload)
+                setSubjects(prev => [...prev, created])
             } else {
-                await subjectService.update(modal.subject.id, payload)
+                const updated = await subjectService.update(modal.subject.id, payload)
+                setSubjects(prev => prev.map(s => s.id === modal.subject.id ? updated : s))
             }
             setModal(null)
-            load(true)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
@@ -95,11 +94,9 @@ export default function SubjectsPage() {
             await subjectService.remove(id)
             setSubjects(prev => prev.filter(s => s.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

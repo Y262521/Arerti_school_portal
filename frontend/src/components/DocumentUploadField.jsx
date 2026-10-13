@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import { registrationService } from '../services/registrationService'
 import { useLanguage } from '../context/LanguageContext'
 import CameraCaptureModal from './CameraCaptureModal'
-import toast from 'react-hot-toast'
 
 export default function DocumentUploadField({
     label,
@@ -29,7 +28,6 @@ export default function DocumentUploadField({
         if (!files.length) return
 
         setUploading(true)
-        const toastId = toast.loading(`${t('uploading')} ${files.length > 1 ? `${files.length} files…` : '…'}`)
 
         try {
             const uploadedUrls = []
@@ -44,10 +42,8 @@ export default function DocumentUploadField({
             } else {
                 onChange(uploadedUrls[0])
             }
-            toast.dismiss(toastId)
         } catch (err) {
             console.error('File upload failed:', err)
-            toast.error(`${t('failedToUpload')} ${label}`, { id: toastId })
         } finally {
             setUploading(false)
             if (fileInputRef.current) fileInputRef.current.value = ''
@@ -57,7 +53,6 @@ export default function DocumentUploadField({
     // Handle camera snapshot capture
     const handleCameraCapture = async (file) => {
         setUploading(true)
-        const toastId = toast.loading(`${t('uploading')}…`)
         try {
             const url = await registrationService.uploadFile(file, folder)
             if (multiple) {
@@ -66,10 +61,8 @@ export default function DocumentUploadField({
             } else {
                 onChange(url)
             }
-            toast.dismiss(toastId)
         } catch (err) {
             console.error('Camera upload failed:', err)
-            toast.error(`${t('failedToUpload')} ${label}`, { id: toastId })
         } finally {
             setUploading(false)
         }

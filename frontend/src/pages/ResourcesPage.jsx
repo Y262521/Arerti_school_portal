@@ -3,7 +3,6 @@ import { useLanguage } from '../context/LanguageContext'
 import { resourceService } from '../services/resourceService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const AUDIENCE_OPTS = ['GENERAL', 'STUDENTS', 'TEACHERS', 'PARENTS']
 
@@ -31,7 +30,7 @@ function UploadForm({ onSubmit, onClose, loading }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        if (!file) { toast.error(t('choosefile')); return }
+        if (!file) { return }
         const fd = new FormData()
         fd.append('file', file)
         fd.append('title', title)
@@ -107,7 +106,7 @@ export default function ResourcesPage() {
     const load = async (silent = false) => {
         if (!silent) setLoading(true)
         try { setResources(await resourceService.getAll()) }
-        catch { toast.error(t('failedToLoadResources')) }
+        catch { /* silent */ }
         finally { if (!silent) setLoading(false) }
     }
 
@@ -116,11 +115,10 @@ export default function ResourcesPage() {
     const handleUpload = async (formData) => {
         setUploading(true)
         try {
-            await resourceService.upload(formData)
+            const created = await resourceService.upload(formData)
             setModal(false)
-            load(true)
+            setResources(prev => [created, ...prev])
         } catch (err) {
-            toast.error(err.response?.data?.message || t('uploadFailed'))
         } finally { setUploading(false) }
     }
 
@@ -129,7 +127,6 @@ export default function ResourcesPage() {
         try {
             await resourceService.download(resource)
         } catch {
-            toast.error(t('downloadFailed'))
         } finally { setDownloadingId(null) }
     }
 
@@ -140,11 +137,9 @@ export default function ResourcesPage() {
             await resourceService.remove(id)
             setResources(prev => prev.filter(r => r.id !== id))
             setConfirmDelete(null)
-            load(true)
         } catch (err) {
             const msg = err.response?.data?.message || t('deleteFailed')
             setDeleteError(msg)
-            load(true)
         } finally {
             setDeleting(false)
         }

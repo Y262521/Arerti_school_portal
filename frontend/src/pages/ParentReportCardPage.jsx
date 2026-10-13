@@ -2,7 +2,6 @@
 import { useLanguage } from '../context/LanguageContext'
 import { parentService } from '../services/parentService'
 import { reportCardService } from '../services/gradeService'
-import toast from 'react-hot-toast'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 
@@ -126,7 +125,7 @@ export default function ParentReportCardPage() {
                 setChildren(data)
                 if (data.length > 0) setSelectedChild(data[0])
             })
-            .catch(() => toast.error(t('failedToLoadChildren')))
+            .catch(() => {})
             .finally(() => setLoading(false))
     }, [])
 

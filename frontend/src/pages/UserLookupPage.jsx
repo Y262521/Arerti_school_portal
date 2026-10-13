@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const ROLE_BADGE = {
     ADMIN:   'bg-purple-100 text-purple-700',
@@ -20,14 +19,12 @@ function ResetPasswordModal({ user, onClose }) {
 
     const handleReset = async (e) => {
         e.preventDefault()
-        if (newPassword.length < 6) { toast.error(t('passwordTooShort')); return }
+        if (newPassword.length < 6) { return }
         setLoading(true)
         try {
             const r = await api.post(`/auth/admin/users/${user.id}/reset-password`, { newPassword })
             setResult(r.data)
-            toast.success(t('passwordResetSuccess'))
         } catch (err) {
-            toast.error(err.response?.data?.message || t('resetFailed'))
         } finally { setLoading(false) }
     }
 
@@ -108,7 +105,6 @@ export default function UserLookupPage() {
             setUsers(r.data)
             setSearched(true)
         } catch {
-            toast.error(t('searchFailed'))
         } finally { setLoading(false) }
     }
 

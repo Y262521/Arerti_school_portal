@@ -3,7 +3,6 @@ import { useLanguage } from '../context/LanguageContext'
 import { teacherService } from '../services/teacherService'
 import { registrationService } from '../services/registrationService'
 import Modal from '../components/Modal'
-import toast from 'react-hot-toast'
 
 const ETHIOPIAN_REGIONS = [
     'Addis Ababa', 'Afar', 'Amhara', 'Benishangul-Gumuz', 'Dire Dawa',
@@ -83,7 +82,6 @@ function TeacherRegistrationForm({ onSuccess }) {
             const newTeacher = await teacherService.create({ ...form, hireDate: form.hireDate || null })
             onSuccess(newTeacher)
         } catch (err) {
-            toast.error(err.response?.data?.message || t('saveFailed'))
         } finally { setSaving(false) }
     }
 
