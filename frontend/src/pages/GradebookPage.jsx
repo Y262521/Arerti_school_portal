@@ -22,7 +22,7 @@ const GRADE_COLOR = (g) => {
 
 // ── Grade Entry Form ───────────────────────────────────────────────────────────
 function GradeEntryForm({ student, subject, entry, term, academicYear,
-    onSubmit, onClose, loading, canEdit, isLocked, hasRegradePermission }) {
+    onSubmit, onClose, loading, canEdit, isLocked, hasRegradePermission, isAdmin }) {
     const { t } = useLanguage()
 
     const COMPONENTS = [
@@ -41,7 +41,8 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
     })
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
     const total = COMPONENTS.reduce((s, c) => s + (Number(form[c.key]) || 0), 0)
-    const isEditable = canEdit && (!isLocked || hasRegradePermission)
+    // Admin can always edit — bypasses lock entirely
+    const isEditable = isAdmin || (canEdit && (!isLocked || hasRegradePermission))
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -61,14 +62,20 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
         <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-sm text-slate-500">{t('semester')} {term} · {academicYear}</p>
 
-            {isLocked && !hasRegradePermission && (
+            {/* Only show lock warning to non-admin users */}
+            {!isAdmin && isLocked && !hasRegradePermission && (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
                     🔒 {t('marksLocked')}
                 </div>
             )}
-            {isLocked && hasRegradePermission && (
+            {!isAdmin && isLocked && hasRegradePermission && (
                 <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
                     ✅ {t('regradePermissionGranted')}
+                </div>
+            )}
+            {isAdmin && isLocked && (
+                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                    🔓 Director override — editing locked marks
                 </div>
             )}
 
@@ -461,6 +468,7 @@ export default function GradebookPage() {
                         canEdit={isAdmin || (windowIsOpen && myAssignedSubjectIds.has(modal.subject.id))}
                         isLocked={modal.entry?.locked ?? false}
                         hasRegradePermission={hasRegradePermission(modal.subject.id, modal.student.id)}
+                        isAdmin={isAdmin}
                     />
                 </Modal>
             )}
