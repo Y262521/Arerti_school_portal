@@ -32,7 +32,7 @@ public class StudentGradeHistoryController {
     private final GradeEntryRepository gradeEntryRepository;
 
     @GetMapping("/my-grade-history")
-    @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN') or hasRole('PARENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<GradeHistoryEntryResponse>> getMyGradeHistory(Authentication auth) {
         Student student = studentRepository.findByUser_Username(auth.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Student profile not found"));
@@ -51,9 +51,11 @@ public class StudentGradeHistoryController {
                     .findByStudentAndTermAndAcademicYear(student, 2, academicYear);
 
             List<GradeHistoryEntryResponse.SubjectScore> sem1Grades = sem1Entries.stream()
+                    .filter(e -> e.getSubject() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
             List<GradeHistoryEntryResponse.SubjectScore> sem2Grades = sem2Entries.stream()
+                    .filter(e -> e.getSubject() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
 

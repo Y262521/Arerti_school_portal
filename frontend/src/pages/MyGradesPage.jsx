@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import { gradeService } from '../services/gradeService'
 import { studentService } from '../services/studentService'
@@ -7,14 +7,29 @@ import { useAuth } from '../context/AuthContext'
 function toEthiopianDate(gregorianDate) {
   if (!gregorianDate) return ''
   const d = new Date(gregorianDate)
+  // Epoch-based Ethiopian calendar conversion using Julian Day Number
   const gcYear = d.getFullYear()
   const gcMonth = d.getMonth() + 1
   const gcDay = d.getDate()
-  const etYear = gcMonth > 9 || (gcMonth === 9 && gcDay >= 11) ? gcYear - 7 : gcYear - 8
-  const etMonthNames = ['መስከረም','ጥቅምት','ህዳር','ታህሳስ','ጥር','የካቲት','መጋቢት','ሚያዚያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ']
-  const etMonthIdx = (gcMonth - 9 + 12) % 12
-  const etMonthName = etMonthNames[etMonthIdx]
-  return `${gcDay} ${etMonthName} ${etYear}`
+
+  // Convert Gregorian to Julian Day Number
+  const a = Math.floor((14 - gcMonth) / 12)
+  const y = gcYear + 4800 - a
+  const m = gcMonth + 12 * a - 3
+  const jdn = gcDay + Math.floor((153 * m + 2) / 5) + 365 * y
+    + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
+
+  // Convert JDN to Ethiopian calendar (epoch: Meskerem 1, 1 EC = JDN 1724221)
+  const etEpoch = 1724221
+  const r = (jdn - etEpoch) % 1461
+  const n = r % 365 + 365 * Math.floor(r / 1460)
+  const etYear = 4 * Math.floor((jdn - etEpoch) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460)
+  const etMonth = Math.floor(n / 30) + 1
+  const etDay = (n % 30) + 1
+
+  const etMonthNames = ['መስከረም','ጥቅምት','ህዳር','ታህሳስ','ጥር','የካቲት','መጋቢት','ሚያዚያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ','ጳጉሜን']
+  const etMonthName = etMonthNames[Math.min(etMonth - 1, 12)]
+  return `${etDay} ${etMonthName} ${etYear}`
 }
 
 export default function MyGradesPage() {
@@ -101,7 +116,7 @@ export default function MyGradesPage() {
                 const sem2Key = `${entry.id}-2`
 
                 return (
-                  <>
+                  <React.Fragment key={entry.id}>
                     <tr
                       key={sem1Key + '-row'}
                       className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
@@ -192,7 +207,7 @@ export default function MyGradesPage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 )
               })}
             </tbody>
