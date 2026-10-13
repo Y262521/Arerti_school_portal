@@ -73,11 +73,7 @@ function GradeEntryForm({ student, subject, entry, term, academicYear,
                     ✅ {t('regradePermissionGranted')}
                 </div>
             )}
-            {isAdmin && isLocked && (
-                <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
-                    🔓 Director override — editing locked marks
-                </div>
-            )}
+
 
             <div className="grid grid-cols-2 gap-3">
                 {COMPONENTS.map(c => (
