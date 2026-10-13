@@ -73,6 +73,28 @@ function ReportCard({ child, term, academicYear }) {
                 </div>
             </div>
 
+            {/* Annual result banner — shown only when both semesters are available */}
+            {report.hasBothSemesters && (
+                <div className={`mb-6 rounded-xl border-2 p-4 flex items-center gap-4 ${
+                    report.passed
+                        ? 'bg-green-50 border-green-400'
+                        : 'bg-red-50 border-red-400'
+                }`}>
+                    <div className={`text-4xl font-black ${report.passed ? 'text-green-600' : 'text-red-600'}`}>
+                        {report.passed ? '✓' : '✗'}
+                    </div>
+                    <div>
+                        <div className={`text-lg font-bold ${report.passed ? 'text-green-700' : 'text-red-700'}`}>
+                            {report.passed ? 'PASSED' : 'FAILED'} — {academicYear}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                            Annual average: <strong>{report.annualAverage?.toFixed(1)}</strong> / 100
+                            {!report.passed && <span className="ml-2 text-red-600 font-medium">— below passing mark of 50</span>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="overflow-x-auto -mx-6 px-6">
                 <table className="w-full text-sm">
                     <thead>

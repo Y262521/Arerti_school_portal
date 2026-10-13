@@ -75,7 +75,10 @@ public class ReportCardService {
                 letterGrade(average),
                 totalDays,
                 presentDays,
-                Math.round(attendancePct * 10.0) / 10.0
+                Math.round(attendancePct * 10.0) / 10.0,
+                hasBoth ? Math.round(annualAvg * 10.0) / 10.0 : null,
+                hasBoth ? annualAvg >= 50.0 : null,
+                hasBoth
         );
     }
 

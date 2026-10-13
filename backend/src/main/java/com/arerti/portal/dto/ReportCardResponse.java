@@ -14,5 +14,8 @@ public record ReportCardResponse(
         String overallGrade,
         long totalDays,
         long presentDays,
-        double attendancePercent
+        double attendancePercent,
+        Double annualAverage,
+        Boolean passed,
+        boolean hasBothSemesters
 ) {}
