@@ -233,11 +233,13 @@ export default function GradebookPage() {
         grades.find(g => g.studentId === studentId && g.subjectId === subjectId)
 
     const classSubjectIds = new Set(assignments.map(a => a.subjectId))
-    // Teachers only see subjects assigned to them — homeroom does NOT grant access to all subjects
+    // Homeroom teachers see all class subjects (read-only view + regrade requests)
+    // Subject teachers only see their own assigned subjects
     const visibleSubjects = subjects.filter(s => {
         if (isAdmin) return classSubjectIds.has(s.id) || classSubjectIds.size === 0
         if (!isTeacher) return false
-        return myAssignedSubjectIds.has(s.id)
+        if (isHomeroomOfSection) return classSubjectIds.has(s.id) // homeroom sees all
+        return myAssignedSubjectIds.has(s.id) // subject teacher sees only theirs
     })
 
     // Teachers can only open the grade form when the window is open (or they have regrade permission)
