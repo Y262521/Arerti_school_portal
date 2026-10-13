@@ -225,7 +225,7 @@ export default function LoginPage() {
                   : 'Please wait for a few second...'}
               </span>
             </div>
-          )
+          )}
 
           {/* ── Error message displayed directly BELOW the form ── */}
           {errorMessage && (
