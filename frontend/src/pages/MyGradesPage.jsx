@@ -7,25 +7,32 @@ import { useAuth } from '../context/AuthContext'
 function toEthiopianDate(gregorianDate) {
   if (!gregorianDate) return ''
   const d = new Date(gregorianDate)
-  // Epoch-based Ethiopian calendar conversion using Julian Day Number
   const gcYear = d.getFullYear()
   const gcMonth = d.getMonth() + 1
   const gcDay = d.getDate()
 
-  // Convert Gregorian to Julian Day Number
+  // Reliable Gregorian→Ethiopian conversion using Julian Day Numbers
+  // JDN for Gregorian date
   const a = Math.floor((14 - gcMonth) / 12)
   const y = gcYear + 4800 - a
   const m = gcMonth + 12 * a - 3
   const jdn = gcDay + Math.floor((153 * m + 2) / 5) + 365 * y
     + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
 
-  // Convert JDN to Ethiopian calendar (epoch: Meskerem 1, 1 EC = JDN 1724221)
+  // Ethiopian epoch: Meskerem 1, 1 EC = JDN 1724221 (Proleptic Julian 29 Aug 8 AD)
   const etEpoch = 1724221
-  const r = (jdn - etEpoch) % 1461
-  const n = r % 365 + 365 * Math.floor(r / 1460)
-  const etYear = 4 * Math.floor((jdn - etEpoch) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460)
-  const etMonth = Math.floor(n / 30) + 1
-  const etDay = (n % 30) + 1
+  const etDelta = jdn - etEpoch
+  // Each Ethiopian 4-year cycle = 4*365+1 = 1461 days
+  const etCycle4 = Math.floor(etDelta / 1461)
+  const remainder = etDelta % 1461
+  // Year within cycle: remainder / 365, but the leap year is year 3 (remainder 1460)
+  const etYearInCycle = Math.floor(remainder / 365)
+  const etYear = 4 * etCycle4 + etYearInCycle + 1
+  // Day within the Ethiopian year (0-indexed)
+  const dayOfYear = remainder - etYearInCycle * 365
+  // Months 1-12 are 30 days each; month 13 (Pagume) is 5 or 6 days
+  const etMonth = Math.floor(dayOfYear / 30) + 1
+  const etDay = (dayOfYear % 30) + 1
 
   const etMonthNames = ['መስከረም','ጥቅምት','ህዳር','ታህሳስ','ጥር','የካቲት','መጋቢት','ሚያዚያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ','ጳጉሜን']
   const etMonthName = etMonthNames[Math.min(etMonth - 1, 12)]

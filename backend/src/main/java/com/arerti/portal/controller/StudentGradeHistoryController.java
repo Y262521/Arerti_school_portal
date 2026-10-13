@@ -38,7 +38,9 @@ public class StudentGradeHistoryController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Student profile not found"));
 
         List<EnrollmentRecord> records = new ArrayList<>(enrollmentRecordRepository.findByStudent(student));
-        records.sort(Comparator.comparing(EnrollmentRecord::getGrade, Comparator.nullsFirst(Comparator.naturalOrder())));
+        // Sort by createdAt ascending so the most recently created enrollment is last
+        // (frontend uses history[history.length - 1] for the pass/fail banner)
+        records.sort(Comparator.comparing(EnrollmentRecord::getCreatedAt, Comparator.nullsFirst(Comparator.naturalOrder())));
 
         List<GradeHistoryEntryResponse> history = records.stream().map(record -> {
             String academicYear = record.getAcademicYear();
@@ -74,8 +76,16 @@ public class StudentGradeHistoryController {
             Double annualAverage = null;
             Boolean passed = null;
             if (sem1Average != null && sem2Average != null) {
-                annualAverage = (sem1Average + sem2Average) / 2.0;
-                passed = annualAverage >= 50.0;
+                // Flat average: sum all scores across both semesters divided by total subject count
+                // This avoids average-of-averages skew when semester subject counts differ
+                double totalScore = sem1Entries.stream()
+                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum()
+                        + sem2Entries.stream()
+                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum();
+                long totalCount = sem1Entries.stream().filter(e -> e.getScore() != null).count()
+                        + sem2Entries.stream().filter(e -> e.getScore() != null).count();
+                annualAverage = totalCount > 0 ? totalScore / totalCount : null;
+                passed = annualAverage != null && annualAverage >= 50.0;
             }
 
             return new GradeHistoryEntryResponse(
