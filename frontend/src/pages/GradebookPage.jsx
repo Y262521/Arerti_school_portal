@@ -174,6 +174,7 @@ export default function GradebookPage() {
         Promise.all([classService.getAll(), subjectService.getAll()])
             .then(([c, s]) => { setSections(c); setSubjects(s) })
             .catch(() => {})
+        if (isTeacher) {
             regradeService.myRequests().then(setMyRegradePerms).catch(() => {})
         }
     }, [isTeacher])
