@@ -4,6 +4,7 @@ import com.arerti.portal.entity.EnrollmentRecord;
 import com.arerti.portal.entity.RegistrationWindow;
 import com.arerti.portal.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
