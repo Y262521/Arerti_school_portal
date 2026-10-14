@@ -70,13 +70,13 @@ export function AdminDashboard() {
     { icon: '📁', title: 'ሃብቶችን አስተዳድራለሁ', detail: 'የጥናት ቁሳቁሶችን፣ ሰነዶችን እና ፋይሎችን ለተማሪዎች እና ሰራተኞች አዘጋጃለሁ።' },
     { icon: '🔍', title: 'ተጠቃሚዎችን እፈልጋለሁ እና ኦዲት አደርጋለሁ', detail: 'ማንኛውም ተጠቃሚ ፈልጎ የይለፍ ቃሉን ዳግም ማስጀምር ይቻለኛል። የሥርዓቱ ሙሉ እንቅስቃሴ ይታየኛል።' },
   ] : [
-    { icon: '🎓', title: 'I register students and teachers', detail: 'I enrol new students into the school, hire teachers, and create their accounts so they can access the portal.' },
-    { icon: '📚', title: 'I organise classes and subjects', detail: 'I create class sections, assign subjects to each class, set up the grade curriculum, and assign teachers to their subjects.' },
-    { icon: '📝', title: 'I control grade submission', detail: 'I open and close the grade submission window after exams, and approve regrade requests from homeroom teachers when marks need correction.' },
-    { icon: '📋', title: 'I monitor attendance', detail: 'I can view daily attendance reports for any class across the school to track student presence.' },
-    { icon: '📣', title: 'I post school notices', detail: 'I publish announcements for students, parents, staff, or everyone — with photos if needed.' },
-    { icon: '📁', title: 'I manage resources', detail: 'I upload study materials, documents and files that students and teachers can access.' },
-    { icon: '🔍', title: 'I look up users and review audit logs', detail: 'I can find any user, reset their password, and see a full trail of all system activity.' },
+    { icon: '🎓', title: 'You can register students and teachers', detail: 'You can enrol new students into the school, hire teachers, and create their accounts so they can access the portal.' },
+    { icon: '📚', title: 'You can organise classes and subjects', detail: 'You can create class sections, assign subjects to each class, set up the grade curriculum, and assign teachers to their subjects.' },
+    { icon: '📝', title: 'You can control grade submission', detail: 'You can open and close the grade submission window after exams, and approve regrade requests from homeroom teachers when marks need correction.' },
+    { icon: '📋', title: 'You can monitor attendance', detail: 'You can view daily attendance reports for any class across the school to track student presence.' },
+    { icon: '📣', title: 'You can post school notices', detail: 'You can publish announcements for students, parents, staff, or everyone — with photos if needed.' },
+    { icon: '📁', title: 'You can manage resources', detail: 'You can upload study materials, documents and files that students and teachers can access.' },
+    { icon: '🔍', title: 'You can look up users and review audit logs', detail: 'You can find any user, reset their password, and see a full trail of all system activity.' },y.' },
   ]
 
   return (
@@ -104,10 +104,10 @@ export function TeacherDashboard() {
     { icon: '📝', title: 'ተማሪዎችን ምዘግባለሁ', detail: 'ምዝገባ ሲከፈት አዲስ ወይም ቀደም ሲል የነበሩ ተማሪዎችን ምዘግባለሁ።' },
     { icon: '🔄', title: 'ቆልፎ ምልክቶች ለማስተካከል ፈቃድ እጠይቃለሁ', detail: 'እኔ ሆምሩም አስተማሪ ከሆንኩ፣ ቆልፎ ውጤቶችን ለማስተካከል ከዳይሬክተሩ ፈቃድ ለመጠየቅ ችላለሁ።' },
   ] : [
-    { icon: '✏️', title: 'I enter grades for my students', detail: 'I submit marks for my assigned subjects — mid exam, final exam, assignment and test/quiz. Grades are locked after submission.' },
-    { icon: '📋', title: 'I mark attendance for my class', detail: 'As a homeroom teacher I record daily attendance for my class — present, absent, late or excused.' },
-    { icon: '📝', title: 'I register students', detail: 'When registration is open I can enrol new or existing students into the school for the new academic year.' },
-    { icon: '🔄', title: 'I request regrade permission', detail: 'As a homeroom teacher I can request the director\'s approval to correct locked marks when a mistake is found.' },
+    { icon: '✏️', title: 'You can enter grades for your students', detail: 'You can submit marks for your assigned subjects — mid exam, final exam, assignment and test/quiz. Grades are locked after submission.' },
+    { icon: '📋', title: 'You can mark attendance for your class', detail: 'As a homeroom teacher you can record daily attendance for your class — present, absent, late or excused.' },
+    { icon: '📝', title: 'You can register students', detail: 'When registration is open you can enrol new or existing students into the school for the new academic year.' },
+    { icon: '🔄', title: 'You can request regrade permission', detail: 'As a homeroom teacher you can request the director\'s approval to correct locked marks when a mistake is found.' },
   ]
 
   return (
@@ -168,9 +168,9 @@ export function StudentDashboard() {
     { icon: '📋', title: 'ክትትሌን አረጋግጣለሁ', detail: 'ዕለቱን፣ ሁኔታዬን (ተገኝቻለሁ፣ አልተገኘሁም፣ ዘግይቻለሁ) እና ምን ያህል ቀናት ክፍል ውስጥ ነበርኩ ማየት ይቻለኛል።' },
     { icon: '📣', title: 'የትምህርት ቤቱን ማስታወቂያዎች ሳብ አነብባለሁ', detail: 'ዳይሬክተሩ ለተማሪዎች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ማንበብ ይቻለኛል።' },
   ] : [
-    { icon: '📊', title: 'I view my grades and academic history', detail: 'I can see all my subject scores across every semester and batch, my pass or fail status each year, and my annual average.' },
-    { icon: '📋', title: 'I check my attendance record', detail: 'I can see each day\'s status — present, absent, late or excused — and how many school days I have attended.' },
-    { icon: '📣', title: 'I read school notices', detail: 'I can read announcements posted by the director for students or for the whole school.' },
+    { icon: '📊', title: 'You can view your grades and academic history', detail: 'You can see all your subject scores across every semester and batch, your pass or fail status each year, and your annual average.' },
+    { icon: '📋', title: 'You can check your attendance record', detail: 'You can see each day\'s status — present, absent, late or excused — and how many school days you have attended.' },
+    { icon: '📣', title: 'You can read school notices', detail: 'You can read announcements posted by the director for students or for the whole school.' },
   ]
 
   return (
@@ -203,10 +203,10 @@ export function ParentDashboard() {
     { icon: '📋', title: 'የልጄን ክትትል ሂደት ክትትዬ ሳደርጋለሁ', detail: 'ልጄ ወደ ትምህርት ቤቱ ዕለቱን ተገኝቷል ወይ? ዘግይቷል ወይ? ፈቃድ ነበረው ወይ? ሁሉንም ማየት ይቻለኛል።' },
     { icon: '📣', title: 'ማስታወቂያዎችን አነብባለሁ', detail: 'ዳይሬክተሩ ለወላጆች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ማንበብ ይቻለኛል።' },
   ] : [
-    { icon: '👨‍👩‍👧', title: 'I link and manage my child', detail: 'I can connect my child\'s school profile to my account using their Student ID. If I have more than one child at the school I can link all of them.' },
-    { icon: '📊', title: 'I view my child\'s grades', detail: 'I can see all my child\'s subject scores across every semester, their annual average, and whether they were promoted or retained each year.' },
-    { icon: '📋', title: 'I track my child\'s attendance', detail: 'I can see day by day whether my child was present, absent, late or excused — so I am always informed.' },
-    { icon: '📣', title: 'I read school notices', detail: 'I can read official announcements posted by the director for parents or for the whole school community.' },
+    { icon: '👨‍👩‍👧', title: 'You can link and manage your child', detail: 'You can connect your child\'s school profile to your account using their Student ID. If you have more than one child at the school you can link all of them.' },
+    { icon: '📊', title: 'You can view your child\'s grades', detail: 'You can see all your child\'s subject scores across every semester, their annual average, and whether they were promoted or retained each year.' },
+    { icon: '📋', title: 'You can track your child\'s attendance', detail: 'You can see day by day whether your child was present, absent, late or excused — so you are always informed.' },
+    { icon: '📣', title: 'You can read school notices', detail: 'You can read official announcements posted by the director for parents or for the whole school community.' },
   ]
 
   return (
