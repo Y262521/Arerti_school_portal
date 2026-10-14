@@ -24,13 +24,13 @@ function WelcomeBanner({ name, role, stats, lines }) {
         </div>
       )}
 
-      <div className="px-6 pb-7 pt-1 bg-slate-900">
+      <div className="px-6 pb-7 pt-1 bg-white">
         <ul className="space-y-3 pt-4">
           {lines.map((line, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="mt-0.5 text-lg shrink-0">{line.icon}</span>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                <span className="font-semibold text-white">{line.title} — </span>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                <span className="font-semibold text-slate-900">{line.title} — </span>
                 {line.detail}
               </p>
             </li>
@@ -60,10 +60,10 @@ export function AdminDashboard() {
     { icon: '📖', title: 'ሥርዓተ ትምህርት ማዋቀር ይችላሉ', detail: 'ለእያንዳንዱ ክፍል (Grade 9-12) ምን ምን ትምህርቶች ይሰጡ እንደሚሆን ማዘጋጀት ይችላሉ — አዲስ ክፍል ሲፈጠር ሥርዓተ ትምህርቱ ራሱ ይተገበራል።' },
     { icon: '📝', title: 'የውጤት ማስረከቢያ ጊዜ ማስተዳደር ይችላሉ', detail: 'ከፈተና በኋላ አስተማሪዎች ውጤቶችን የሚያስገቡበት ጊዜ መክፈት፣ ማራዘም እና መዝጋት ይችላሉ።' },
     { icon: '🔄', title: 'ድጋሚ ምዘና ጥያቄዎችን ማፅደቅ ወይም ውድቅ ማድረግ ይችላሉ', detail: 'ሆምሩም አስተማሪዎች ቆልፎ ምልክቶችን ለማስተካከል ሲጠይቁ ጥያቄዎቹን ፍቅደው ወይም ውድቅ ማድረግ ይችላሉ።' },
-    { icon: '📊', title: 'ሁሉም ክፍሎች ውጤቶችን ማስተካከል ይችላሉ', detail: 'ዳይሬክተር እንደ ልዩ ሥልጣን ቆልፎ ምልክቶችን ጨምሮ ማንኛውም ተማሪ ውጤቶችን ማስተካከል ይችላሉ።' },
+    { icon: '📊', title: 'የሁሉም ክፍሎች ውጤቶችን ማስተካከል ይችላሉ', detail: 'ዳይሬክተር እንደ ልዩ ሥልጣን ቆልፎ ምልክቶችን ጨምሮ ማንኛውም ተማሪ ውጤቶችን ማስተካከል ይችላሉ።' },
     { icon: '📋', title: 'የሁሉም ክፍሎች ክትትል ማስተዳደር ይችላሉ', detail: 'ለሁሉም ክፍሎች ዕለታዊ ክትትሉን ማየት፣ ማስገባት ወይም ማስተካከል ይችላሉ።' },
     { icon: '📣', title: 'ማስታወቂያዎችን መፍጠር እና ማስተዳደር ይችላሉ', detail: 'ለተማሪዎች፣ ለወላጆች፣ ለሰራተኞች ወይም ለሁሉም ሰው ምስሎችን ጨምሮ ማስታወቂያ ማዘጋጀት፣ ማስተካከል እና መሰረዝ ይችላሉ።' },
-    { icon: '📁', title: 'ሃብቶችን ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ፣ ሰነዶች እና ሌሎች ቁሳቁሶችን ለተማሪዎች ወይም ለሰራተኞች መጫን፣ ማውረድ እና መሰረዝ ይችላሉ።' },
+    { icon: '📁', title: 'ግብዓቶች ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ፣ ሰነዶች እና ሌሎች ቁሳቁሶችን ለተማሪዎች ወይም ለሰራተኞች መጫን፣ ማውረድ እና መሰረዝ ይችላሉ።' },
     { icon: '🔍', title: 'ተጠቃሚዎችን መፈለግ እና የይለፍ ቃል ዳግም ማስጀምር ይችላሉ', detail: 'ማንኛውም ተጠቃሚ (ተማሪ፣ አስተማሪ፣ ወላጅ) ፈልጎ ሂሳቡን ማየትና የይለፍ ቃሉን ዳግም ማስጀምር ይችላሉ።' },
     { icon: '📜', title: 'ሙሉ የኦዲት መዝገብ ማየት ይችላሉ', detail: 'ሁሉም ተጠቃሚዎች ምን ድርጊቶች እንደፈፀሙ — ምዝገባ፣ ውጤት ማስገባት፣ ግቤት ወዘተ — ሙሉ ታሪኩን ማየት ይችላሉ።' },
     { icon: '🔚', title: 'ዓመቱን ማጠናቀቅ ይችላሉ', detail: 'ዓመቱ ሲጠናቀቅ ሁሉም ምደባዎችን ወደ ታሪክ ማዛወርና ተማሪዎችን ለቀጣዩ ዓመት ዝግጁ ማድረግ ይችላሉ።' },
@@ -104,13 +104,13 @@ export function TeacherDashboard() {
 
   const lines = lang === 'am' ? [
     { icon: '✏️', title: 'ለተሰጦት ትምህርት ውጤቶችን ማስገባት ይችላሉ', detail: 'የወቅት ፈተና (20)፣ የዓመት ፈተና (60)፣ የቤት ሥራ (10) እና ጥያቄ/ፈተና (10) ውጤቶችን ለእያንዳንዱ ተማሪ ማስገባት ይችላሉ። ውጤቶቹ ከቀረቡ በኋላ ይቆለፋሉ።' },
-    { icon: '�', title: 'ሁሉም ትምህርቶች ለሆምሩም አስተማሪ ይታያሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ለክፍልዎ ሁሉም ትምህርቶች ውጤቶችን ማየት ይችላሉ — ያስተምሩት ትምህርቶች ብቻ ሳይሆን ሁሉም።' },
-    { icon: '📋', title: 'ለክፍልዎ ዕለታዊ ክትትሉን ምዝግባ ይችላሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ዕለቱን ለእያንዳንዱ ተማሪ ተገኝቷል፣ አልተገኘም፣ ዘግይቷል ወይም ፈቃድ አለው ብለው ምዝግብ ይችላሉ። ሁሉንም ተቀምጦ ምልክት ማድረግ ይችላሉ።' },
-    { icon: '📝', title: 'ሲከፈት ተማሪዎችን ምዝገባ ማካሄድ ይችላሉ', detail: 'ምዝገባ ሲከፈት አዲስ ተማሪዎችን (ሙሉ ቅጽ) ወይም ቀደም ሲል ያሉ ተማሪዎችን (ፈጣን ዳሳሽ) ምዝግብ ይችላሉ።' },
+    { icon: '�', title: 'ሁሉም ትምህርቶች ለስም ጠሪው አስተማሪ ይታያሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ለክፍልዎ ሁሉም ትምህርቶች ውጤቶችን ማየት ይችላሉ — ያስተምሩት ትምህርቶች ብቻ ሳይሆን ሁሉም።' },
+    { icon: '📋', title: 'ለክፍልዎ ዕለታዊ ክትትሉን መመዝገብ ይችላሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ዕለቱን ለእያንዳንዱ ተማሪ ተገኝቷል፣ አልተገኘም፣ ዘግይቷል ወይም ፈቃድ አለው ብለው ምዝግብ ይችላሉ። ሁሉንም ተቀምጦ ምልክት ማድረግ ይችላሉ።' },
+    { icon: '📝', title: 'ምዝገባ ሲጀመር የተማሪዎችን ምዝገባ ማካሄድ ይችላሉ', detail: 'ምዝገባ ሲከፈት አዲስ ተማሪዎችን (ሙሉ ቅጽ) ወይም ቀደም ሲል ያሉ ተማሪዎችን (ፈጣን ዳሳሽ) ምዝግብ ይችላሉ።' },
     { icon: '🔄', title: 'ቆልፎ ምልክቶች ለማስተካከል ፈቃድ መጠየቅ ይችላሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ስህተት ሲያዩ ዳይሬክተሩ ፈቃድ ሲሰጡ ቆልፎ ምልክቶቹን ማስተካከል ይችላሉ።' },
     { icon: '📣', title: 'ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለሰራተኞች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ሙሉ ዝርዝሩን ማንበብ ይችላሉ።' },
-    { icon: '📁', title: 'ሃብቶችን ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ እና ሰነዶችን ለተማሪዎች ወይም ሰራተኞች ማጫን፣ ማውረድ እና የጫኑትን መሰረዝ ይችላሉ።' },
-    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት፣ የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
+    { icon: '📁', title: 'ግብዓቶች ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ እና ሰነዶችን ለተማሪዎች ወይም ሰራተኞች ማጫን፣ ማውረድ እና የጫኑትን መሰረዝ ይችላሉ።' },
+    { icon: '👤', title: 'የማንነቶን መገለጫ ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት፣ የማንነቶን መገለጫ ለማሻሻል የይለፍ ቃልዎን በሌላ መቀየር ይችላሉ።' },
   ] : [
     { icon: '✏️', title: 'You can enter grades for your assigned subjects', detail: 'You can submit mid exam (20), final exam (60), assignment (10) and test/quiz (10) marks for each student in your subject. Grades lock after submission.' },
     { icon: '�', title: 'You can view all subjects as homeroom teacher', detail: 'If you are the homeroom teacher of a class, you can view grades for all subjects in that class — not just the one you teach.' },
@@ -169,11 +169,11 @@ export function StudentDashboard() {
 
   const lines = lang === 'am' ? [
     { icon: '📊', title: 'ሁሉም ሴሜስተሮች ውጤቶችዎን ማየት ይችላሉ', detail: 'ከ Grade 9 እስከ አሁን ሁሉም ሴሜስተሮች ያሉ ትምህርቶቻቸው ውጤቶች፣ ዓመታዊ አማካይ እና ያለፉ/ያልወጡ ሁኔታ ማየት ይችላሉ።' },
-    { icon: '🏅', title: 'ያለፉ ወይም ያልወጡ ሁኔታ ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት (ዙር) ሁለቱ ሴሜስተሮች ካለቁ የሚያለፉ ወይም ያልሚያልፉ ሁኔታ ይታያሉ — 50 ወይም ከዚያ በላይ ካለ ያለፉ ነው።' },
+    { icon: '🏅', title: 'ማለፏን ወይም አለማለፏን በማየት ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት (ዙር) ሁለቱ ሴሜስተሮች ካለቁ የሚያለፉ ወይም የማያልፉ ተማሪ ሁኔታ ይታያሉ — 50 ወይም ከዚያ በላይ ካለ ያለፉ ነው።' },
     { icon: '📋', title: 'ሙሉ ክትትል ታሪኩን ማየት ይችላሉ', detail: 'ዕለቱን ተገኝተዋል፣ አልተገኙም፣ ዘግይተዋል ወይም ፈቃድ ነበረዎ? ሁሉም ቀናት ዝርዝሩ ይታያሉ። የክትትል ምጣኔዎ ከ75% በታች ከሆነ ማስጠንቀቂያ ይታያሉ።' },
     { icon: '📣', title: 'ሁሉም ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለተማሪዎች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ሙሉ ዝርዝሩን ፣ ምስሎቹን ጨምሮ ማንበብ ይችላሉ።' },
-    { icon: '📁', title: 'ሃብቶችን ማውረድ እና መጠቀም ይችላሉ', detail: 'አስተማሪዎች የጫኑዎትን ፒዲኤፍ፣ ሰነዶች እና ቁሳቁሶች ማግኘት፣ ማንበብ እና ማውረድ ይችላሉ።' },
-    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን፣ ሚናዎን ማየት እና የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
+    { icon: '📁', title: 'ግብዓቶች ማውረድ እና መጠቀም ይችላሉ', detail: 'አስተማሪዎች የጫኑዎትን ፒዲኤፍ፣ ሰነዶች እና ቁሳቁሶች ማግኘት፣ ማንበብ እና ማውረድ ይችላሉ።' },
+    { icon: '👤', title: 'የማንነቶን መገለጫ ማስተዳደር ይችላሉ', detail: 'ስምዎን፣ ሚናዎን ማየት እና የማንነቶን መገለጫ ደህንነት ለማሻሻል የይለፍ ቃልዎን በሌላ መቀየር ይችላሉ።' },
   ] : [
     { icon: '📊', title: 'You can view all your semester grades', detail: 'You can see every subject score for every semester from Grade 9 onwards — mid exam, final, assignment and quiz — together with your semester average.' },
     { icon: '🏅', title: 'You can see your pass or fail result per year', detail: 'Once both semesters of a year are recorded, your annual result is shown — promoted if your annual average is 50 or above, failed if below.' },
@@ -210,10 +210,10 @@ export function ParentDashboard() {
   const lines = lang === 'am' ? [
     { icon: '👨‍👩‍👧', title: 'ልጅዎን ማያያዝ እና ማስተዳደር ይችላሉ', detail: 'ትምህርት ቤቱ የሰጠዎትን Student ID ተጠቅመው ልጅዎን ከሂሳብዎ ጋር ማያያዝ ይችላሉ። ከአንድ በላይ ልጅ ካለ ሁሉንም ማስጠጋት ይችላሉ።' },
     { icon: '📊', title: 'ሁሉም ሴሜስተሮች ውጤቶቹን ማየት ይችላሉ', detail: 'ልጅዎ ከ Grade 9 ጀምሮ ያስመዘገባቸው ሁሉም ሴሜስተሮች ትምህርቶች ውጤቶች፣ ዓመታዊ አማካይ ማየት ይችላሉ።' },
-    { icon: '🏅', title: 'ያለፈ ወይም ያልወጣ ሁኔታ ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት ልጅዎ ያለፈ ወይም ያልወጣ ሁኔታ ይታያሉ — ይህ ለቀጣዩ ዓመት ምዝገባ ወሳኝ ነው።' },
+    { icon: '🏅', title: 'የልጆን ማለፍ ወይም አለማለፍ በማየት ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት ልጅዎ ማለፍ ወይም አለማለፍ ሁኔታ ይታያሉ — ይህ ለቀጣዩ ዓመት ምዝገባ ወሳኝ ነው።' },
     { icon: '📋', title: 'ሙሉ ክትትል ታሪኩን ማየት ይችላሉ', detail: 'ልጅዎ ዕለቱን ትምህርት ቤት ተገኝቷል ወይ? ዘግይቷል ወይ? ፈቃድ ነበረው ወይ? ሁሉም ቀናት ዝርዝሩ ይታያሉ።' },
     { icon: '📣', title: 'ሁሉም ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለወላጆች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ምስሎቹን ጨምሮ ማንበብ ይችላሉ።' },
-    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት እና የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
+    { icon: '👤', title: 'የማንነቶን መገለጫ ማስተዳደር ይችላሉ', detail: 'ስምዎን፣ ሚናዎን ማየት እና የማንነቶን መገለጫ ደህንነት ለማሻሻል የይለፍ ቃልዎን በሌላ መቀየር ይችላሉ።' },
   ] : [
     { icon: '👨‍👩‍👧', title: 'You can link and manage your children', detail: 'You can connect your child\'s school profile using their portal username and password. If you have more than one child at the school you can link all of them and switch between them.' },
     { icon: '📊', title: 'You can view all semester grades', detail: 'You can see every subject score your child has earned from Grade 9 onwards — for every semester, with the semester average shown.' },
