@@ -6,6 +6,7 @@ import { gradeEntryWindowService } from '../services/registrationService'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
+import SearchSelect from '../components/SearchSelect'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 const cy = new Date().getFullYear()
@@ -321,15 +322,16 @@ export default function GradebookPage() {
             <div className="card mb-6 flex flex-wrap gap-4 items-end">
                 <div>
                     <label className="field-label">{t('classSection')}</label>
-                    <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
-                        <option value="">— {t('selectClass')} —</option>
-                        {sections.map(s => (
-                            <option key={s.id} value={s.id}>
-                                {t('grade')} {s.grade} – {s.section} ({s.academicYear})
-                                {s.stream ? ` · ${s.stream.replace('_',' ')}` : ''}
-                            </option>
-                        ))}
-                    </select>
+                    <SearchSelect
+                        className="w-52"
+                        placeholder="e.g. Grade 9-A"
+                        value={sectionId}
+                        onChange={v => setSectionId(v)}
+                        options={sections.map(s => ({
+                            value: s.id,
+                            label: `Grade ${s.grade}-${s.section}${s.stream ? ` (${s.stream.replace('_',' ')})` : ''}`
+                        }))}
+                    />
                 </div>
                 <div>
                     <label className="field-label">{t('semester')}</label>
@@ -340,9 +342,13 @@ export default function GradebookPage() {
                 </div>
                 <div>
                     <label className="field-label">{t('academicYear')}</label>
-                    <select className="field w-36" value={academicYear} onChange={e => setAcademicYear(e.target.value)}>
-                        {YEAR_OPTIONS.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
+                    <SearchSelect
+                        className="w-36"
+                        placeholder="e.g. 2026/2027"
+                        value={academicYear}
+                        onChange={v => v && setAcademicYear(v)}
+                        options={YEAR_OPTIONS.map(y => ({ value: y, label: y }))}
+                    />
                 </div>
             </div>
 

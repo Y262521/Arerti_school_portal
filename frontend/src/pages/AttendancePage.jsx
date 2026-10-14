@@ -4,6 +4,7 @@ import { attendanceService } from '../services/attendanceService'
 import { classService } from '../services/classService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
+import SearchSelect from '../components/SearchSelect'
 
 const STATUS_STYLES = {
     PRESENT: 'bg-green-100 text-green-700',
@@ -94,14 +95,16 @@ export default function AttendancePage() {
             <div className="card mb-6 flex flex-wrap gap-4 items-end">
                 <div>
                     <label className="field-label">{t('classSection')}</label>
-                    <select className="field w-52" value={sectionId} onChange={e => setSectionId(e.target.value)}>
-                        <option value="">— {t('selectClass')} —</option>
-                        {sections.map(s => (
-                            <option key={s.id} value={s.id}>
-                                {t('grade')} {s.grade} – {s.section} ({s.academicYear})
-                            </option>
-                        ))}
-                    </select>
+                    <SearchSelect
+                        className="w-52"
+                        placeholder="e.g. Grade 9-A"
+                        value={sectionId}
+                        onChange={v => setSectionId(v)}
+                        options={sections.map(s => ({
+                            value: s.id,
+                            label: `Grade ${s.grade}-${s.section}`
+                        }))}
+                    />
                 </div>
                 <div>
                     <label className="field-label">{t('dateLabel')}</label>
