@@ -9,9 +9,7 @@ import Modal from '../components/Modal'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 const cy = new Date().getFullYear()
-const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => { const y = cy - 3 + i; return `${y}/${y + 1}` })
-
-const GRADE_COLOR = (g) => {
+const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => { const y = cy - 3 + i; return `${y}/${y + 1}` })const GRADE_COLOR = (g) => {
     if (!g || g === '—') return 'text-slate-400'
     if (g.startsWith('A')) return 'text-green-600 font-bold'
     if (g.startsWith('B')) return 'text-blue-600 font-bold'
@@ -172,6 +170,17 @@ export default function GradebookPage() {
     const [modal,            setModal]            = useState(null)
     const [regradeModal,     setRegradeModal]     = useState(null)
     const [requestingRegrade,setRequestingRegrade]= useState(false)
+
+    // Auto-select the currently open grade entry window on load
+    useEffect(() => {
+        gradeEntryWindowService.getAll().then(windows => {
+            const active = windows.find(w => w.active)
+            if (active) {
+                setAcademicYear(active.academicYear)
+                setTerm(active.semester)
+            }
+        }).catch(() => {})
+    }, [])
 
     useEffect(() => {
         Promise.all([classService.getAll(), subjectService.getAll()])
