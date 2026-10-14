@@ -76,7 +76,7 @@ export function AdminDashboard() {
     { icon: '📋', title: 'You can monitor attendance', detail: 'You can view daily attendance reports for any class across the school to track student presence.' },
     { icon: '📣', title: 'You can post school notices', detail: 'You can publish announcements for students, parents, staff, or everyone — with photos if needed.' },
     { icon: '📁', title: 'You can manage resources', detail: 'You can upload study materials, documents and files that students and teachers can access.' },
-    { icon: '🔍', title: 'You can look up users and review audit logs', detail: 'You can find any user, reset their password, and see a full trail of all system activity.' },y.' },
+    { icon: '🔍', title: 'You can look up users and review audit logs', detail: 'You can find any user, reset their password, and see a full trail of all system activity.' },
   ]
 
   return (
