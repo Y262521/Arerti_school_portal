@@ -29,14 +29,14 @@ function WelcomeBanner({ name, role, stats, lines }) {
         </div>
       )}
 
-      {/* "What I do" lines */}
-      <div className="bg-white/96 px-6 py-6">
+      {/* "What I do" lines — white text on green */}
+      <div className="px-6 pb-7 pt-1">
         <ul className="space-y-3">
           {lines.map((line, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="mt-0.5 text-lg shrink-0">{line.icon}</span>
-              <p className="text-sm text-slate-700 leading-relaxed">
-                <span className="font-semibold text-slate-900">{line.title} — </span>
+              <p className="text-sm text-white/90 leading-relaxed">
+                <span className="font-semibold text-white">{line.title} — </span>
                 {line.detail}
               </p>
             </li>
