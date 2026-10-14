@@ -1,130 +1,169 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 
-function DashboardHeader({ title, subtitle }) {
+// ── Stat pill ─────────────────────────────────────────────────────────────────
+function StatPill({ label, value, color = 'brand' }) {
+  const colors = {
+    brand:  'bg-brand/10 text-brand border-brand/20',
+    green:  'bg-green-50 text-green-700 border-green-200',
+    amber:  'bg-amber-50 text-amber-700 border-amber-200',
+    slate:  'bg-slate-100 text-slate-600 border-slate-200',
+  }
   return (
-    <div className="mb-6">
-      <h1 className="font-display text-2xl font-bold text-slate-900">{title}</h1>
-      {subtitle && <p className="text-slate-500 mt-1">{subtitle}</p>}
+    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${colors[color]}`}>
+      <span className="text-lg font-bold">{value ?? '—'}</span>
+      <span className="font-medium opacity-80">{label}</span>
     </div>
   )
 }
 
-function NavCard({ to, labelKey, value, descKey, highlight }) {
-  const { t } = useLanguage()
+// ── Feature chip ──────────────────────────────────────────────────────────────
+function Chip({ icon, text }) {
   return (
-    <Link to={to} className={`card hover:shadow-md transition cursor-pointer ${highlight ? 'border-brand/20 bg-brand/5' : ''}`}>
-      <div className={`text-xs uppercase tracking-wide font-semibold ${highlight ? 'text-brand' : 'text-slate-500'}`}>
-        {t(labelKey)}
-      </div>
-      <div className="mt-1 text-3xl font-bold text-brand">{value || '→'}</div>
-      <div className="mt-1 text-xs text-slate-500">{t(descKey)}</div>
-    </Link>
+    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 shadow-sm">
+      <span className="text-base">{icon}</span>
+      <span>{text}</span>
+    </div>
   )
 }
 
+// ── Welcome banner ────────────────────────────────────────────────────────────
+function WelcomeBanner({ name, role, tagline, description, chips, stats, gradient }) {
+  return (
+    <div className={`rounded-2xl overflow-hidden shadow-md mb-8 ${gradient}`}>
+      {/* Top section */}
+      <div className="px-6 pt-6 pb-4 text-white">
+        <p className="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">{role}</p>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold leading-tight">{name}</h1>
+        <p className="mt-1 text-sm sm:text-base opacity-90 font-medium">{tagline}</p>
+      </div>
+
+      {/* Stats row */}
+      {stats && stats.length > 0 && (
+        <div className="px-6 pb-4 flex flex-wrap gap-2">
+          {stats.map((s, i) => (
+            <div key={i} className="bg-white/20 backdrop-blur rounded-lg px-3 py-1.5 text-white text-sm font-semibold">
+              <span className="text-white/70 font-normal mr-1">{s.label}:</span>{s.value ?? '—'}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Description + chips */}
+      <div className="bg-white/95 px-6 py-5">
+        <p className="text-slate-600 text-sm leading-relaxed mb-4">{description}</p>
+        <div className="flex flex-wrap gap-2">
+          {chips.map((c, i) => <Chip key={i} icon={c.icon} text={c.text} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Director Dashboard ────────────────────────────────────────────────────────
 export function AdminDashboard() {
   const { user } = useAuth()
   const { t } = useLanguage()
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    api.get('/dashboard/stats').then(r => setStats(r.data)).catch(() => { })
+    api.get('/dashboard/stats').then(r => setStats(r.data)).catch(() => {})
   }, [])
 
-  return (
-    <div>
-      <DashboardHeader
-        title={`${t('welcomeAdmin')}, ${user?.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : user?.fullName}`}
-        subtitle={t('directorOverview')}
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/admin/students" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('students')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.studentCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('manageStudents')} →</div>
-        </Link>
-        <Link to="/admin/teachers" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('teachers')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.teacherCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('manageTeachers')} →</div>
-        </Link>
-        <Link to="/admin/classes" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('classes')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.classCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('manageClasses')} →</div>
-        </Link>
-        <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('noticeboard')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{stats ? stats.noticeCount : '—'}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('manageNotices')} →</div>
-        </Link>
-      </div>
+  const name = user?.fullName === 'System Administrator'
+    ? (t('ADMIN') || 'School Director')
+    : user?.fullName
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-        <NavCard to="/admin/registration" labelKey="studentRegistrationCard" descKey="studentRegistrationDesc" />
-        <NavCard to="/admin/grades" labelKey="gradebookCard" descKey="gradebookDesc" />
-        <NavCard to="/admin/attendance" labelKey="attendanceCard" descKey="attendanceDesc" />
-        <NavCard to="/admin/subjects" labelKey="subjectsCard" descKey="subjectsDesc" />
-        <NavCard to="/admin/regrade-requests" labelKey="regradeCard" descKey="regradeDesc" />
-        <NavCard to="/resources" labelKey="resourcesCard" descKey="resourcesDesc" />
-        <NavCard to="/admin/grade-entry" labelKey="gradeEntryCard" descKey="gradeEntryDesc" />
-        <NavCard to="/admin/user-lookup" labelKey="userLookupCard" descKey="userLookupDesc" />
-        <NavCard to="/admin/audit-log" labelKey="auditLogCard" descKey="auditLogDesc" />
-      </div>
-    </div>
+  return (
+    <WelcomeBanner
+      name={`${t('welcomeAdmin')}, ${name}`}
+      role={t('ADMIN')}
+      tagline={t('directorOverview')}
+      gradient="bg-gradient-to-br from-brand-dark via-brand to-emerald-500"
+      stats={[
+        { label: t('students'), value: stats?.studentCount },
+        { label: t('teachers'), value: stats?.teacherCount },
+        { label: t('classes'),  value: stats?.classCount  },
+        { label: t('noticeboard'), value: stats?.noticeCount },
+      ]}
+      description={
+        `As the school director, you have full oversight of Arerti General Secondary & Preparatory School's digital portal. ` +
+        `From here you can manage every aspect of the school — register students and teachers, organise classes and subjects, ` +
+        `control grade submission periods, review regrade requests, post notices, upload resources, and audit all system activity. ` +
+        `Use the navigation bar above to move between sections.`
+      }
+      chips={[
+        { icon: '🎓', text: 'Student & Teacher Registration' },
+        { icon: '📚', text: 'Classes & Subjects' },
+        { icon: '📝', text: 'Gradebook & Grade Submission' },
+        { icon: '📋', text: 'Attendance Tracking' },
+        { icon: '🔄', text: 'Regrade Requests' },
+        { icon: '📣', text: 'Notice Board' },
+        { icon: '📁', text: 'Resources' },
+        { icon: '🔍', text: 'User Lookup & Audit Log' },
+      ]}
+    />
   )
 }
 
+// ── Teacher Dashboard ─────────────────────────────────────────────────────────
 export function TeacherDashboard() {
   const { user } = useAuth()
   const { t } = useLanguage()
   const [notices, setNotices] = useState([])
 
   useEffect(() => {
-    api.get('/notices').then(r => setNotices(r.data.slice(0, 3))).catch(() => { })
+    api.get('/notices').then(r => setNotices(r.data.slice(0, 3))).catch(() => {})
   }, [])
 
   return (
-    <div>
-      <DashboardHeader title={`${t('helloTeacher')}, ${user?.fullName}`} subtitle={t('teacherWorkspace')} />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Link to="/teacher/grades" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('gradebook')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('enterGrades')}</div>
-        </Link>
-        <Link to="/teacher/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('attendance')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('markAttendance')}</div>
-        </Link>
-        <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{notices.length}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
-        </Link>
-      </div>
+    <>
+      <WelcomeBanner
+        name={`${t('helloTeacher')}, ${user?.fullName}`}
+        role={t('TEACHER')}
+        tagline={t('teacherWorkspace')}
+        gradient="bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500"
+        stats={[
+          { label: t('notices'), value: notices.length },
+        ]}
+        description={
+          `Welcome to your teacher workspace. Use the navigation bar to access all your tools. ` +
+          `You can enter and manage student grades for your assigned subjects, mark daily attendance for your homeroom class, ` +
+          `register new students during open registration periods, and submit regrade requests when a correction is needed. ` +
+          `Stay updated with the latest school notices and share learning materials through the resources section.`
+        }
+        chips={[
+          { icon: '✏️', text: 'Enter & Manage Grades' },
+          { icon: '📋', text: 'Mark Homeroom Attendance' },
+          { icon: '📝', text: 'Student Registration' },
+          { icon: '🔄', text: 'Request Regrade Permission' },
+          { icon: '📣', text: 'Notice Board' },
+          { icon: '📁', text: 'Resources' },
+        ]}
+      />
+
       {notices.length > 0 && (
         <div className="card">
-          <h2 className="font-display font-semibold text-slate-800 mb-3">{t('latestNotices')}</h2>
+          <h2 className="font-display font-semibold text-slate-800 mb-3 flex items-center gap-2">
+            <span>📌</span> {t('latestNotices')}
+          </h2>
           <ul className="space-y-2">
             {notices.map(n => (
-              <li key={n.id} className="text-sm text-slate-600 flex gap-2">
-                {n.pinned && <span className="text-brand">📌</span>}
+              <li key={n.id} className="text-sm text-slate-600 flex gap-2 items-start">
+                <span className="text-brand mt-0.5">›</span>
                 <span>{n.title}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
+// ── Student Dashboard ─────────────────────────────────────────────────────────
 export function StudentDashboard() {
   const { user } = useAuth()
   const { t } = useLanguage()
@@ -137,41 +176,42 @@ export function StudentDashboard() {
       if (me?.id) {
         api.get(`/report-card/${me.id}`, { params: { term: 1, academicYear: currentYear } })
           .then(rc => setReport(rc.data))
-          .catch(() => { })
+          .catch(() => {})
       }
-    }).catch(() => { })
+    }).catch(() => {})
   }, [user])
 
   return (
-    <div>
-      <DashboardHeader title={`${t('hiStudent')}, ${user?.fullName}`} subtitle={t('yourSchoolSnapshot')} />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Link to="/student/grades" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('average')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">
-            {report?.average ? report.average.toFixed(1) : '—'}
-          </div>
-          <div className="mt-1 text-xs text-slate-500">{report?.overallGrade || `${t('viewGradesArrow')} →`}</div>
-        </Link>
-        <Link to="/student/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('attendance')}</div>
-          <div className={`mt-1 text-3xl font-bold ${report?.attendancePercent >= 75 ? 'text-green-600' : report ? 'text-red-600' : 'text-brand'}`}>
-            {report ? `${report.attendancePercent}%` : '—'}
-          </div>
-          <div className="mt-1 text-xs text-slate-500">
-            {report ? `${report.presentDays}/${report.totalDays} ${t('presentDays')}` : `${t('viewAttendanceArrow')} →`}
-          </div>
-        </Link>
-        <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
-        </Link>
-      </div>
-    </div>
+    <WelcomeBanner
+      name={`${t('hiStudent')}, ${user?.fullName}`}
+      role={t('STUDENT')}
+      tagline={t('yourSchoolSnapshot')}
+      gradient="bg-gradient-to-br from-violet-700 via-purple-600 to-pink-500"
+      stats={[
+        { label: t('average'),    value: report?.average ? report.average.toFixed(1) : null },
+        { label: t('attendance'), value: report ? `${report.attendancePercent}%` : null },
+        { label: t('semester'),   value: report ? `${t('semester')} 1` : null },
+      ]}
+      description={
+        `Welcome to your student portal at Arerti General Secondary & Preparatory School. ` +
+        `Here you can view your complete academic history — your grades for each subject across all semesters, ` +
+        `your attendance record with a full day-by-day breakdown, and your overall performance per batch. ` +
+        `You can also read school notices and access study resources uploaded by your teachers. ` +
+        `Your registration history with semester results is available in the My Grades section.`
+      }
+      chips={[
+        { icon: '📊', text: 'My Grades & Results' },
+        { icon: '📋', text: 'Attendance Record' },
+        { icon: '📣', text: 'School Notices' },
+        { icon: '📁', text: 'Study Resources' },
+        { icon: '🏅', text: 'Semester Pass/Fail Status' },
+        { icon: '👤', text: 'My Account' },
+      ]}
+    />
   )
 }
 
+// ── Parent Dashboard ──────────────────────────────────────────────────────────
 export function ParentDashboard() {
   const { user } = useAuth()
   const { t } = useLanguage()
@@ -179,55 +219,62 @@ export function ParentDashboard() {
   const [children, setChildren] = useState([])
 
   useEffect(() => {
-    api.get('/notices').then(r => setNotices(r.data.slice(0, 3))).catch(() => { })
-    api.get('/parent/children').then(r => setChildren(r.data)).catch(() => { })
+    api.get('/notices').then(r => setNotices(r.data.slice(0, 3))).catch(() => {})
+    api.get('/parent/children').then(r => setChildren(r.data)).catch(() => {})
   }, [])
 
   return (
-    <div>
-      <DashboardHeader title={`${t('welcomeParent')}, ${user?.fullName}`} subtitle={t('trackChildProgress')} />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Link to="/parent/children" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('linkedChildren')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{children.length}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('manageStudents')} →</div>
-        </Link>
-        <Link to="/parent/report-cards" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('reportCards')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('viewGradesArrow')} &amp; {t('viewAttendanceArrow')}</div>
-        </Link>
-        <Link to="/parent/attendance" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('attendance')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('viewAttendanceArrow')}</div>
-        </Link>
-        <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">{notices.length}</div>
-          <div className="mt-1 text-xs text-slate-500">{t('viewNotices')}</div>
-        </Link>
-      </div>
+    <>
+      <WelcomeBanner
+        name={`${t('welcomeParent')}, ${user?.fullName}`}
+        role={t('PARENT')}
+        tagline={t('trackChildProgress')}
+        gradient="bg-gradient-to-br from-rose-600 via-orange-500 to-amber-400"
+        stats={[
+          { label: t('linkedChildren'), value: children.length },
+          { label: t('notices'),        value: notices.length  },
+        ]}
+        description={
+          `Welcome to the parent portal of Arerti General Secondary & Preparatory School. ` +
+          `This portal gives you full visibility into your child's academic journey. ` +
+          `You can view their complete grade history across all semesters and batches, ` +
+          `track their daily attendance record, and see their promotion or retention status for each year. ` +
+          `To get started, link your child's account using their Student ID in the My Children section. ` +
+          `School notices are also available to keep you informed of important updates.`
+        }
+        chips={[
+          { icon: '👨‍👩‍👧', text: 'Link & Manage Children' },
+          { icon: '📊', text: "View Child's Grade History" },
+          { icon: '📋', text: 'Child Attendance Record' },
+          { icon: '🏅', text: 'Semester Promotion Status' },
+          { icon: '📣', text: 'School Notices' },
+        ]}
+      />
+
       {notices.length > 0 && (
         <div className="card">
-          <h2 className="font-display font-semibold text-slate-800 mb-3">{t('latestNotices')}</h2>
+          <h2 className="font-display font-semibold text-slate-800 mb-3 flex items-center gap-2">
+            <span>📌</span> {t('latestNotices')}
+          </h2>
           <ul className="space-y-2">
             {notices.map(n => (
-              <li key={n.id} className="text-sm text-slate-600 flex gap-2">
-                {n.pinned && <span className="text-brand">📌</span>}
+              <li key={n.id} className="text-sm text-slate-600 flex gap-2 items-start">
+                <span className="text-brand mt-0.5">›</span>
                 <span>{n.title}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
+
       {children.length === 0 && (
-        <div className="card mt-4 text-sm text-slate-600">
-          {t('linkChildInstructions').replace('My Children', '')}
-          <Link to="/parent/children" className="text-brand hover:underline">{t('myChildren')}</Link>
-          {' '}{t('linkChildInstructions').split('My Children').slice(-1)[0] || ''}
+        <div className="card border-amber-200 bg-amber-50 mt-4">
+          <p className="text-sm text-amber-800 font-medium">
+            💡 {t('linkChildInstructions').replace('My Children', '')}
+            <span className="text-brand font-semibold"> {t('myChildren')}</span>.
+          </p>
         </div>
       )}
-    </div>
+    </>
   )
 }
