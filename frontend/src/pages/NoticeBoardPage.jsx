@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext'
 import { noticeService } from '../services/noticeService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
+import DocumentUploadField from '../components/DocumentUploadField'
 
 const PRIORITY_BADGE = {
     HIGH: 'bg-red-100 text-red-700',
@@ -13,7 +14,7 @@ const PRIORITY_BADGE = {
 const AUDIENCE_OPTS = ['GENERAL', 'STUDENT', 'TEACHER', 'PARENT']
 const PRIORITY_OPTS = ['LOW', 'MEDIUM', 'HIGH']
 
-const EMPTY = { title: '', body: '', audience: 'GENERAL', priority: 'MEDIUM', pinned: false }
+const EMPTY = { title: '', body: '', audience: 'GENERAL', priority: 'MEDIUM', pinned: false, photoUrls: '' }
 
 function NoticeForm({ initial, onSubmit, onClose, loading }) {
     const { t } = useLanguage()
@@ -61,6 +62,17 @@ function NoticeForm({ initial, onSubmit, onClose, loading }) {
                 <input type="checkbox" checked={form.pinned} onChange={e => set('pinned', e.target.checked)} />
                 {t('pinNotice')}
             </label>
+            <div>
+                <label className="field-label">{t('noticePhotos') || 'Photos (optional)'}</label>
+                <DocumentUploadField
+                    label={t('noticePhotos') || 'Notice Photos'}
+                    folder="notice-photos"
+                    value={form.photoUrls || ''}
+                    onChange={v => set('photoUrls', v)}
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple={true}
+                />
+            </div>
             <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-ghost" onClick={onClose}>{t('cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={loading}>
@@ -174,6 +186,16 @@ export default function NoticeBoardPage() {
                             {expanded === n.id && (
                                 <div className="mt-4 pt-4 border-t border-slate-100">
                                     <p className="text-sm text-slate-700 whitespace-pre-wrap">{n.body}</p>
+                                    {n.photoUrls && (
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {n.photoUrls.split(',').map(u => u.trim()).filter(Boolean).map((url, i) => (
+                                                <a key={i} href={url} target="_blank" rel="noreferrer">
+                                                    <img src={url} alt={`Notice photo ${i+1}`}
+                                                        className="h-32 w-32 object-cover rounded-lg border border-slate-200 hover:opacity-90 transition" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
                                     {isAdmin && (
                                         <div className="flex gap-3 mt-4">
                                             <button className="text-xs text-brand hover:underline"
@@ -199,7 +221,7 @@ export default function NoticeBoardPage() {
                         initial={modal.mode === 'edit' ? {
                             title: modal.notice.title, body: modal.notice.body,
                             audience: modal.notice.audience, priority: modal.notice.priority,
-                            pinned: modal.notice.pinned
+                            pinned: modal.notice.pinned, photoUrls: modal.notice.photoUrls || ''
                         } : EMPTY}
                         onSubmit={handleSave} onClose={() => setModal(null)} loading={saving}
                     />

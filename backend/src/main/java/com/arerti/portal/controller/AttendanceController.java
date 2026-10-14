@@ -4,6 +4,7 @@ import com.arerti.portal.dto.AttendanceRequest;
 import com.arerti.portal.dto.AttendanceResponse;
 import com.arerti.portal.entity.Student;
 import com.arerti.portal.repository.ParentLinkRepository;
+import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
 import com.arerti.portal.service.AttendanceService;
 import jakarta.validation.Valid;

@@ -4,7 +4,7 @@ import { resourceService } from '../services/resourceService'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
 
-const AUDIENCE_OPTS = ['GENERAL', 'STUDENTS', 'TEACHERS', 'PARENTS']
+const AUDIENCE_OPTS = ['GENERAL', 'STUDENTS', 'TEACHERS']
 
 function formatSize(bytes) {
     if (!bytes && bytes !== 0) return ''
@@ -25,7 +25,6 @@ function UploadForm({ onSubmit, onClose, loading }) {
         GENERAL:  t('audienceGeneral'),
         STUDENTS: t('audienceStudents'),
         TEACHERS: t('audienceTeachers'),
-        PARENTS:  t('audienceParents'),
     }
 
     const handleSubmit = (e) => {
@@ -92,7 +91,6 @@ export default function ResourcesPage() {
         GENERAL:  t('audienceGeneral'),
         STUDENTS: t('audienceStudents'),
         TEACHERS: t('audienceTeachers'),
-        PARENTS:  t('audienceParents'),
     }
     const [resources, setResources] = useState([])
     const [loading, setLoading] = useState(true)

@@ -36,6 +36,9 @@ public class Notice {
 
     private boolean pinned;
 
+    /** Comma-separated Cloudinary image URLs for notice photos */
+    private String photoUrls;
+
     /** Username of the admin who posted it */
     private String postedBy;
 

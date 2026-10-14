@@ -12,6 +12,7 @@ public record NoticeResponse(
         String priority,
         boolean pinned,
         String postedBy,
+        String photoUrls,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -19,7 +20,8 @@ public record NoticeResponse(
         return new NoticeResponse(
                 n.getId(), n.getTitle(), n.getBody(),
                 n.getAudience(), n.getPriority(), n.isPinned(),
-                n.getPostedBy(), n.getCreatedAt(), n.getUpdatedAt()
+                n.getPostedBy(), n.getPhotoUrls(),
+                n.getCreatedAt(), n.getUpdatedAt()
         );
     }
 }

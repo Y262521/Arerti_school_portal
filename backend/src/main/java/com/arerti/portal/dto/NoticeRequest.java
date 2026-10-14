@@ -7,5 +7,6 @@ public record NoticeRequest(
         @NotBlank String body,
         String audience,   // GENERAL | STUDENTS | TEACHERS | PARENTS
         String priority,   // LOW | MEDIUM | HIGH
-        boolean pinned
+        boolean pinned,
+        String photoUrls   // comma-separated Cloudinary URLs (optional)
 ) {}

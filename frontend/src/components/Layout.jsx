@@ -34,6 +34,7 @@ const ADMIN_GROUPS = [
       { to: '/admin/students',    key: 'students' },
       { to: '/admin/teachers',    key: 'teachers' },
       { to: '/notices',           key: 'noticeboard' },
+      { to: '/resources',         key: 'resources' },
       { to: '/admin/user-lookup', key: 'userlookup' },
       { to: '/admin/audit-log',   key: 'auditlog' },
     ],

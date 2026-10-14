@@ -41,6 +41,7 @@ public class NoticeService {
                 .audience(req.audience() != null ? req.audience().toUpperCase() : "GENERAL")
                 .priority(req.priority() != null ? req.priority().toUpperCase() : "MEDIUM")
                 .pinned(req.pinned())
+                .photoUrls(req.photoUrls())
                 .postedBy(postedBy)
                 .build();
         return NoticeResponse.from(noticeRepository.save(notice));
@@ -53,6 +54,7 @@ public class NoticeService {
         notice.setAudience(req.audience() != null ? req.audience().toUpperCase() : "GENERAL");
         notice.setPriority(req.priority() != null ? req.priority().toUpperCase() : "MEDIUM");
         notice.setPinned(req.pinned());
+        notice.setPhotoUrls(req.photoUrls());
         return NoticeResponse.from(noticeRepository.save(notice));
     }
 
