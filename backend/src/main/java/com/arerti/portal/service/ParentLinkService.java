@@ -53,9 +53,7 @@ public class ParentLinkService {
         }
 
         // Make sure the account is actually a student
-        boolean isStudent = studentUser.getRoles().stream()
-                .anyMatch(r -> r.getName().equals("ROLE_STUDENT"));
-        if (!isStudent) {
+        if (studentUser.getRole() == null || !studentUser.getRole().name().equals("STUDENT")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "That account is not a student account.");
         }
