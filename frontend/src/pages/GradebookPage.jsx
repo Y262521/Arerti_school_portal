@@ -464,7 +464,7 @@ export default function GradebookPage() {
                         student={modal.student} subject={modal.subject} entry={modal.entry}
                         term={term} academicYear={academicYear}
                         onSubmit={handleSaveGrade} onClose={() => setModal(null)} loading={saving}
-                        canEdit={isAdmin || (windowIsOpen && myAssignedSubjectIds.has(modal.subject.id))}
+                        canEdit={isAdmin || (windowIsOpen && myAssignedSubjectIds.has(modal.subject.id)) || hasRegradePermission(modal.subject.id, modal.student.id)}
                         isLocked={modal.entry?.locked ?? false}
                         hasRegradePermission={hasRegradePermission(modal.subject.id, modal.student.id)}
                         isAdmin={isAdmin}
