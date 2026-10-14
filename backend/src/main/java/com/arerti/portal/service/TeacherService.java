@@ -66,7 +66,7 @@ public class TeacherService {
         String plainPassword = generatePassword();
 
         if (userRepository.existsByUsername(username)) {
-            username = username + Year.now().getValue();
+            username = username + LocalDate.now().getYear();
         }
 
         // Full name from parts
