@@ -63,7 +63,6 @@ const ROLE_LINKS = {
     { to: '/parent/report-cards', key: 'reportCards' },
     { to: '/parent/attendance',   key: 'myAttendance' },
     { to: '/notices',             key: 'notices' },
-    { to: '/resources',           key: 'resources' },
   ],
 }
 

@@ -221,7 +221,7 @@ export default function App() {
       <Route
         path="/resources"
         element={
-          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT']}>
             <Layout><ResourcesPage /></Layout>
           </ProtectedRoute>
         }

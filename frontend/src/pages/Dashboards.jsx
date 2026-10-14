@@ -202,11 +202,6 @@ export function ParentDashboard() {
           <div className="mt-1 text-3xl font-bold text-brand">→</div>
           <div className="mt-1 text-xs text-slate-500">{t('viewAttendanceArrow')}</div>
         </Link>
-        <Link to="/resources" className="card hover:shadow-md transition cursor-pointer">
-          <div className="text-xs uppercase tracking-wide text-slate-500">{t('resources')}</div>
-          <div className="mt-1 text-3xl font-bold text-brand">→</div>
-          <div className="mt-1 text-xs text-slate-500">{t('resourcesDesc')}</div>
-        </Link>
         <Link to="/notices" className="card hover:shadow-md transition cursor-pointer">
           <div className="text-xs uppercase tracking-wide text-slate-500">{t('notices')}</div>
           <div className="mt-1 text-3xl font-bold text-brand">{notices.length}</div>
