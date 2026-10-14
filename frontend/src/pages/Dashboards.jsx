@@ -167,10 +167,12 @@ export function StudentDashboard() {
     { icon: '📊', title: 'ውጤቶችዎን እና ታሪክዎን ማየት ይችላሉ', detail: 'በሁሉም ሴሜስተሮች እና ዙሮች ያሉ ውጤቶችዎን፣ ያለፉ ወይም ያልወጡ ሁኔታዎን፣ ዓመታዊ አማካይዎን ማየት ይችላሉ።' },
     { icon: '📋', title: 'ክትትልዎን ማረጋገጥ ይችላሉ', detail: 'ዕለቱን፣ ሁኔታዎን (ተገኝተዋል፣ አልተገኙም፣ ዘግይተዋል) እና ምን ያህል ቀናት ክፍል ውስጥ እንደነበሩ ማየት ይችላሉ።' },
     { icon: '📣', title: 'የትምህርት ቤቱን ማስታወቂያዎች ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለተማሪዎች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ማንበብ ይችላሉ።' },
+    { icon: '📁', title: 'ሃብቶችን ማውረድ እና መጠቀም ይችላሉ', detail: 'አስተማሪዎች ያዘጋጁዎትን የጥናት ቁሳቁሶች፣ ሰነዶች እና ፋይሎች ማግኘት እና ማውረድ ይችላሉ።' },
   ] : [
     { icon: '📊', title: 'You can view your grades and academic history', detail: 'You can see all your subject scores across every semester and batch, your pass or fail status each year, and your annual average.' },
     { icon: '📋', title: 'You can check your attendance record', detail: 'You can see each day\'s status — present, absent, late or excused — and how many school days you have attended.' },
     { icon: '📣', title: 'You can read school notices', detail: 'You can read announcements posted by the director for students or for the whole school.' },
+    { icon: '📁', title: 'You can download and use resources', detail: 'You can access and download study materials, documents and files uploaded by your teachers to help with your studies.' },
   ]
 
   return (
