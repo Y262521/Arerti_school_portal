@@ -6,23 +6,45 @@ import Modal from '../components/Modal'
 
 function LinkForm({ onSubmit, onClose, loading }) {
     const { t } = useLanguage()
-    const [studentUid, setStudentUid] = useState('')
+    const [studentUsername, setStudentUsername] = useState('')
+    const [studentPassword, setStudentPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const [relationship, setRelationship] = useState('')
 
     return (
-        <form onSubmit={e => { e.preventDefault(); onSubmit({ studentUid, relationship }) }} className="space-y-3">
+        <form onSubmit={e => { e.preventDefault(); onSubmit({ studentUsername, studentPassword, relationship }) }} className="space-y-3">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+                🔐 Enter your child's portal <strong>username</strong> and <strong>password</strong> to link their account securely.
+            </div>
             <div>
-                <label className="field-label">{t('studentUidLabel')} *</label>
+                <label className="field-label">{t('username')} *</label>
                 <input
                     className="field"
-                    placeholder="e.g. AGSPS-1000"
-                    value={studentUid}
-                    onChange={e => setStudentUid(e.target.value)}
+                    placeholder="e.g. agsps1000"
+                    value={studentUsername}
+                    onChange={e => setStudentUsername(e.target.value)}
+                    autoComplete="off"
                     required
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                    {t('studentUidHint')}
-                </p>
+            </div>
+            <div>
+                <label className="field-label">{t('password')} *</label>
+                <div className="relative">
+                    <input
+                        className="field pr-10"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={studentPassword}
+                        onChange={e => setStudentPassword(e.target.value)}
+                        autoComplete="off"
+                        required
+                    />
+                    <button type="button" tabIndex={-1}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        onClick={() => setShowPassword(v => !v)}>
+                        {showPassword ? '🙈' : '👁'}
+                    </button>
+                </div>
             </div>
             <div>
                 <label className="field-label">{t('relationship')}</label>

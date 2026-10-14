@@ -11,6 +11,7 @@ import com.arerti.portal.repository.StudentRepository;
 import com.arerti.portal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +28,7 @@ public class ParentLinkService {
     private final UserRepository userRepository;
     private final GradeSectionRepository gradeSectionRepository;
     private final AuditService auditService;
+    private final PasswordEncoder passwordEncoder;
 
     public List<ParentLinkResponse> findChildren(String parentUsername) {
         User parent = getParent(parentUsername);
@@ -38,20 +40,35 @@ public class ParentLinkService {
     @Transactional
     public ParentLinkResponse link(String parentUsername, ParentLinkRequest req) {
         User parent = getParent(parentUsername);
-        Student student = studentRepository.findByStudentUid(req.studentUid().trim().toUpperCase())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "No student found with that ID. Double-check the Student UID with the school office."));
 
-        if (parentLinkRepository.existsByParentIdAndStudentId(parent.getId(), student.getId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "This child is already linked to your account");
+        // Find the student by their username
+        User studentUser = userRepository.findByUsername(req.studentUsername().trim().toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No student account found with that username. Please check and try again."));
+
+        // Verify the password
+        if (!passwordEncoder.matches(req.studentPassword(), studentUser.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Incorrect password. Please enter your child's correct login password.");
         }
 
-        // Verify relationship to prevent unauthorized student linking
-        boolean phoneMatches = phonesMatch(parent.getPhone(), student.getGuardianPhone());
-        boolean nameMatches = namesMatch(parent.getFullName(), student.getGuardianName());
-        if (!phoneMatches && !nameMatches) {
+        // Make sure the account is actually a student
+        boolean isStudent = studentUser.getRoles().stream()
+                .anyMatch(r -> r.getName().equals("ROLE_STUDENT"));
+        if (!isStudent) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Verification failed: Your phone number or name does not match the guardian records on file for this student. Please contact the school office to verify or update your contact information.");
+                    "That account is not a student account.");
+        }
+
+        // Look up the student profile
+        Student student = studentRepository.findByUser_Username(req.studentUsername().trim().toLowerCase())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Student profile not found for this account."));
+
+        // Check not already linked
+        if (parentLinkRepository.existsByParentIdAndStudentId(parent.getId(), student.getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "This child is already linked to your account.");
         }
 
         ParentLink link = ParentLink.builder()
@@ -62,27 +79,9 @@ public class ParentLinkService {
         parentLinkRepository.save(link);
 
         auditService.log(parentUsername, "PARENT", "LINK", "PARENT_LINK", student.getStudentUid(),
-                "Linked child " + student.getStudentUid() + " (" + student.getUser().getFullName() + ")");
+                "Linked child " + student.getStudentUid() + " (" + studentUser.getFullName() + ")");
 
         return ParentLinkResponse.from(link, sectionLabel(student.getSectionId()));
-    }
-
-    private boolean phonesMatch(String p1, String p2) {
-        if (p1 == null || p2 == null || p1.isBlank() || p2.isBlank()) return false;
-        String d1 = p1.replaceAll("\\D", "");
-        String d2 = p2.replaceAll("\\D", "");
-        if (d1.startsWith("251")) d1 = d1.substring(3);
-        if (d2.startsWith("251")) d2 = d2.substring(3);
-        if (d1.startsWith("0")) d1 = d1.substring(1);
-        if (d2.startsWith("0")) d2 = d2.substring(1);
-        return d1.length() >= 8 && d1.equals(d2);
-    }
-
-    private boolean namesMatch(String n1, String n2) {
-        if (n1 == null || n2 == null || n1.isBlank() || n2.isBlank()) return false;
-        String s1 = n1.trim().toLowerCase();
-        String s2 = n2.trim().toLowerCase();
-        return s1.contains(s2) || s2.contains(s1);
     }
 
     @Transactional

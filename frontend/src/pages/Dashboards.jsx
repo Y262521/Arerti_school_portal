@@ -24,12 +24,12 @@ function WelcomeBanner({ name, role, stats, lines }) {
         </div>
       )}
 
-      <div className="px-6 pb-7 pt-1">
-        <ul className="space-y-3">
+      <div className="px-6 pb-7 pt-1 bg-slate-900">
+        <ul className="space-y-3 pt-4">
           {lines.map((line, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="mt-0.5 text-lg shrink-0">{line.icon}</span>
-              <p className="text-sm text-white/90 leading-relaxed">
+              <p className="text-sm text-slate-300 leading-relaxed">
                 <span className="font-semibold text-white">{line.title} — </span>
                 {line.detail}
               </p>
@@ -215,7 +215,7 @@ export function ParentDashboard() {
     { icon: '📣', title: 'ሁሉም ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለወላጆች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ምስሎቹን ጨምሮ ማንበብ ይችላሉ።' },
     { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት እና የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
   ] : [
-    { icon: '👨‍👩‍👧', title: 'You can link and manage your children', detail: 'You can connect your child\'s school profile using their Student ID. If you have more than one child at the school you can link all of them and switch between them.' },
+    { icon: '👨‍👩‍👧', title: 'You can link and manage your children', detail: 'You can connect your child\'s school profile using their portal username and password. If you have more than one child at the school you can link all of them and switch between them.' },
     { icon: '📊', title: 'You can view all semester grades', detail: 'You can see every subject score your child has earned from Grade 9 onwards — for every semester, with the semester average shown.' },
     { icon: '🏅', title: 'You can see the annual pass or fail result', detail: 'For each academic year, once both semesters are recorded, you can see whether your child was promoted to the next grade or retained.' },
     { icon: '📋', title: 'You can track the full attendance history', detail: 'You can see day by day whether your child was present, absent, late or excused — with a rate summary and a low-attendance warning if needed.' },
@@ -238,8 +238,8 @@ export function ParentDashboard() {
           <p className="text-sm text-brand font-medium flex items-center gap-2">
             <span>💡</span>
             {lang === 'am'
-              ? 'ጀምር: ወደ ልጆቼ ሂደው የልጅዎን Student ID ተጠቅመው ያያይዙ።'
-              : 'Get started: go to My Children and link your child using their Student ID provided by the school.'}
+              ? 'ጀምር: ወደ ልጆቼ ሂደው የልጅዎን የተጠቃሚ ስምና የይለፍ ቃል ተጠቅመው ያያይዙ።'
+              : 'Get started: go to My Children and link your child using their portal username and password.'}
           </p>
         </div>
       )}
