@@ -27,3 +27,7 @@ export const curriculumService = {
         api.delete(`/curriculum/${grade}/subjects/${subjectId}`,
             { params: stream ? { stream } : {} }),
 }
+
+export const academicYearService = {
+    getAll: () => api.get('/academic-years').then(r => r.data),
+}

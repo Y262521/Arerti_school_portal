@@ -7,10 +7,12 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import Modal from '../components/Modal'
 import SearchSelect from '../components/SearchSelect'
+import { useAcademicYears } from '../hooks/useAcademicYears'
 
 const CURRENT_YEAR = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
 const cy = new Date().getFullYear()
-const YEAR_OPTIONS = Array.from({ length: 7 }, (_, i) => { const y = cy - 3 + i; return `${y}/${y + 1}` })
+// Keep a small fallback list — replaced by live data from the hook
+const YEAR_OPTIONS = Array.from({ length: 16 }, (_, i) => { const y = cy - 10 + i; return `${y}/${y + 1}` })
 
 const GRADE_COLOR = (g) => {
     if (!g || g === '—') return 'text-slate-400'
@@ -156,6 +158,7 @@ export default function GradebookPage() {
     const { t } = useLanguage()
     const isAdmin   = user?.role === 'ADMIN'
     const isTeacher = user?.role === 'TEACHER'
+    const { years: yearOptions } = useAcademicYears()
 
     const [gradeEntryStatus, setGradeEntryStatus] = useState(null)
     const [sections,           setSections]           = useState([])
@@ -349,7 +352,7 @@ export default function GradebookPage() {
                         placeholder="e.g. 2026/2027"
                         value={academicYear}
                         onChange={v => v && setAcademicYear(v)}
-                        options={YEAR_OPTIONS.map(y => ({ value: y, label: y }))}
+                        options={yearOptions.map(y => ({ value: y, label: y }))}
                     />
                 </div>
             </div>

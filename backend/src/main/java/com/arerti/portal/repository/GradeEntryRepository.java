@@ -18,6 +18,9 @@ public interface GradeEntryRepository extends JpaRepository<GradeEntry, Long> {
 
     List<GradeEntry> findByStudentAndAcademicYear(Student student, String academicYear);
 
+    @Query("SELECT DISTINCT g.academicYear FROM GradeEntry g WHERE g.academicYear IS NOT NULL ORDER BY g.academicYear DESC")
+    List<String> findDistinctAcademicYears();
+
     List<GradeEntry> findByStudentAndTermAndAcademicYear(Student student, Integer term, String academicYear);
 
     List<GradeEntry> findByStudent_SectionIdAndTermAndAcademicYear(Long sectionId, Integer term, String academicYear);

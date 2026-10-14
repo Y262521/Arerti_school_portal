@@ -25,4 +25,7 @@ public interface EnrollmentRecordRepository extends JpaRepository<EnrollmentReco
     List<EnrollmentRecord> findByAcademicYearOrderByCreatedAtDesc(String academicYear);
 
     List<EnrollmentRecord> findByWindowOrderByCreatedAtDesc(RegistrationWindow window);
+
+    @Query("SELECT DISTINCT e.academicYear FROM EnrollmentRecord e WHERE e.academicYear IS NOT NULL ORDER BY e.academicYear DESC")
+    List<String> findDistinctAcademicYears();
 }
