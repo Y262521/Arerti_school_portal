@@ -39,13 +39,170 @@ function toEthiopianDate(gregorianDate) {
   return `${etDay} ${etMonthName} ${etYear}`
 }
 
+function StatusBadge({ average, t }) {
+  if (average == null) return <span className="text-slate-400">—</span>
+  if (average >= 50) {
+    return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">{t('passed')}</span>
+  }
+  return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{t('failed')}</span>
+}
+
+export function GradeHistoryTable({ history, t }) {
+  const [expanded, setExpanded] = useState({})
+
+  const toggleExpand = (key) => {
+    setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  if (history.length === 0) {
+    return <div className="card p-8 text-center text-slate-500">{t('noHistory')}</div>
+  }
+
+  return (
+    <div className="card overflow-x-auto p-0">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
+            <th className="w-8 px-2 py-3"></th>
+            <th className="px-4 py-3 text-left">{t('acYear')}</th>
+            <th className="px-4 py-3 text-center">{t('batch')}</th>
+            <th className="px-4 py-3 text-center">{t('semester')}</th>
+            <th className="px-4 py-3 text-left">{t('regDate')}</th>
+            <th className="px-4 py-3 text-center">{t('average')}</th>
+            <th className="px-4 py-3 text-center">{t('prevStatus')}</th>
+            <th className="px-4 py-3 text-center">{t('finalStatus')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {history.map((entry, index) => {
+            const sem1Key = `${entry.id}-1`
+            const sem2Key = `${entry.id}-2`
+            const prevEntry = index > 0 ? history[index - 1] : null
+
+            // Prev Status for Sem I row
+            const sem1PrevStatus = (index === 0 || entry.batch === 1)
+              ? null
+              : prevEntry?.sem2Average ?? null
+
+            // Prev Status for Sem II row
+            const sem2PrevStatus = entry.sem1Average ?? null
+
+            return (
+              <React.Fragment key={entry.id}>
+                {/* Sem I row */}
+                <tr
+                  className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => toggleExpand(sem1Key)}
+                >
+                  <td className="px-2 py-3 text-center text-slate-400 select-none">
+                    {expanded[sem1Key] ? '▼' : '▶'}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-slate-900">{entry.academicYear}</td>
+                  <td className="px-4 py-3 text-center">{entry.batch}</td>
+                  <td className="px-4 py-3 text-center font-semibold">I</td>
+                  <td className="px-4 py-3">{toEthiopianDate(entry.registrationDate)}</td>
+                  <td className="px-4 py-3 text-center">
+                    {entry.sem1Average != null ? entry.sem1Average.toFixed(1) : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {index === 0 ? '' : <StatusBadge average={sem1PrevStatus} t={t} />}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <StatusBadge average={entry.sem1Average} t={t} />
+                  </td>
+                </tr>
+                {expanded[sem1Key] && (
+                  <tr className="bg-slate-50">
+                    <td></td>
+                    <td colSpan={7} className="px-6 py-3">
+                      {entry.sem1Grades && entry.sem1Grades.length > 0 ? (
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-slate-500 uppercase">
+                              <th className="py-1 text-left">Subject</th>
+                              <th className="py-1 text-center">Score /100</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {entry.sem1Grades.map((g, i) => (
+                              <tr key={i} className="border-t border-slate-200">
+                                <td className="py-1 text-slate-700">{g.subjectName}</td>
+                                <td className="py-1 text-center">{g.score != null ? g.score : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <span className="text-slate-400 text-xs">No grades recorded for Semester I.</span>
+                      )}
+                    </td>
+                  </tr>
+                )}
+
+                {/* Sem II row */}
+                <tr
+                  className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
+                  onClick={() => toggleExpand(sem2Key)}
+                >
+                  <td className="px-2 py-3 text-center text-slate-400 select-none">
+                    {expanded[sem2Key] ? '▼' : '▶'}
+                  </td>
+                  <td className="px-4 py-3 text-slate-400 text-xs"></td>
+                  <td className="px-4 py-3 text-center">{entry.batch}</td>
+                  <td className="px-4 py-3 text-center font-semibold">II</td>
+                  <td className="px-4 py-3 text-slate-400">—</td>
+                  <td className="px-4 py-3 text-center">
+                    {entry.sem2Average != null ? entry.sem2Average.toFixed(1) : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <StatusBadge average={sem2PrevStatus} t={t} />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <StatusBadge average={entry.sem2Average} t={t} />
+                  </td>
+                </tr>
+                {expanded[sem2Key] && (
+                  <tr className="bg-slate-50">
+                    <td></td>
+                    <td colSpan={7} className="px-6 py-3">
+                      {entry.sem2Grades && entry.sem2Grades.length > 0 ? (
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-slate-500 uppercase">
+                              <th className="py-1 text-left">Subject</th>
+                              <th className="py-1 text-center">Score /100</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {entry.sem2Grades.map((g, i) => (
+                              <tr key={i} className="border-t border-slate-200">
+                                <td className="py-1 text-slate-700">{g.subjectName}</td>
+                                <td className="py-1 text-center">{g.score != null ? g.score : '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <span className="text-slate-400 text-xs">No grades recorded for Semester II.</span>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export default function MyGradesPage() {
   const { user } = useAuth()
   const { t } = useLanguage()
   const [student, setStudent] = useState(null)
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
-  const [expanded, setExpanded] = useState({})
 
   useEffect(() => {
     studentService.getMe()
@@ -60,10 +217,6 @@ export default function MyGradesPage() {
       .catch(() => setHistory([]))
       .finally(() => setLoading(false))
   }, [user])
-
-  const toggleExpand = (key) => {
-    setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
-  }
 
   const latestEntry = history.length > 0 ? history[history.length - 1] : null
 
@@ -91,7 +244,7 @@ export default function MyGradesPage() {
           </div>
           <div>
             <div className={`text-lg font-bold ${latestEntry.passed ? 'text-green-700' : 'text-red-700'}`}>
-              {latestEntry.passed ? 'PASSED' : 'FAILED'} — {latestEntry.academicYear}
+              {latestEntry.passed ? t('passed') : t('failed')} — {latestEntry.academicYear}
             </div>
             <div className="text-sm text-slate-600">
               Annual average: <strong>{latestEntry.annualAverage?.toFixed(1)}</strong> / 100
@@ -101,126 +254,7 @@ export default function MyGradesPage() {
         </div>
       )}
 
-      {history.length === 0 ? (
-        <div className="card p-8 text-center text-slate-500">No registration history found.</div>
-      ) : (
-        <div className="card overflow-x-auto p-0">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500 tracking-wide">
-                <th className="w-8 px-2 py-3"></th>
-                <th className="px-4 py-3 text-left">Ac Year</th>
-                <th className="px-4 py-3 text-center">Batch</th>
-                <th className="px-4 py-3 text-center">Semester</th>
-                <th className="px-4 py-3 text-left">Registration Date</th>
-                <th className="px-4 py-3 text-left">Reg Remark</th>
-                <th className="px-4 py-3 text-center">Average</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((entry) => {
-                const sem1Key = `${entry.id}-1`
-                const sem2Key = `${entry.id}-2`
-
-                return (
-                  <React.Fragment key={entry.id}>
-                    <tr
-                      key={sem1Key + '-row'}
-                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
-                      onClick={() => toggleExpand(sem1Key)}
-                    >
-                      <td className="px-2 py-3 text-center text-slate-400 select-none">
-                        {expanded[sem1Key] ? '▼' : '▶'}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-slate-900">
-                        {entry.academicYear}
-                      </td>
-                      <td className="px-4 py-3 text-center">{entry.batch}</td>
-                      <td className="px-4 py-3 text-center font-semibold">I</td>
-                      <td className="px-4 py-3">{toEthiopianDate(entry.registrationDate)}</td>
-                      <td className="px-4 py-3 text-slate-500 text-xs">{entry.enrollmentType}</td>
-                      <td className="px-4 py-3 text-center">
-                        {entry.sem1Average != null ? entry.sem1Average.toFixed(1) : '—'}
-                      </td>
-                    </tr>
-                    {expanded[sem1Key] && (
-                      <tr key={sem1Key + '-detail'} className="bg-slate-50">
-                        <td></td>
-                        <td colSpan={6} className="px-6 py-3">
-                          {entry.sem1Grades && entry.sem1Grades.length > 0 ? (
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="text-xs text-slate-500 uppercase">
-                                  <th className="py-1 text-left">Subject</th>
-                                  <th className="py-1 text-center">Score</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {entry.sem1Grades.map((g, i) => (
-                                  <tr key={i} className="border-t border-slate-200">
-                                    <td className="py-1 text-slate-700">{g.subjectName}</td>
-                                    <td className="py-1 text-center">{g.score != null ? `${g.score} / 100` : '—'}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <span className="text-slate-400 text-xs">No grades recorded for Semester I.</span>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                    <tr
-                      key={sem2Key + '-row'}
-                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer"
-                      onClick={() => toggleExpand(sem2Key)}
-                    >
-                      <td className="px-2 py-3 text-center text-slate-400 select-none">
-                        {expanded[sem2Key] ? '▼' : '▶'}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400 text-xs"></td>
-                      <td className="px-4 py-3 text-center">{entry.batch}</td>
-                      <td className="px-4 py-3 text-center font-semibold">II</td>
-                      <td className="px-4 py-3 text-slate-400">—</td>
-                      <td className="px-4 py-3 text-slate-500 text-xs">{entry.enrollmentType}</td>
-                      <td className="px-4 py-3 text-center">
-                        {entry.sem2Average != null ? entry.sem2Average.toFixed(1) : '—'}
-                      </td>
-                    </tr>
-                    {expanded[sem2Key] && (
-                      <tr key={sem2Key + '-detail'} className="bg-slate-50">
-                        <td></td>
-                        <td colSpan={6} className="px-6 py-3">
-                          {entry.sem2Grades && entry.sem2Grades.length > 0 ? (
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="text-xs text-slate-500 uppercase">
-                                  <th className="py-1 text-left">Subject</th>
-                                  <th className="py-1 text-center">Score</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {entry.sem2Grades.map((g, i) => (
-                                  <tr key={i} className="border-t border-slate-200">
-                                    <td className="py-1 text-slate-700">{g.subjectName}</td>
-                                    <td className="py-1 text-center">{g.score != null ? `${g.score} / 100` : '—'}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <span className="text-slate-400 text-xs">No grades recorded for Semester II.</span>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <GradeHistoryTable history={history} t={t} />
     </div>
   )
 }

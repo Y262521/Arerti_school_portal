@@ -709,6 +709,14 @@ const translations = {
     inactivityLogoutMsg: 'You were automatically logged out after 5 minutes of inactivity for your security.',
     parentAccountCredentials: 'Parent Account Info',
     parentAccountNotice: 'Parent accounts are issued by the school administration upon student registration. Please use your credentials or contact the school office.',
+    acYear: 'Ac Year',
+    batch: 'Batch',
+    regDate: 'Registration Date',
+    prevStatus: 'Prev Status',
+    finalStatus: 'Final Status',
+    passed: 'PASSED',
+    failed: 'FAILED',
+    noHistory: 'No registration history found.',
   },
 
   am: {
@@ -1417,6 +1425,14 @@ const translations = {
     inactivityLogoutMsg: 'ለደህንነትዎ ሲባል ከ 5 ደቂቃ እንቅስቃሴ አለማድረግ በኋላ በራስ-ሰር ወጥተዋል።',
     parentAccountCredentials: 'የወላጅ መግቢያ መረጃ',
     parentAccountNotice: 'የወላጅ አካውንቶች ተማሪው ሲመዘገብ በትምህርት ቤቱ አስተዳደር ይሰጣሉ። እባክዎ በትምህርት ቤቱ የተሰጡዎትን መረጃዎች ይጠቀሙ ወይም ቢሮውን ያነጋግሩ።',
+    acYear: 'የትምህርት ዓመት',
+    batch: 'ዙር',
+    regDate: 'የምዝገባ ቀን',
+    prevStatus: 'ቀዳሚ ሁኔታ',
+    finalStatus: 'የመጨረሻ ሁኔታ',
+    passed: 'አለፈ',
+    failed: 'ወደቀ',
+    noHistory: 'የምዝገባ ታሪክ አልተገኘም።',
   }
 }
 

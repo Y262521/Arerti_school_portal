@@ -8,6 +8,7 @@ export const gradeService = {
     upsert: (payload) => api.post('/grades', payload).then(r => r.data),
     remove: (id) => api.delete(`/grades/${id}`),
     getMyGradeHistory: () => api.get('/student/my-grade-history').then(r => r.data),
+    getChildGradeHistory: (studentId) => api.get('/student/grade-history/' + studentId).then(r => r.data),
 }
 
 export const subjectService = {

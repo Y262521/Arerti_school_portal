@@ -20,6 +20,7 @@ import ParentChildrenPage from './pages/ParentChildrenPage'
 import AuditLogPage from './pages/AuditLogPage'
 import AccountPage from './pages/AccountPage'
 import ParentReportCardPage from './pages/ParentReportCardPage'
+import ParentAttendancePage from './pages/ParentAttendancePage'
 import SubjectsPage from './pages/SubjectsPage'
 import MyAttendancePage from './pages/MyAttendancePage'
 import RegradeRequestsPage from './pages/RegradeRequestsPage'
@@ -247,6 +248,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['PARENT']}>
             <Layout><ParentReportCardPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/parent/attendance"
+        element={
+          <ProtectedRoute roles={['PARENT']}>
+            <Layout><ParentAttendancePage /></Layout>
           </ProtectedRoute>
         }
       />
