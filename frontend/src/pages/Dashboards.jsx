@@ -3,21 +3,16 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 
-// ── Shared green gradient — used by all dashboards ────────────────────────────
 const GRADIENT = 'bg-gradient-to-br from-brand-dark via-brand to-emerald-500'
 
-// ── Welcome banner — same design for all roles ────────────────────────────────
 function WelcomeBanner({ name, role, stats, lines }) {
   return (
     <div className={`rounded-2xl overflow-hidden shadow-lg mb-8 ${GRADIENT}`}>
-
-      {/* Header */}
       <div className="px-6 pt-7 pb-5 text-white">
         <p className="text-xs font-bold uppercase tracking-widest opacity-75 mb-1">{role}</p>
         <h1 className="font-display text-2xl sm:text-3xl font-bold leading-snug">{name}</h1>
       </div>
 
-      {/* Stats pills — only shown when data exists */}
       {stats && stats.some(s => s.value != null) && (
         <div className="px-6 pb-5 flex flex-wrap gap-2">
           {stats.filter(s => s.value != null).map((s, i) => (
@@ -29,7 +24,6 @@ function WelcomeBanner({ name, role, stats, lines }) {
         </div>
       )}
 
-      {/* "What I do" lines — white text on green */}
       <div className="px-6 pb-7 pt-1">
         <ul className="space-y-3">
           {lines.map((line, i) => (
@@ -47,7 +41,7 @@ function WelcomeBanner({ name, role, stats, lines }) {
   )
 }
 
-// ── Director Dashboard ────────────────────────────────────────────────────────
+// ── Director ──────────────────────────────────────────────────────────────────
 export function AdminDashboard() {
   const { user } = useAuth()
   const { t, lang } = useLanguage()
@@ -57,26 +51,36 @@ export function AdminDashboard() {
     api.get('/dashboard/stats').then(r => setStats(r.data)).catch(() => {})
   }, [])
 
-  const name = user?.fullName === 'System Administrator'
-    ? (t('ADMIN') || 'School Director')
-    : user?.fullName
+  const name = user?.fullName === 'System Administrator' ? (t('ADMIN') || 'School Director') : user?.fullName
 
   const lines = lang === 'am' ? [
-    { icon: '🎓', title: 'ተማሪዎችን እና አስተማሪዎችን መመዝገብ ይችላሉ', detail: 'አዲስ ተማሪዎችን ወደ ትምህርት ቤቱ መመዝገብ፣ አስተማሪዎችን ቀጥሮ ሥራ ላይ ማሰማራት ይችላሉ።' },
-    { icon: '📚', title: 'ክፍሎችን እና ትምህርቶችን ማዋቀር ይችላሉ', detail: 'የትምህርት ክፍሎችን መፍጠር፣ ለእያንዳንዱ ክፍል ትምህርቶችን መመደብ፣ ሥርዓተ ትምህርት ማዘጋጀት ይችላሉ።' },
-    { icon: '📝', title: 'የውጤት ማስረከቢያ ጊዜ መቆጣጠር ይችላሉ', detail: 'ለፈተና ውጤት ማስረከቢያ ጊዜ መክፈት፣ አስተማሪዎች ውጤቶችን ሲያስገቡ መቆጣጠር፣ ቆልፎ ምልክቶችን ለድጋሚ ምዘና ፈቃድ መስጠት ይችላሉ።' },
-    { icon: '📋', title: 'ክትትሉን መከታተል ይችላሉ', detail: 'ለሁሉም ክፍሎች ዕለታዊ የክትትል ሪፖርቶችን ማየት ይችላሉ።' },
-    { icon: '📣', title: 'ማስታወቂያዎችን መለጠፍ ይችላሉ', detail: 'ለተማሪዎች፣ ለወላጆች፣ ለሰራተኞች ወይም ለሁሉም ሰው ማስታወቂያ ምስሎችን ጨምሮ መለጠፍ ይችላሉ።' },
-    { icon: '📁', title: 'ሃብቶችን ማስተዳደር ይችላሉ', detail: 'የጥናት ቁሳቁሶችን፣ ሰነዶችን እና ፋይሎችን ለተማሪዎች እና ሰራተኞች ማዘጋጀት ይችላሉ።' },
-    { icon: '🔍', title: 'ተጠቃሚዎችን መፈለግ እና ኦዲት ማድረግ ይችላሉ', detail: 'ማንኛውም ተጠቃሚ ፈልጎ የይለፍ ቃሉን ዳግም ማስጀምር ይችላሉ። የሥርዓቱ ሙሉ እንቅስቃሴ ማየት ይችላሉ።' },
+    { icon: '🎓', title: 'ተማሪዎችን መመዝገብ ይችላሉ', detail: 'አዲስ ተማሪዎችን (Grade 9 አዲስ ገቢ፣ ዝውውር፣ ድጋሚ ተማሪ) ወደ ትምህርት ቤቱ መመዝገብ ይችላሉ። ምዝገባ ሲጠናቀቅ ተማሪዎቹን ወደ ክፍሎች ማስቀመጥ ይችላሉ።' },
+    { icon: '👩‍🏫', title: 'አስተማሪዎችን መቅጠር እና ማስተዳደር ይችላሉ', detail: 'አስተማሪዎችን ቀጥሮ የሂሳብ ክፍት ማድረግ፣ ስሞቻቸውን፣ ፎቶዎቻቸውን እና ሰነዶቻቸውን መስተካከል፣ ሲያስፈልግ ሂሳባቸውን መሰረዝ ይችላሉ።' },
+    { icon: '📚', title: 'ክፍሎችን እና ትምህርቶችን ማዋቀር ይችላሉ', detail: 'የትምህርት ክፍሎችን (Grade 9-A፣ Grade 11 Natural Science ወዘተ) መፍጠር፣ ለእያንዳንዱ ክፍል ትምህርቶችን መመደብ፣ ለእያንዳንዱ ትምህርት አስተማሪ መሰየም ይችላሉ።' },
+    { icon: '📖', title: 'ሥርዓተ ትምህርት ማዋቀር ይችላሉ', detail: 'ለእያንዳንዱ ክፍል (Grade 9-12) ምን ምን ትምህርቶች ይሰጡ እንደሚሆን ማዘጋጀት ይችላሉ — አዲስ ክፍል ሲፈጠር ሥርዓተ ትምህርቱ ራሱ ይተገበራል።' },
+    { icon: '📝', title: 'የውጤት ማስረከቢያ ጊዜ ማስተዳደር ይችላሉ', detail: 'ከፈተና በኋላ አስተማሪዎች ውጤቶችን የሚያስገቡበት ጊዜ መክፈት፣ ማራዘም እና መዝጋት ይችላሉ።' },
+    { icon: '🔄', title: 'ድጋሚ ምዘና ጥያቄዎችን ማፅደቅ ወይም ውድቅ ማድረግ ይችላሉ', detail: 'ሆምሩም አስተማሪዎች ቆልፎ ምልክቶችን ለማስተካከል ሲጠይቁ ጥያቄዎቹን ፍቅደው ወይም ውድቅ ማድረግ ይችላሉ።' },
+    { icon: '📊', title: 'ሁሉም ክፍሎች ውጤቶችን ማስተካከል ይችላሉ', detail: 'ዳይሬክተር እንደ ልዩ ሥልጣን ቆልፎ ምልክቶችን ጨምሮ ማንኛውም ተማሪ ውጤቶችን ማስተካከል ይችላሉ።' },
+    { icon: '📋', title: 'የሁሉም ክፍሎች ክትትል ማስተዳደር ይችላሉ', detail: 'ለሁሉም ክፍሎች ዕለታዊ ክትትሉን ማየት፣ ማስገባት ወይም ማስተካከል ይችላሉ።' },
+    { icon: '📣', title: 'ማስታወቂያዎችን መፍጠር እና ማስተዳደር ይችላሉ', detail: 'ለተማሪዎች፣ ለወላጆች፣ ለሰራተኞች ወይም ለሁሉም ሰው ምስሎችን ጨምሮ ማስታወቂያ ማዘጋጀት፣ ማስተካከል እና መሰረዝ ይችላሉ።' },
+    { icon: '📁', title: 'ሃብቶችን ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ፣ ሰነዶች እና ሌሎች ቁሳቁሶችን ለተማሪዎች ወይም ለሰራተኞች መጫን፣ ማውረድ እና መሰረዝ ይችላሉ።' },
+    { icon: '🔍', title: 'ተጠቃሚዎችን መፈለግ እና የይለፍ ቃል ዳግም ማስጀምር ይችላሉ', detail: 'ማንኛውም ተጠቃሚ (ተማሪ፣ አስተማሪ፣ ወላጅ) ፈልጎ ሂሳቡን ማየትና የይለፍ ቃሉን ዳግም ማስጀምር ይችላሉ።' },
+    { icon: '📜', title: 'ሙሉ የኦዲት መዝገብ ማየት ይችላሉ', detail: 'ሁሉም ተጠቃሚዎች ምን ድርጊቶች እንደፈፀሙ — ምዝገባ፣ ውጤት ማስገባት፣ ግቤት ወዘተ — ሙሉ ታሪኩን ማየት ይችላሉ።' },
+    { icon: '🔚', title: 'ዓመቱን ማጠናቀቅ ይችላሉ', detail: 'ዓመቱ ሲጠናቀቅ ሁሉም ምደባዎችን ወደ ታሪክ ማዛወርና ተማሪዎችን ለቀጣዩ ዓመት ዝግጁ ማድረግ ይችላሉ።' },
   ] : [
-    { icon: '🎓', title: 'You can register students and teachers', detail: 'You can enrol new students into the school, hire teachers, and create their accounts so they can access the portal.' },
-    { icon: '📚', title: 'You can organise classes and subjects', detail: 'You can create class sections, assign subjects to each class, set up the grade curriculum, and assign teachers to their subjects.' },
-    { icon: '📝', title: 'You can control grade submission', detail: 'You can open and close the grade submission window after exams, and approve regrade requests from homeroom teachers when marks need correction.' },
-    { icon: '📋', title: 'You can monitor attendance', detail: 'You can view daily attendance reports for any class across the school to track student presence.' },
-    { icon: '📣', title: 'You can post school notices', detail: 'You can publish announcements for students, parents, staff, or everyone — with photos if needed.' },
-    { icon: '📁', title: 'You can manage resources', detail: 'You can upload study materials, documents and files that students and teachers can access.' },
-    { icon: '🔍', title: 'You can look up users and review audit logs', detail: 'You can find any user, reset their password, and see a full trail of all system activity.' },
+    { icon: '🎓', title: 'You can register students', detail: 'You can enrol new students (Grade 9 new entrants, transfers, repeaters, promoted students) and assign them to class sections after registration closes.' },
+    { icon: '👩‍🏫', title: 'You can hire and manage teachers', detail: 'You can register new teachers, update their profiles and documents, and delete accounts when needed.' },
+    { icon: '📚', title: 'You can set up classes and assign subjects', detail: 'You can create class sections (e.g. Grade 9-A, Grade 11 Natural Science), assign subjects to each class, and assign teachers to those subjects.' },
+    { icon: '📖', title: 'You can manage the grade curriculum', detail: 'You can define which subjects are taught at each grade level — when a new class is created the curriculum is applied automatically.' },
+    { icon: '📝', title: 'You can manage grade submission windows', detail: 'You can open, extend and close the period during which teachers submit exam results after each exam.' },
+    { icon: '🔄', title: 'You can approve or reject regrade requests', detail: 'When a homeroom teacher requests permission to correct locked marks, you can approve or reject that request.' },
+    { icon: '📊', title: 'You can edit any grade — including locked ones', detail: 'As director you have override power to correct marks for any student in any subject across the entire school.' },
+    { icon: '📋', title: 'You can manage attendance for all classes', detail: 'You can view, enter and correct daily attendance records for any class in the school.' },
+    { icon: '📣', title: 'You can create and manage school notices', detail: 'You can post announcements with photos targeted to students, parents, teachers, or everyone — and edit or delete them any time.' },
+    { icon: '📁', title: 'You can manage resources', detail: 'You can upload PDFs, documents and study materials for students or teachers, download any resource, and delete uploaded files.' },
+    { icon: '🔍', title: 'You can look up any user and reset passwords', detail: 'You can search for any student, teacher or parent, view their account details, and reset their password if they forget it.' },
+    { icon: '📜', title: 'You can review the full audit log', detail: 'You can see a complete trail of all system activity — who registered, who submitted grades, who changed what and when.' },
+    { icon: '🔚', title: 'You can end the academic year', detail: 'When the year finishes you can archive all subject assignments and unassign students from classes to prepare for the new year.' },
   ]
 
   return (
@@ -84,30 +88,38 @@ export function AdminDashboard() {
       name={`${t('welcomeAdmin')}, ${name}`}
       role={t('ADMIN')}
       stats={[
-        { label: t('students'),    value: stats?.studentCount },
-        { label: t('teachers'),    value: stats?.teacherCount },
-        { label: t('classes'),     value: stats?.classCount   },
+        { label: t('students'), value: stats?.studentCount },
+        { label: t('teachers'), value: stats?.teacherCount },
+        { label: t('classes'),  value: stats?.classCount   },
       ]}
       lines={lines}
     />
   )
 }
 
-// ── Teacher Dashboard ─────────────────────────────────────────────────────────
+// ── Teacher ───────────────────────────────────────────────────────────────────
 export function TeacherDashboard() {
   const { user } = useAuth()
   const { t, lang } = useLanguage()
 
   const lines = lang === 'am' ? [
-    { icon: '✏️', title: 'ለተማሪዎች ውጤቶችን ማስገባት ይችላሉ', detail: 'ለተሰጦት ትምህርት ውጤቶችን ማስገባት ይችላሉ — የወቅት፣ የዓመት ፈተና፣ የቤት ሥራ እና ጥያቄ/ፈተና። ውጤቶቹ ከተቀመጡ በኋላ ይቆለፋሉ።' },
-    { icon: '📋', title: 'ለክፍልዎ ክትትሉን መምዝገብ ይችላሉ', detail: 'የሆምሩም አስተማሪ ከሆኑ ለክፍልዎ ዕለታዊ ክትትሉን መምዝገብ ይችላሉ — ተገኝቷል፣ አልተገኘም፣ ዘግይቷል ወይም ፈቃድ አለው።' },
-    { icon: '📝', title: 'ተማሪዎችን መምዝገብ ይችላሉ', detail: 'ምዝገባ ሲከፈት አዲስ ወይም ቀደም ሲል የነበሩ ተማሪዎችን መምዝገብ ይችላሉ።' },
-    { icon: '🔄', title: 'ቆልፎ ምልክቶች ለማስተካከል ፈቃድ መጠየቅ ይችላሉ', detail: 'የሆምሩም አስተማሪ ከሆኑ ቆልፎ ውጤቶችን ለማስተካከል ከዳይሬክተሩ ፈቃድ መጠየቅ ይችላሉ።' },
+    { icon: '✏️', title: 'ለተሰጦት ትምህርት ውጤቶችን ማስገባት ይችላሉ', detail: 'የወቅት ፈተና (20)፣ የዓመት ፈተና (60)፣ የቤት ሥራ (10) እና ጥያቄ/ፈተና (10) ውጤቶችን ለእያንዳንዱ ተማሪ ማስገባት ይችላሉ። ውጤቶቹ ከቀረቡ በኋላ ይቆለፋሉ።' },
+    { icon: '�', title: 'ሁሉም ትምህርቶች ለሆምሩም አስተማሪ ይታያሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ለክፍልዎ ሁሉም ትምህርቶች ውጤቶችን ማየት ይችላሉ — ያስተምሩት ትምህርቶች ብቻ ሳይሆን ሁሉም።' },
+    { icon: '📋', title: 'ለክፍልዎ ዕለታዊ ክትትሉን ምዝግባ ይችላሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ዕለቱን ለእያንዳንዱ ተማሪ ተገኝቷል፣ አልተገኘም፣ ዘግይቷል ወይም ፈቃድ አለው ብለው ምዝግብ ይችላሉ። ሁሉንም ተቀምጦ ምልክት ማድረግ ይችላሉ።' },
+    { icon: '📝', title: 'ሲከፈት ተማሪዎችን ምዝገባ ማካሄድ ይችላሉ', detail: 'ምዝገባ ሲከፈት አዲስ ተማሪዎችን (ሙሉ ቅጽ) ወይም ቀደም ሲል ያሉ ተማሪዎችን (ፈጣን ዳሳሽ) ምዝግብ ይችላሉ።' },
+    { icon: '🔄', title: 'ቆልፎ ምልክቶች ለማስተካከል ፈቃድ መጠየቅ ይችላሉ', detail: 'ሆምሩም አስተማሪ ከሆኑ ስህተት ሲያዩ ዳይሬክተሩ ፈቃድ ሲሰጡ ቆልፎ ምልክቶቹን ማስተካከል ይችላሉ።' },
+    { icon: '📣', title: 'ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለሰራተኞች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ሙሉ ዝርዝሩን ማንበብ ይችላሉ።' },
+    { icon: '📁', title: 'ሃብቶችን ማስተዳደር ይችላሉ', detail: 'ፒዲኤፍ እና ሰነዶችን ለተማሪዎች ወይም ሰራተኞች ማጫን፣ ማውረድ እና የጫኑትን መሰረዝ ይችላሉ።' },
+    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት፣ የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
   ] : [
-    { icon: '✏️', title: 'You can enter grades for your students', detail: 'You can submit marks for your assigned subjects — mid exam, final exam, assignment and test/quiz. Grades are locked after submission.' },
-    { icon: '📋', title: 'You can mark attendance for your class', detail: 'As a homeroom teacher you can record daily attendance for your class — present, absent, late or excused.' },
-    { icon: '📝', title: 'You can register students', detail: 'When registration is open you can enrol new or existing students into the school for the new academic year.' },
-    { icon: '🔄', title: 'You can request regrade permission', detail: 'As a homeroom teacher you can request the director\'s approval to correct locked marks when a mistake is found.' },
+    { icon: '✏️', title: 'You can enter grades for your assigned subjects', detail: 'You can submit mid exam (20), final exam (60), assignment (10) and test/quiz (10) marks for each student in your subject. Grades lock after submission.' },
+    { icon: '�', title: 'You can view all subjects as homeroom teacher', detail: 'If you are the homeroom teacher of a class, you can view grades for all subjects in that class — not just the one you teach.' },
+    { icon: '📋', title: 'You can mark daily attendance for your class', detail: 'As a homeroom teacher you can record present, absent, late or excused for each student every day. You can also mark all students at once.' },
+    { icon: '📝', title: 'You can register students when registration is open', detail: 'When registration is open you can enrol new students (full form) or re-enrol existing ones (quick form with payment details).' },
+    { icon: '🔄', title: 'You can request regrade permission for locked marks', detail: 'As a homeroom teacher, when you spot an error in a locked grade you can request the director\'s approval to correct it.' },
+    { icon: '📣', title: 'You can read all school notices', detail: 'You can read the full content of announcements posted by the director for teachers or for the whole school.' },
+    { icon: '📁', title: 'You can upload and manage resources', detail: 'You can upload PDFs and documents for students or staff, download any resource, and delete files you uploaded.' },
+    { icon: '👤', title: 'You can manage your account', detail: 'You can view your profile and change your password to keep your account secure.' },
   ]
 
   return (
@@ -120,7 +132,7 @@ export function TeacherDashboard() {
   )
 }
 
-// ── Student Dashboard ─────────────────────────────────────────────────────────
+// ── Student ───────────────────────────────────────────────────────────────────
 export function StudentDashboard() {
   const { user } = useAuth()
   const { t, lang } = useLanguage()
@@ -128,16 +140,13 @@ export function StudentDashboard() {
   const [semLabel, setSemLabel] = useState(null)
 
   useEffect(() => {
-    // Fetch the most recent report card by trying sem2 first, then sem1
     api.get('/students/me').then(async r => {
       const me = r.data
       if (!me?.id) return
-      // Try to get the latest from grade history
       try {
         const hist = await api.get('/student/my-grade-history').then(h => h.data)
         if (hist && hist.length > 0) {
           const latest = hist[hist.length - 1]
-          // Try sem2 first, then sem1
           if (latest.sem2Average != null) {
             setReport({ average: latest.sem2Average, attendancePercent: null })
             setSemLabel(`${t('semester')} 2 · ${latest.academicYear}`)
@@ -147,16 +156,11 @@ export function StudentDashboard() {
           }
         }
       } catch {
-        // fallback to report card API
         const cy = `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
         for (const term of [2, 1]) {
           try {
             const rc = await api.get(`/report-card/${me.id}`, { params: { term, academicYear: cy } }).then(x => x.data)
-            if (rc?.grades?.length > 0) {
-              setReport(rc)
-              setSemLabel(`${t('semester')} ${term} · ${cy}`)
-              break
-            }
+            if (rc?.grades?.length > 0) { setReport(rc); setSemLabel(`${t('semester')} ${term} · ${cy}`); break }
           } catch {}
         }
       }
@@ -164,15 +168,19 @@ export function StudentDashboard() {
   }, [user])
 
   const lines = lang === 'am' ? [
-    { icon: '📊', title: 'ውጤቶችዎን እና ታሪክዎን ማየት ይችላሉ', detail: 'በሁሉም ሴሜስተሮች እና ዙሮች ያሉ ውጤቶችዎን፣ ያለፉ ወይም ያልወጡ ሁኔታዎን፣ ዓመታዊ አማካይዎን ማየት ይችላሉ።' },
-    { icon: '📋', title: 'ክትትልዎን ማረጋገጥ ይችላሉ', detail: 'ዕለቱን፣ ሁኔታዎን (ተገኝተዋል፣ አልተገኙም፣ ዘግይተዋል) እና ምን ያህል ቀናት ክፍል ውስጥ እንደነበሩ ማየት ይችላሉ።' },
-    { icon: '📣', title: 'የትምህርት ቤቱን ማስታወቂያዎች ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለተማሪዎች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ማንበብ ይችላሉ።' },
-    { icon: '📁', title: 'ሃብቶችን ማውረድ እና መጠቀም ይችላሉ', detail: 'አስተማሪዎች ያዘጋጁዎትን የጥናት ቁሳቁሶች፣ ሰነዶች እና ፋይሎች ማግኘት እና ማውረድ ይችላሉ።' },
+    { icon: '📊', title: 'ሁሉም ሴሜስተሮች ውጤቶችዎን ማየት ይችላሉ', detail: 'ከ Grade 9 እስከ አሁን ሁሉም ሴሜስተሮች ያሉ ትምህርቶቻቸው ውጤቶች፣ ዓመታዊ አማካይ እና ያለፉ/ያልወጡ ሁኔታ ማየት ይችላሉ።' },
+    { icon: '🏅', title: 'ያለፉ ወይም ያልወጡ ሁኔታ ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት (ዙር) ሁለቱ ሴሜስተሮች ካለቁ የሚያለፉ ወይም ያልሚያልፉ ሁኔታ ይታያሉ — 50 ወይም ከዚያ በላይ ካለ ያለፉ ነው።' },
+    { icon: '📋', title: 'ሙሉ ክትትል ታሪኩን ማየት ይችላሉ', detail: 'ዕለቱን ተገኝተዋል፣ አልተገኙም፣ ዘግይተዋል ወይም ፈቃድ ነበረዎ? ሁሉም ቀናት ዝርዝሩ ይታያሉ። የክትትል ምጣኔዎ ከ75% በታች ከሆነ ማስጠንቀቂያ ይታያሉ።' },
+    { icon: '📣', title: 'ሁሉም ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለተማሪዎች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ሙሉ ዝርዝሩን ፣ ምስሎቹን ጨምሮ ማንበብ ይችላሉ።' },
+    { icon: '📁', title: 'ሃብቶችን ማውረድ እና መጠቀም ይችላሉ', detail: 'አስተማሪዎች የጫኑዎትን ፒዲኤፍ፣ ሰነዶች እና ቁሳቁሶች ማግኘት፣ ማንበብ እና ማውረድ ይችላሉ።' },
+    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን፣ ሚናዎን ማየት እና የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
   ] : [
-    { icon: '📊', title: 'You can view your grades and academic history', detail: 'You can see all your subject scores across every semester and batch, your pass or fail status each year, and your annual average.' },
-    { icon: '📋', title: 'You can check your attendance record', detail: 'You can see each day\'s status — present, absent, late or excused — and how many school days you have attended.' },
-    { icon: '📣', title: 'You can read school notices', detail: 'You can read announcements posted by the director for students or for the whole school.' },
-    { icon: '📁', title: 'You can download and use resources', detail: 'You can access and download study materials, documents and files uploaded by your teachers to help with your studies.' },
+    { icon: '📊', title: 'You can view all your semester grades', detail: 'You can see every subject score for every semester from Grade 9 onwards — mid exam, final, assignment and quiz — together with your semester average.' },
+    { icon: '🏅', title: 'You can see your pass or fail result per year', detail: 'Once both semesters of a year are recorded, your annual result is shown — promoted if your annual average is 50 or above, failed if below.' },
+    { icon: '📋', title: 'You can check your full attendance history', detail: 'You can see day by day whether you were present, absent, late or excused. A warning appears if your attendance rate drops below 75%.' },
+    { icon: '📣', title: 'You can read all school notices', detail: 'You can read the full content and photos of announcements posted by the director for students or for the whole school.' },
+    { icon: '📁', title: 'You can download and use study resources', detail: 'You can access, read and download PDFs, documents and study materials uploaded by your teachers.' },
+    { icon: '👤', title: 'You can manage your account', detail: 'You can view your profile information and change your password to keep your account secure.' },
   ]
 
   return (
@@ -189,7 +197,7 @@ export function StudentDashboard() {
   )
 }
 
-// ── Parent Dashboard ──────────────────────────────────────────────────────────
+// ── Parent ────────────────────────────────────────────────────────────────────
 export function ParentDashboard() {
   const { user } = useAuth()
   const { t, lang } = useLanguage()
@@ -200,15 +208,19 @@ export function ParentDashboard() {
   }, [])
 
   const lines = lang === 'am' ? [
-    { icon: '👨‍👩‍👧', title: 'ልጅዎን ማያያዝ እና ማስተዳደር ይችላሉ', detail: 'የልጅዎን Student ID ተጠቅመው ፕሮፋይሉን ከሂሳብዎ ጋር ማያያዝ ይችላሉ። ከአንድ በላይ ልጅ ካለ ሁሉንም ማስጠጋት ይችላሉ።' },
-    { icon: '📊', title: 'የልጅዎን ውጤቶች ማየት ይችላሉ', detail: 'ልጅዎ ለሁሉም ሴሜስተሮች ያስመዘገቧቸው ውጤቶች፣ ዓመታዊ አማካይ እና ያለፈ ወይም ያልወጣ ሁኔታ ማየት ይችላሉ።' },
-    { icon: '📋', title: 'የልጅዎን ክትትል ሂደት መከታተል ይችላሉ', detail: 'ልጅዎ ወደ ትምህርት ቤቱ ዕለቱን ተገኝቷል ወይ? ዘግይቷል ወይ? ፈቃድ ነበረው ወይ? ሁሉንም ማየት ይችላሉ።' },
-    { icon: '📣', title: 'ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለወላጆች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ማንበብ ይችላሉ።' },
+    { icon: '👨‍👩‍👧', title: 'ልጅዎን ማያያዝ እና ማስተዳደር ይችላሉ', detail: 'ትምህርት ቤቱ የሰጠዎትን Student ID ተጠቅመው ልጅዎን ከሂሳብዎ ጋር ማያያዝ ይችላሉ። ከአንድ በላይ ልጅ ካለ ሁሉንም ማስጠጋት ይችላሉ።' },
+    { icon: '📊', title: 'ሁሉም ሴሜስተሮች ውጤቶቹን ማየት ይችላሉ', detail: 'ልጅዎ ከ Grade 9 ጀምሮ ያስመዘገባቸው ሁሉም ሴሜስተሮች ትምህርቶች ውጤቶች፣ ዓመታዊ አማካይ ማየት ይችላሉ።' },
+    { icon: '🏅', title: 'ያለፈ ወይም ያልወጣ ሁኔታ ማወቅ ይችላሉ', detail: 'ለእያንዳንዱ ዓመት ልጅዎ ያለፈ ወይም ያልወጣ ሁኔታ ይታያሉ — ይህ ለቀጣዩ ዓመት ምዝገባ ወሳኝ ነው።' },
+    { icon: '📋', title: 'ሙሉ ክትትል ታሪኩን ማየት ይችላሉ', detail: 'ልጅዎ ዕለቱን ትምህርት ቤት ተገኝቷል ወይ? ዘግይቷል ወይ? ፈቃድ ነበረው ወይ? ሁሉም ቀናት ዝርዝሩ ይታያሉ።' },
+    { icon: '📣', title: 'ሁሉም ማስታወቂያዎችን ማንበብ ይችላሉ', detail: 'ዳይሬክተሩ ለወላጆች ወይም ለሁሉም ሰው የሚለጥፈውን ማስታወቂያ ምስሎቹን ጨምሮ ማንበብ ይችላሉ።' },
+    { icon: '👤', title: 'የሂሳብ ቅንብሮቻቸውን ማስተዳደር ይችላሉ', detail: 'ስምዎን ማየት እና የሂሳብ ደህንነት ለማሻሻል የይለፍ ቃልዎን ለሌላ ቀይር ይችላሉ።' },
   ] : [
-    { icon: '👨‍👩‍👧', title: 'You can link and manage your child', detail: 'You can connect your child\'s school profile to your account using their Student ID. If you have more than one child at the school you can link all of them.' },
-    { icon: '📊', title: 'You can view your child\'s grades', detail: 'You can see all your child\'s subject scores across every semester, their annual average, and whether they were promoted or retained each year.' },
-    { icon: '📋', title: 'You can track your child\'s attendance', detail: 'You can see day by day whether your child was present, absent, late or excused — so you are always informed.' },
-    { icon: '📣', title: 'You can read school notices', detail: 'You can read official announcements posted by the director for parents or for the whole school community.' },
+    { icon: '👨‍👩‍👧', title: 'You can link and manage your children', detail: 'You can connect your child\'s school profile using their Student ID. If you have more than one child at the school you can link all of them and switch between them.' },
+    { icon: '📊', title: 'You can view all semester grades', detail: 'You can see every subject score your child has earned from Grade 9 onwards — for every semester, with the semester average shown.' },
+    { icon: '🏅', title: 'You can see the annual pass or fail result', detail: 'For each academic year, once both semesters are recorded, you can see whether your child was promoted to the next grade or retained.' },
+    { icon: '📋', title: 'You can track the full attendance history', detail: 'You can see day by day whether your child was present, absent, late or excused — with a rate summary and a low-attendance warning if needed.' },
+    { icon: '📣', title: 'You can read all school notices', detail: 'You can read the full content and photos of announcements posted by the director for parents or for the whole school community.' },
+    { icon: '👤', title: 'You can manage your account', detail: 'You can view your profile and change your password to keep your account secure.' },
   ]
 
   return (
@@ -226,7 +238,7 @@ export function ParentDashboard() {
           <p className="text-sm text-brand font-medium flex items-center gap-2">
             <span>💡</span>
             {lang === 'am'
-              ? 'ጀምር: ወደ ልጆቼ ሄደህ የልጅህን Student ID ተጠቅምህ አያይዝ።'
+              ? 'ጀምር: ወደ ልጆቼ ሂደው የልጅዎን Student ID ተጠቅመው ያያይዙ።'
               : 'Get started: go to My Children and link your child using their Student ID provided by the school.'}
           </p>
         </div>
