@@ -4,39 +4,58 @@ import { gradeService } from '../services/gradeService'
 import { studentService } from '../services/studentService'
 import { useAuth } from '../context/AuthContext'
 
-function toEthiopianDate(gregorianDate) {
+const GC_MONTH_NAMES_EN = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+]
+
+// Format registration date:
+// English → "23 October 2026"
+// Amharic → Ethiopian calendar with Amharic month names: "13 ጥቅምት 2019"
+function formatRegDate(gregorianDate, isAmharic) {
   if (!gregorianDate) return ''
   const d = new Date(gregorianDate)
   const gcYear = d.getFullYear()
   const gcMonth = d.getMonth() + 1
   const gcDay = d.getDate()
 
-  // Reliable Gregorian→Ethiopian conversion using Julian Day Numbers
-  // JDN for Gregorian date
+  if (!isAmharic) {
+    return `${gcDay} ${GC_MONTH_NAMES_EN[gcMonth - 1]} ${gcYear}`
+  }
+
+  // Ethiopian calendar via Julian Day Numbers
   const a = Math.floor((14 - gcMonth) / 12)
   const y = gcYear + 4800 - a
   const m = gcMonth + 12 * a - 3
   const jdn = gcDay + Math.floor((153 * m + 2) / 5) + 365 * y
     + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
-
-  // Ethiopian epoch: Meskerem 1, 1 EC = JDN 1724221 (Proleptic Julian 29 Aug 8 AD)
   const etEpoch = 1724221
   const etDelta = jdn - etEpoch
-  // Each Ethiopian 4-year cycle = 4*365+1 = 1461 days
   const etCycle4 = Math.floor(etDelta / 1461)
   const remainder = etDelta % 1461
-  // Year within cycle: remainder / 365, but the leap year is year 3 (remainder 1460)
   const etYearInCycle = Math.floor(remainder / 365)
   const etYear = 4 * etCycle4 + etYearInCycle + 1
-  // Day within the Ethiopian year (0-indexed)
   const dayOfYear = remainder - etYearInCycle * 365
-  // Months 1-12 are 30 days each; month 13 (Pagume) is 5 or 6 days
   const etMonth = Math.floor(dayOfYear / 30) + 1
   const etDay = (dayOfYear % 30) + 1
-
   const etMonthNames = ['መስከረም','ጥቅምት','ህዳር','ታህሳስ','ጥር','የካቲት','መጋቢት','ሚያዚያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ','ጳጉሜን']
-  const etMonthName = etMonthNames[Math.min(etMonth - 1, 12)]
-  return `${etDay} ${etMonthName} ${etYear}`
+  return `${etDay} ${etMonthNames[Math.min(etMonth - 1, 12)]} ${etYear}`
+}
+
+// Sem II academic year = next year pair, e.g. "2026/2027" → "2027/2028"
+function sem2AcYear(acYear) {
+  if (!acYear) return ''
+  const parts = acYear.split('/')
+  if (parts.length !== 2) return acYear
+  const y1 = parseInt(parts[0]) + 1
+  const y2 = parseInt(parts[1]) + 1
+  return `${y1}/${y2}`
+}
+
+// Batch number → Grade label
+function batchToGrade(batch) {
+  const map = { 1: 'Grade 9', 2: 'Grade 10', 3: 'Grade 11', 4: 'Grade 12' }
+  return map[batch] || `Grade ${batch + 8}`
 }
 
 function StatusBadge({ average, t }) {
@@ -47,7 +66,7 @@ function StatusBadge({ average, t }) {
   return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{t('failed')}</span>
 }
 
-export function GradeHistoryTable({ history, t }) {
+export function GradeHistoryTable({ history, t, isAmharic }) {
   const [expanded, setExpanded] = useState({})
 
   const toggleExpand = (key) => {
@@ -98,9 +117,9 @@ export function GradeHistoryTable({ history, t }) {
                     {expanded[sem1Key] ? '▼' : '▶'}
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-900">{entry.academicYear}</td>
-                  <td className="px-4 py-3 text-center">{entry.batch}</td>
+                  <td className="px-4 py-3 text-center">{batchToGrade(entry.batch)}</td>
                   <td className="px-4 py-3 text-center font-semibold">I</td>
-                  <td className="px-4 py-3">{toEthiopianDate(entry.registrationDate)}</td>
+                  <td className="px-4 py-3">{formatRegDate(entry.registrationDate, isAmharic)}</td>
                   <td className="px-4 py-3 text-center">
                     {entry.sem1Average != null ? entry.sem1Average.toFixed(1) : '—'}
                   </td>
@@ -147,8 +166,8 @@ export function GradeHistoryTable({ history, t }) {
                   <td className="px-2 py-3 text-center text-slate-400 select-none">
                     {expanded[sem2Key] ? '▼' : '▶'}
                   </td>
-                  <td className="px-4 py-3 text-slate-400 text-xs"></td>
-                  <td className="px-4 py-3 text-center">{entry.batch}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900">{sem2AcYear(entry.academicYear)}</td>
+                  <td className="px-4 py-3 text-center">{batchToGrade(entry.batch)}</td>
                   <td className="px-4 py-3 text-center font-semibold">II</td>
                   <td className="px-4 py-3 text-slate-400">—</td>
                   <td className="px-4 py-3 text-center">
@@ -199,7 +218,7 @@ export function GradeHistoryTable({ history, t }) {
 
 export default function MyGradesPage() {
   const { user } = useAuth()
-  const { t } = useLanguage()
+  const { t, isAmharic } = useLanguage()
   const [student, setStudent] = useState(null)
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
@@ -254,7 +273,7 @@ export default function MyGradesPage() {
         </div>
       )}
 
-      <GradeHistoryTable history={history} t={t} />
+      <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} />
     </div>
   )
 }

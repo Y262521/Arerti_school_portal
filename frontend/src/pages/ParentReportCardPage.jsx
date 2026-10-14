@@ -5,7 +5,7 @@ import { gradeService } from '../services/gradeService'
 import { GradeHistoryTable } from './MyGradesPage'
 
 export default function ParentReportCardPage() {
-  const { t } = useLanguage()
+  const { t, isAmharic } = useLanguage()
   const [children, setChildren] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
   const [history, setHistory] = useState([])
@@ -104,7 +104,7 @@ export default function ParentReportCardPage() {
             </div>
           )}
 
-          <GradeHistoryTable history={history} t={t} />
+          <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} />
         </>
       )}
     </div>
