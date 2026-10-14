@@ -390,9 +390,12 @@ export default function GradebookPage() {
                                         </td>
                                         {visibleSubjects.map(subj => {
                                             const entry    = getGrade(student.id, subj.id)
-                                            const isMine   = isAdmin || myAssignedSubjectIds.has(subj.id)
                                             const hasReg   = hasRegradePermission(subj.id, student.id)
                                             const isLocked = entry?.locked ?? false
+                                            // isMine: admin, assigned subject teacher, OR homeroom with approved regrade
+                                            const isMine   = isAdmin
+                                                || myAssignedSubjectIds.has(subj.id)
+                                                || (isHomeroomOfSection && hasReg)
                                             const canEdit  = isAdmin
                                                 || (windowIsOpen && !isLocked && isMine)
                                                 || (isLocked && hasReg && isMine)

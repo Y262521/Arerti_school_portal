@@ -16,7 +16,7 @@ public class Teacher {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "employee_id", length = 30, unique = true)
+    @Column(name = "employee_id", length = 20, unique = true)
     private String employeeId;
 
     // ── Personal info ──────────────────────────────────────────────────────────

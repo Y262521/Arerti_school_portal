@@ -714,8 +714,8 @@ const translations = {
     regDate: 'Registration Date',
     prevStatus: 'Prev Status',
     finalStatus: 'Final Status',
-    passed: 'PASSED',
-    failed: 'FAILED',
+    passed: 'Promoted',
+    failed: 'Failed',
     noHistory: 'No registration history found.',
   },
 
@@ -1385,8 +1385,8 @@ const translations = {
 
     // ── Missing from registration wizards ───────────────────────────────────
     enrolledLabel: 'ተመዝግቧል',
-    passedLabel: 'አለፈ',
-    failedLabel: 'ወደቀ',
+    passed: 'ተዛውሯል/ተዛውራለች',
+    failed: 'ወድቋል/ወድቃለች',
     repeaterLabel: 'ደጋሚ',
     studentsDidNotPass: 'ተማሪዎች ምዝገባ ደጋሚ ሆነው ሊምዘገቡ ይችላሉ',
     studentEnrolled: 'ተመዝግቧል',
@@ -1430,8 +1430,6 @@ const translations = {
     regDate: 'የምዝገባ ቀን',
     prevStatus: 'ቀዳሚ ሁኔታ',
     finalStatus: 'የመጨረሻ ሁኔታ',
-    passed: 'አለፈ',
-    failed: 'ወደቀ',
     noHistory: 'የምዝገባ ታሪክ አልተገኘም።',
   }
 }

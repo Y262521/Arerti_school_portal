@@ -83,27 +83,6 @@ export default function ParentReportCardPage() {
         <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
       ) : (
         <>
-          {latestEntry && latestEntry.annualAverage != null && (
-            <div className={`mb-6 rounded-xl border-2 p-4 flex items-center gap-4 ${
-              latestEntry.passed
-                ? 'bg-green-50 border-green-400'
-                : 'bg-red-50 border-red-400'
-            }`}>
-              <div className={`text-4xl font-black ${latestEntry.passed ? 'text-green-600' : 'text-red-600'}`}>
-                {latestEntry.passed ? '✓' : '✗'}
-              </div>
-              <div>
-                <div className={`text-lg font-bold ${latestEntry.passed ? 'text-green-700' : 'text-red-700'}`}>
-                  {latestEntry.passed ? t('passed') : t('failed')} — {latestEntry.academicYear}
-                </div>
-                <div className="text-sm text-slate-600">
-                  Annual average: <strong>{latestEntry.annualAverage?.toFixed(1)}</strong> / 100
-                  {!latestEntry.passed && <span className="ml-2 text-red-600 font-medium">— below passing mark of 50</span>}
-                </div>
-              </div>
-            </div>
-          )}
-
           <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} />
         </>
       )}

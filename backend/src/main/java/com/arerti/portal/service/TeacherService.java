@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -249,16 +248,29 @@ public class TeacherService {
         return teacherRepository.count();
     }
 
-    private String generateEmployeeId() {
-        int year = Year.now().getValue();
-        String suffix = java.util.UUID.randomUUID().toString()
-                .replace("-", "").substring(0, 6).toUpperCase();
-        return String.format("TCH-%d-%s", year, suffix);
+    private synchronized String generateEmployeeId() {
+        List<String> ids = teacherRepository.findAgsptIds();
+        int maxNum = 0;
+        for (String id : ids) {
+            if (id != null && id.toUpperCase().startsWith("AGSPS-T")) {
+                try {
+                    int val = Integer.parseInt(id.substring(7).trim());
+                    if (val > maxNum) maxNum = val;
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        int next = maxNum + 1;
+        String candidate = "AGSPS-T" + next;
+        while (teacherRepository.existsByEmployeeId(candidate)) {
+            next++;
+            candidate = "AGSPS-T" + next;
+        }
+        return candidate;
     }
 
     private String generatePassword() {
         int rand = 100 + (int)(Math.random() * 900);
-        return "Arerti@" + Year.now().getValue() + rand;
+        return "Arerti@" + LocalDate.now().getYear() + rand;
     }
 
     private String actorUsername() {
