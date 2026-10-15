@@ -3,20 +3,20 @@ import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
 import api from '../services/api'
 
-const GRADIENT = 'bg-gradient-to-br from-brand-dark via-brand to-emerald-500'
+const GRADIENT = 'bg-gradient-to-br from-slate-100 to-slate-200'
 
 function WelcomeBanner({ name, role, stats, lines }) {
   return (
     <div className={`rounded-2xl overflow-hidden shadow-lg mb-8 ${GRADIENT}`}>
-      <div className="px-6 pt-7 pb-5 text-white">
-        <p className="text-xs font-bold uppercase tracking-widest opacity-75 mb-1">{role}</p>
-        <h1 className="font-display text-2xl sm:text-3xl font-bold leading-snug">{name}</h1>
+      <div className="px-6 pt-7 pb-5">
+        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">{role}</p>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold leading-snug text-slate-900">{name}</h1>
       </div>
 
       {stats && stats.some(s => s.value != null) && (
         <div className="px-6 pb-5 pt-2 flex flex-wrap gap-2 bg-white/10">
           {stats.filter(s => s.value != null).map((s, i) => (
-            <div key={i} className="bg-white/90 rounded-xl px-4 py-2 flex items-center gap-2">
+            <div key={i} className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 border border-slate-200 shadow-sm">
               <span className="text-xl font-black text-brand">{s.value}</span>
               <span className="text-sm text-slate-600">{s.label}</span>
             </div>
