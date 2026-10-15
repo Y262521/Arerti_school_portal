@@ -27,6 +27,12 @@ export default function AttendancePage() {
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState({})
 
+    // Export date range — defaults to first of current month → today
+    const today = new Date()
+    const firstOfMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`
+    const [exportStartDate, setExportStartDate] = useState(firstOfMonth)
+    const [exportEndDate, setExportEndDate] = useState(today.toISOString().split('T')[0])
+
     // Status label map — uses translation keys
     const STATUS_LABELS = {
         PRESENT: t('present'),
@@ -111,31 +117,45 @@ export default function AttendancePage() {
                     <input className="field" type="date" value={date} onChange={e => setDate(e.target.value)} />
                 </div>
                 {sectionId && total > 0 && (
-                    <div className="flex gap-2 ml-auto">
+                    <div className="flex flex-wrap gap-2 ml-auto items-end">
                         <button className="text-xs btn-ghost py-1.5 px-3" onClick={() => markAll('PRESENT')}>
                             ✓ {t('markAllPresent')}
                         </button>
                         <button className="text-xs btn-ghost py-1.5 px-3 border-red-200 text-red-600" onClick={() => markAll('ABSENT')}>
                             ✗ {t('markAllAbsent')}
                         </button>
-                        <button
-                            className="text-xs btn-ghost py-1.5 px-3"
-                            onClick={() => {
-                                const token = localStorage.getItem('arerti_token')
-                                const base = import.meta.env.DEV ? '/api' : 'https://arerti-school-backend.onrender.com/api'
-                                const now = new Date()
-                                const y = now.getFullYear()
-                                const m = String(now.getMonth() + 1).padStart(2, '0')
-                                const startDate = `${y}-${m}-01`
-                                const lastDay = new Date(y, now.getMonth() + 1, 0).getDate()
-                                const endDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`
-                                window.open(
-                                    `${base}/export/attendance?sectionId=${sectionId}&startDate=${startDate}&endDate=${endDate}&token=${token}`
-                                )
-                            }}
-                        >
-                            📥 {t('exportCsv')}
-                        </button>
+                        <div className="flex items-end gap-1">
+                            <div>
+                                <label className="field-label text-xs">{t('exportFrom')}</label>
+                                <input
+                                    className="field text-xs py-1.5 px-2"
+                                    type="date"
+                                    value={exportStartDate}
+                                    onChange={e => setExportStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="field-label text-xs">{t('exportTo')}</label>
+                                <input
+                                    className="field text-xs py-1.5 px-2"
+                                    type="date"
+                                    value={exportEndDate}
+                                    onChange={e => setExportEndDate(e.target.value)}
+                                />
+                            </div>
+                            <button
+                                className="text-xs btn-ghost py-1.5 px-3"
+                                onClick={() => {
+                                    const token = localStorage.getItem('arerti_token')
+                                    const base = import.meta.env.DEV ? '/api' : 'https://arerti-school-backend.onrender.com/api'
+                                    window.open(
+                                        `${base}/export/attendance?sectionId=${sectionId}&startDate=${exportStartDate}&endDate=${exportEndDate}&token=${token}`
+                                    )
+                                }}
+                            >
+                                📥 {t('exportCsv')}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

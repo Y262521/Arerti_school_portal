@@ -720,6 +720,8 @@ const translations = {
 
     // ── Export & Print ────────────────────────────────────────────────────────
     exportCsv: 'Export CSV',
+    exportFrom: 'From',
+    exportTo: 'To',
     printReportCard: 'Print Report Card',
 
     // ── Staff Attendance ──────────────────────────────────────────────────────
@@ -1443,6 +1445,8 @@ const translations = {
 
     // ── Export & Print ────────────────────────────────────────────────────────
     exportCsv: 'CSV አውርድ',
+    exportFrom: 'ከ',
+    exportTo: 'እስከ',
     printReportCard: 'ሪፖርት ካርድ አትም',
 
     // ── Staff Attendance ──────────────────────────────────────────────────────

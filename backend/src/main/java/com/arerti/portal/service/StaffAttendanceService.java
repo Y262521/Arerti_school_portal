@@ -14,11 +14,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StaffAttendanceService {
+
+    private static final Set<String> ALLOWED_STATUSES =
+            Set.of("PRESENT", "ABSENT", "LATE", "EXCUSED");
 
     private final StaffAttendanceRepository staffAttendanceRepository;
     private final TeacherRepository teacherRepository;
@@ -42,6 +46,13 @@ public class StaffAttendanceService {
     public StaffAttendanceResponse mark(StaffAttendanceRequest req, String markedBy) {
         Teacher teacher = teacherRepository.findById(req.teacherId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Teacher not found"));
+
+        // Validate status against the allowed set
+        if (req.status() == null || !ALLOWED_STATUSES.contains(req.status())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid status. Must be one of: PRESENT, ABSENT, LATE, EXCUSED");
+        }
+
         StaffAttendance record = staffAttendanceRepository
                 .findByTeacherAndDate(teacher, req.date())
                 .orElse(null);
