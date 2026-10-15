@@ -14,11 +14,11 @@ function WelcomeBanner({ name, role, stats, lines }) {
       </div>
 
       {stats && stats.some(s => s.value != null) && (
-        <div className="px-6 pb-5 flex flex-wrap gap-2">
+        <div className="px-6 pb-5 pt-2 flex flex-wrap gap-2 bg-white/10">
           {stats.filter(s => s.value != null).map((s, i) => (
-            <div key={i} className="bg-white/25 backdrop-blur-sm rounded-xl px-4 py-2 text-white flex items-center gap-2">
-              <span className="text-xl font-black">{s.value}</span>
-              <span className="text-sm opacity-85">{s.label}</span>
+            <div key={i} className="bg-white/90 rounded-xl px-4 py-2 flex items-center gap-2">
+              <span className="text-xl font-black text-brand">{s.value}</span>
+              <span className="text-sm text-slate-600">{s.label}</span>
             </div>
           ))}
         </div>
@@ -27,8 +27,7 @@ function WelcomeBanner({ name, role, stats, lines }) {
       <div className="px-6 pb-7 pt-1 bg-white">
         <ul className="space-y-3 pt-4">
           {lines.map((line, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span className="mt-0.5 text-lg shrink-0">{line.icon}</span>
+            <li key={i} className="flex items-start gap-3 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
               <p className="text-sm text-slate-600 leading-relaxed">
                 <span className="font-semibold text-slate-900">{line.title} — </span>
                 {line.detail}

@@ -236,9 +236,9 @@ function TeacherForm({ initial, onSubmit, onClose, loading, isEdit }) {
             <div>
                 <h3 className="font-semibold text-slate-700 mb-3 text-sm">{t('documentsSection')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FileUploadField label={t('teacherPhoto')} folder="teacher-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" multiple={false} />
-                    <FileUploadField label={t('qualificationCert')} folder="qualifications" value={form.qualificationCertUrl} onChange={v => set('qualificationCertUrl', v)} accept="image/*,.pdf" multiple={true} />
-                    <FileUploadField label={t('idDocument')} folder="id-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} accept="image/*,.pdf" multiple={true} />
+                    <FileUploadField label={t('teacherPhoto')} folder="teacher-photos" value={form.photoUrl} onChange={v => set('photoUrl', v)} accept="image/jpeg,image/png" multiple={false} required={!isEdit} />
+                    <FileUploadField label={t('qualificationCert')} folder="qualifications" value={form.qualificationCertUrl} onChange={v => set('qualificationCertUrl', v)} accept="image/*,.pdf" multiple={true} required={!isEdit} />
+                    <FileUploadField label={t('idDocument')} folder="id-docs" value={form.idDocUrl} onChange={v => set('idDocUrl', v)} accept="image/*,.pdf" multiple={true} required={!isEdit} />
                 </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">

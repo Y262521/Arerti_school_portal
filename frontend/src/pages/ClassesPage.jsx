@@ -223,6 +223,7 @@ function CurriculumPanel({ onClose }) {
     useEffect(() => { load() }, [grade, stream])
 
     const inCurriculum = new Set(curriculum.map(c => c.subjectId))
+    // Filter out already-added subjects by ID (code differentiates streams)
     const available = allSubjects.filter(s => !inCurriculum.has(s.id))
 
     const handleAdd = async () => {
@@ -231,8 +232,17 @@ function CurriculumPanel({ onClose }) {
         setAdding(true)
         try {
             await curriculumService.addSubject(grade, selectedSubject, needsStream ? stream : null)
+            // Update in-place — no reload
+            const added = allSubjects.find(s => String(s.id) === String(selectedSubject))
+            if (added) {
+                setCurriculum(prev => [...prev, {
+                    id: Date.now(),
+                    subjectId: added.id,
+                    subjectName: added.name,
+                    subjectCode: added.code,
+                }])
+            }
             setSelectedSubject('')
-            load()
         } catch (err) {
         } finally { setAdding(false) }
     }
@@ -240,7 +250,8 @@ function CurriculumPanel({ onClose }) {
     const handleRemove = async (subjectId) => {
         try {
             await curriculumService.removeSubject(grade, subjectId, needsStream ? stream : null)
-            load()
+            // Update in-place — no reload
+            setCurriculum(prev => prev.filter(c => c.subjectId !== subjectId))
         } catch { /* silent */ }
     }
 
@@ -302,7 +313,9 @@ function CurriculumPanel({ onClose }) {
                             onChange={e => setSelectedSubject(e.target.value)}>
                             <option value="">— {t('addSubjectToCurriculum')} —</option>
                             {available.map(s => (
-                                <option key={s.id} value={s.id}>{s.name}{s.code ? ` (${s.code})` : ''}</option>
+                                <option key={s.id} value={s.id}>
+                                    {s.name}{s.code ? ` [${s.code}]` : ''}
+                                </option>
                             ))}
                         </select>
                         <button className="btn-primary px-4" onClick={handleAdd}

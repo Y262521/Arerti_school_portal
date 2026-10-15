@@ -77,6 +77,10 @@ function TeacherRegistrationForm({ onSuccess }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        // All documents are required
+        if (!form.photoUrl) { alert(t('studentPhotoRequired') || 'Teacher photo is required'); return }
+        if (!form.qualificationCertUrl) { alert(t('qualificationCert') + ' is required'); return }
+        if (!form.idDocUrl) { alert(t('idDocument') + ' is required'); return }
         setSaving(true)
         try {
             const newTeacher = await teacherService.create({ ...form, hireDate: form.hireDate || null })
@@ -182,6 +186,7 @@ function TeacherRegistrationForm({ onSuccess }) {
                         onChange={v => set('photoUrl', v)}
                         accept="image/jpeg,image/png"
                         multiple={false}
+                        required={true}
                     />
                     <FileUploadField
                         label={t('qualificationCert')}
@@ -190,6 +195,7 @@ function TeacherRegistrationForm({ onSuccess }) {
                         onChange={v => set('qualificationCertUrl', v)}
                         accept="image/*,.pdf"
                         multiple={true}
+                        required={true}
                     />
                     <FileUploadField
                         label={t('idDocument')}
@@ -198,6 +204,7 @@ function TeacherRegistrationForm({ onSuccess }) {
                         onChange={v => set('idDocUrl', v)}
                         accept="image/*,.pdf"
                         multiple={true}
+                        required={true}
                     />
                 </div>
             </div>
