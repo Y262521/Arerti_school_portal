@@ -4,10 +4,12 @@ import com.arerti.portal.dto.GradeEntryRequest;
 import com.arerti.portal.dto.GradeEntryResponse;
 import com.arerti.portal.entity.*;
 import com.arerti.portal.repository.*;
-import com.arerti.portal.service.GradeEntryWindowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +27,7 @@ public class GradeBookService {
     private final TeacherRepository teacherRepository;
     private final ClassSubjectAssignmentRepository assignmentRepository;
     private final GradeSectionRepository sectionRepository;
+    private final AuditService auditService;
     @Lazy
     private final GradeEntryWindowService gradeEntryWindowService;
 
@@ -133,7 +136,20 @@ public class GradeBookService {
             }
         }
 
-        return GradeEntryResponse.from(gradeEntryRepository.save(entry));
+        GradeEntry saved = gradeEntryRepository.save(entry);
+
+        // Audit log — fire-and-forget, never breaks the main operation
+        String action = isNewEntry ? "CREATE_GRADE" : "UPDATE_GRADE";
+        auditService.log(
+                actorUsername(), actorRole(), action, "GRADE",
+                student.getStudentUid(),
+                "Subject: " + subject.getName()
+                        + ", Score: " + saved.getScore()
+                        + ", Term: " + req.term()
+                        + ", Year: " + req.academicYear()
+        );
+
+        return GradeEntryResponse.from(saved);
     }
 
     @Transactional
@@ -151,5 +167,21 @@ public class GradeBookService {
     private Student getStudent(Long id) {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+    }
+
+    private String actorUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null ? auth.getName() : "unknown";
+    }
+
+    private String actorRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return "unknown";
+        return auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring(5))
+                .findFirst()
+                .orElse("unknown");
     }
 }

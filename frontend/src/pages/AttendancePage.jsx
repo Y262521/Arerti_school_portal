@@ -118,6 +118,24 @@ export default function AttendancePage() {
                         <button className="text-xs btn-ghost py-1.5 px-3 border-red-200 text-red-600" onClick={() => markAll('ABSENT')}>
                             ✗ {t('markAllAbsent')}
                         </button>
+                        <button
+                            className="text-xs btn-ghost py-1.5 px-3"
+                            onClick={() => {
+                                const token = localStorage.getItem('arerti_token')
+                                const base = import.meta.env.DEV ? '/api' : 'https://arerti-school-backend.onrender.com/api'
+                                const now = new Date()
+                                const y = now.getFullYear()
+                                const m = String(now.getMonth() + 1).padStart(2, '0')
+                                const startDate = `${y}-${m}-01`
+                                const lastDay = new Date(y, now.getMonth() + 1, 0).getDate()
+                                const endDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`
+                                window.open(
+                                    `${base}/export/attendance?sectionId=${sectionId}&startDate=${startDate}&endDate=${endDate}&token=${token}`
+                                )
+                            }}
+                        >
+                            📥 {t('exportCsv')}
+                        </button>
                     </div>
                 )}
             </div>

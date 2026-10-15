@@ -1,6 +1,7 @@
 package com.arerti.portal.config;
 
 import com.arerti.portal.security.JwtAuthFilter;
+import com.arerti.portal.security.JwtQueryParamFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +57,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
+            .addFilterBefore(new JwtQueryParamFilter(), JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

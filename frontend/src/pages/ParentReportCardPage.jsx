@@ -83,7 +83,7 @@ export default function ParentReportCardPage() {
         <div className="card p-8 text-center text-slate-500">{t('loading')}</div>
       ) : (
         <>
-          <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} />
+          <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} studentId={selectedChild?.studentId} />
         </>
       )}
     </div>

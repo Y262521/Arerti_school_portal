@@ -19,6 +19,8 @@ public interface AttendanceRepository extends JpaRepository<AttendanceRecord, Lo
 
     Optional<AttendanceRecord> findByStudentIdAndDate(Long studentId, LocalDate date);
 
+    List<AttendanceRecord> findByStudent_SectionIdAndDateBetween(Long sectionId, LocalDate startDate, LocalDate endDate);
+
     @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.student = :student AND a.status = 'PRESENT'")
     long countPresentByStudent(Student student);
 

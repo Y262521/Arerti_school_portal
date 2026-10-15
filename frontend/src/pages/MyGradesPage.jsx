@@ -66,7 +66,7 @@ function StatusBadge({ average, t }) {
   return <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">{t('failed')}</span>
 }
 
-export function GradeHistoryTable({ history, t, isAmharic }) {
+export function GradeHistoryTable({ history, t, isAmharic, studentId }) {
   const [expanded, setExpanded] = useState({})
 
   const toggleExpand = (key) => {
@@ -117,7 +117,7 @@ export function GradeHistoryTable({ history, t, isAmharic }) {
                     {expanded[sem1Key] ? '▼' : '▶'}
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-900">{entry.academicYear}</td>
-                  <td className="px-4 py-3 text-center">{batchToGrade(entry.batch)}</td>
+                  <td className="px-4 py-3 text-center">{entry.batch != null ? batchToGrade(entry.batch) : '—'}</td>
                   <td className="px-4 py-3 text-center font-semibold">I</td>
                   <td className="px-4 py-3">{formatRegDate(entry.registrationDate, isAmharic)}</td>
                   <td className="px-4 py-3 text-center">
@@ -154,6 +154,18 @@ export function GradeHistoryTable({ history, t, isAmharic }) {
                       ) : (
                         <span className="text-slate-400 text-xs">No grades recorded for Semester I.</span>
                       )}
+                      {studentId && (
+                        <div className="mt-3">
+                          <button
+                            className="btn-ghost text-xs"
+                            onClick={() => window.open(
+                              `/print/report-card?studentId=${studentId}&term=1&academicYear=${encodeURIComponent(entry.academicYear)}`
+                            )}
+                          >
+                            🖨️ {t('printReportCard')}
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )}
@@ -167,7 +179,7 @@ export function GradeHistoryTable({ history, t, isAmharic }) {
                     {expanded[sem2Key] ? '▼' : '▶'}
                   </td>
                   <td className="px-4 py-3 font-medium text-slate-900">{sem2AcYear(entry.academicYear)}</td>
-                  <td className="px-4 py-3 text-center">{batchToGrade(entry.batch)}</td>
+                  <td className="px-4 py-3 text-center">{entry.batch != null ? batchToGrade(entry.batch) : '—'}</td>
                   <td className="px-4 py-3 text-center font-semibold">II</td>
                   <td className="px-4 py-3 text-slate-400">—</td>
                   <td className="px-4 py-3 text-center">
@@ -203,6 +215,18 @@ export function GradeHistoryTable({ history, t, isAmharic }) {
                         </table>
                       ) : (
                         <span className="text-slate-400 text-xs">No grades recorded for Semester II.</span>
+                      )}
+                      {studentId && (
+                        <div className="mt-3">
+                          <button
+                            className="btn-ghost text-xs"
+                            onClick={() => window.open(
+                              `/print/report-card?studentId=${studentId}&term=2&academicYear=${encodeURIComponent(sem2AcYear(entry.academicYear))}`
+                            )}
+                          >
+                            🖨️ {t('printReportCard')}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -252,7 +276,7 @@ export default function MyGradesPage() {
         </div>
       </div>
 
-      <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} />
+      <GradeHistoryTable history={history} t={t} isAmharic={isAmharic} studentId={student?.id} />
     </div>
   )
 }

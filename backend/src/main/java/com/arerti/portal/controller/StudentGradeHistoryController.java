@@ -50,28 +50,31 @@ public class StudentGradeHistoryController {
         List<GradeHistoryEntryResponse> history = records.stream().map(record -> {
             String academicYear = record.getAcademicYear();
             Integer grade = record.getGrade();
-            int batch = (grade != null) ? grade - 8 : 0;
+            // batch is null when grade is null — frontend renders '—' for null batch
+            Integer batch = (grade != null) ? grade - 8 : null;
 
             List<GradeEntry> sem1Entries = gradeEntryRepository
                     .findByStudentAndTermAndAcademicYear(student, 1, academicYear);
             List<GradeEntry> sem2Entries = gradeEntryRepository
                     .findByStudentAndTermAndAcademicYear(student, 2, academicYear);
 
+            // Apply subject != null AND score != null to both display list and average
+            // to keep them consistent (avoids orphaned-FK scores skewing the average)
             List<GradeHistoryEntryResponse.SubjectScore> sem1Grades = sem1Entries.stream()
-                    .filter(e -> e.getSubject() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
             List<GradeHistoryEntryResponse.SubjectScore> sem2Grades = sem2Entries.stream()
-                    .filter(e -> e.getSubject() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
 
             OptionalDouble sem1Opt = sem1Entries.stream()
-                    .filter(e -> e.getScore() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .mapToDouble(GradeEntry::getScore)
                     .average();
             OptionalDouble sem2Opt = sem2Entries.stream()
-                    .filter(e -> e.getScore() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .mapToDouble(GradeEntry::getScore)
                     .average();
 
@@ -84,11 +87,11 @@ public class StudentGradeHistoryController {
                 // Flat average: sum all scores across both semesters divided by total subject count
                 // This avoids average-of-averages skew when semester subject counts differ
                 double totalScore = sem1Entries.stream()
-                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum()
+                        .filter(e -> e.getSubject() != null && e.getScore() != null).mapToDouble(GradeEntry::getScore).sum()
                         + sem2Entries.stream()
-                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum();
-                long totalCount = sem1Entries.stream().filter(e -> e.getScore() != null).count()
-                        + sem2Entries.stream().filter(e -> e.getScore() != null).count();
+                        .filter(e -> e.getSubject() != null && e.getScore() != null).mapToDouble(GradeEntry::getScore).sum();
+                long totalCount = sem1Entries.stream().filter(e -> e.getSubject() != null && e.getScore() != null).count()
+                        + sem2Entries.stream().filter(e -> e.getSubject() != null && e.getScore() != null).count();
                 annualAverage = totalCount > 0 ? totalScore / totalCount : null;
                 passed = annualAverage != null && annualAverage >= 50.0;
             }
@@ -137,7 +140,8 @@ public class StudentGradeHistoryController {
         List<GradeHistoryEntryResponse> history = records.stream().map(record -> {
             String academicYear = record.getAcademicYear();
             Integer grade = record.getGrade();
-            int batch = (grade != null) ? grade - 8 : 0;
+            // batch is null when grade is null — frontend renders '—' for null batch
+            Integer batch = (grade != null) ? grade - 8 : null;
 
             List<GradeEntry> sem1Entries = gradeEntryRepository
                     .findByStudentAndTermAndAcademicYear(student, 1, academicYear);
@@ -145,20 +149,20 @@ public class StudentGradeHistoryController {
                     .findByStudentAndTermAndAcademicYear(student, 2, academicYear);
 
             List<GradeHistoryEntryResponse.SubjectScore> sem1Grades = sem1Entries.stream()
-                    .filter(e -> e.getSubject() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
             List<GradeHistoryEntryResponse.SubjectScore> sem2Grades = sem2Entries.stream()
-                    .filter(e -> e.getSubject() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .map(e -> new GradeHistoryEntryResponse.SubjectScore(e.getSubject().getName(), e.getScore()))
                     .toList();
 
             OptionalDouble sem1Opt = sem1Entries.stream()
-                    .filter(e -> e.getScore() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .mapToDouble(GradeEntry::getScore)
                     .average();
             OptionalDouble sem2Opt = sem2Entries.stream()
-                    .filter(e -> e.getScore() != null)
+                    .filter(e -> e.getSubject() != null && e.getScore() != null)
                     .mapToDouble(GradeEntry::getScore)
                     .average();
 
@@ -169,11 +173,11 @@ public class StudentGradeHistoryController {
             Boolean passed = null;
             if (sem1Average != null && sem2Average != null) {
                 double totalScore = sem1Entries.stream()
-                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum()
+                        .filter(e -> e.getSubject() != null && e.getScore() != null).mapToDouble(GradeEntry::getScore).sum()
                         + sem2Entries.stream()
-                        .filter(e -> e.getScore() != null).mapToDouble(GradeEntry::getScore).sum();
-                long totalCount = sem1Entries.stream().filter(e -> e.getScore() != null).count()
-                        + sem2Entries.stream().filter(e -> e.getScore() != null).count();
+                        .filter(e -> e.getSubject() != null && e.getScore() != null).mapToDouble(GradeEntry::getScore).sum();
+                long totalCount = sem1Entries.stream().filter(e -> e.getSubject() != null && e.getScore() != null).count()
+                        + sem2Entries.stream().filter(e -> e.getSubject() != null && e.getScore() != null).count();
                 annualAverage = totalCount > 0 ? totalScore / totalCount : null;
                 passed = annualAverage != null && annualAverage >= 50.0;
             }

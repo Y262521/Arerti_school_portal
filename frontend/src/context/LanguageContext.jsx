@@ -717,6 +717,15 @@ const translations = {
     passed: 'Promoted',
     failed: 'Failed',
     noHistory: 'No registration history found.',
+
+    // ── Export & Print ────────────────────────────────────────────────────────
+    exportCsv: 'Export CSV',
+    printReportCard: 'Print Report Card',
+
+    // ── Staff Attendance ──────────────────────────────────────────────────────
+    staffAttendance: 'Staff Attendance',
+    staffAttendanceSubtitle: 'Mark daily attendance for all teachers',
+    employeeIdLabel: 'Employee ID',
   },
 
   am: {
@@ -1431,6 +1440,15 @@ const translations = {
     prevStatus: 'ቀዳሚ ሁኔታ',
     finalStatus: 'የመጨረሻ ሁኔታ',
     noHistory: 'የምዝገባ ታሪክ አልተገኘም።',
+
+    // ── Export & Print ────────────────────────────────────────────────────────
+    exportCsv: 'CSV አውርድ',
+    printReportCard: 'ሪፖርት ካርድ አትም',
+
+    // ── Staff Attendance ──────────────────────────────────────────────────────
+    staffAttendance: 'የሰራተኛ ክትትል',
+    staffAttendanceSubtitle: 'ለሁሉም አስተማሪዎች ዕለታዊ ክትትሉን ምዝግብ',
+    employeeIdLabel: 'የሰራተኛ መለያ ቁጥር',
   }
 }
 

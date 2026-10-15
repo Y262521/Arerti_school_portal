@@ -29,6 +29,8 @@ import TeacherRegistrationPage from './pages/TeacherRegistrationPage'
 import AdminTeacherRegistrationPage from './pages/AdminTeacherRegistrationPage'
 import UserLookupPage from './pages/UserLookupPage'
 import GradeEntryWindowPage from './pages/GradeEntryWindowPage'
+import PrintReportCardPage from './pages/PrintReportCardPage'
+import StaffAttendancePage from './pages/StaffAttendancePage'
 
 function RoleHomeRedirect() {
   const { user, isLoggedIn } = useAuth()
@@ -45,6 +47,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forbidden" element={<ForbiddenPage />} />
+      <Route path="/print/report-card" element={<PrintReportCardPage />} />
 
       <Route
         path="/admin"
@@ -147,6 +150,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <Layout><AdminTeacherRegistrationPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/staff-attendance"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><StaffAttendancePage /></Layout>
           </ProtectedRoute>
         }
       />

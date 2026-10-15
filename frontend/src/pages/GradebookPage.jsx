@@ -355,6 +355,22 @@ export default function GradebookPage() {
                         options={yearOptions.map(y => ({ value: y, label: y }))}
                     />
                 </div>
+                {sectionId && (isAdmin || isTeacher) && (
+                    <div className="ml-auto self-end">
+                        <button
+                            className="btn-ghost text-sm flex items-center gap-1.5"
+                            onClick={() => {
+                                const token = localStorage.getItem('arerti_token')
+                                const base = import.meta.env.DEV ? '/api' : 'https://arerti-school-backend.onrender.com/api'
+                                window.open(
+                                    `${base}/export/grades?sectionId=${sectionId}&term=${term}&academicYear=${encodeURIComponent(academicYear)}&token=${token}`
+                                )
+                            }}
+                        >
+                            📥 {t('exportCsv')}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {!sectionId ? (
