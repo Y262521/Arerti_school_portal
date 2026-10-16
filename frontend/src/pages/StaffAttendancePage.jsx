@@ -20,6 +20,7 @@ export default function StaffAttendancePage() {
     const [saving,   setSaving]   = useState({})
     const [error,    setError]    = useState(null)
     const [markError, setMarkError] = useState(null)
+    const [search,   setSearch]   = useState('')
 
     const STATUS_LABELS = {
         PRESENT: t('present'),
@@ -65,6 +66,13 @@ export default function StaffAttendancePage() {
     const present = records.filter(r => r.status === 'PRESENT').length
     const absent  = records.filter(r => r.status === 'ABSENT').length
 
+    // Filter teachers by search
+    const filtered = search.trim()
+        ? teachers.filter(tr =>
+            tr.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+            (tr.employeeId || '').toLowerCase().includes(search.toLowerCase()))
+        : teachers
+
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
@@ -96,6 +104,15 @@ export default function StaffAttendancePage() {
                         onChange={e => setDate(e.target.value)}
                     />
                 </div>
+                <div>
+                    <label className="field-label">{t('search')}</label>
+                    <input
+                        className="field w-48"
+                        placeholder={`${t('search')}…`}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
             </div>
 
             {date && teachers.length > 0 && (
@@ -122,7 +139,7 @@ export default function StaffAttendancePage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {teachers.map(teacher => {
+                            {filtered.map(teacher => {
                                 const rec = getRecord(teacher.id)
                                 const status = rec?.status
                                 return (

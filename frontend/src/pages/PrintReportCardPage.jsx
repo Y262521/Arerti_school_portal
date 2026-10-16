@@ -17,13 +17,15 @@ export default function PrintReportCardPage() {
         reportCardService.get(Number(studentId), Number(term), academicYear)
             .then(d => {
                 setData(d)
-                setTimeout(() => window.print(), 400)
             })
             .catch(() => setError('Failed to load report card. You may need to be logged in.'))
     }, [])
 
     if (error) return <div style={{ padding: 32, color: 'red', fontFamily: 'Arial, sans-serif' }}>{error}</div>
     if (!data)  return <div style={{ padding: 32, fontFamily: 'Arial, sans-serif' }}>Loading…</div>
+
+    // Trigger print after the DOM has fully rendered
+    requestAnimationFrame(() => requestAnimationFrame(() => window.print()))
 
     // data.grades is List<GradeEntryResponse> from the backend DTO
     const grades = data.grades || []
