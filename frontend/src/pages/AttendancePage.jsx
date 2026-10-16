@@ -145,12 +145,22 @@ export default function AttendancePage() {
                             </div>
                             <button
                                 className="text-xs btn-ghost py-1.5 px-3"
-                                onClick={() => {
+                                onClick={async () => {
                                     const token = localStorage.getItem('arerti_token')
                                     const base = import.meta.env.DEV ? '/api' : 'https://arerti-school-backend.onrender.com/api'
-                                    window.open(
-                                        `${base}/export/attendance?sectionId=${sectionId}&startDate=${exportStartDate}&endDate=${exportEndDate}&token=${token}`
-                                    )
+                                    const url = `${base}/export/attendance?sectionId=${sectionId}&startDate=${exportStartDate}&endDate=${exportEndDate}`
+                                    try {
+                                        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+                                        if (!res.ok) return
+                                        const blob = await res.blob()
+                                        const a = document.createElement('a')
+                                        a.href = URL.createObjectURL(blob)
+                                        const cd = res.headers.get('Content-Disposition') || ''
+                                        const match = cd.match(/filename="?([^"]+)"?/)
+                                        a.download = match ? match[1] : 'attendance.csv'
+                                        a.click()
+                                        URL.revokeObjectURL(a.href)
+                                    } catch { /* silent — download failed */ }
                                 }}
                             >
                                 📥 {t('exportCsv')}

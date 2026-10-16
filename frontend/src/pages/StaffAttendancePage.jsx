@@ -19,6 +19,7 @@ export default function StaffAttendancePage() {
     const [loading,  setLoading]  = useState(false)
     const [saving,   setSaving]   = useState({})
     const [error,    setError]    = useState(null)
+    const [markError, setMarkError] = useState(null)
 
     const STATUS_LABELS = {
         PRESENT: t('present'),
@@ -45,6 +46,7 @@ export default function StaffAttendancePage() {
     const getRecord = (teacherId) => records.find(r => r.teacherId === teacherId)
 
     const handleMark = async (teacherId, status) => {
+        setMarkError(null)
         setSaving(s => ({ ...s, [teacherId]: true }))
         try {
             const rec = await staffAttendanceService.mark({ teacherId, date, status, note: null })
@@ -54,7 +56,9 @@ export default function StaffAttendancePage() {
                     ? prev.map((r, i) => i === idx ? rec : r)
                     : [...prev, rec]
             })
-        } catch { /* silent */ }
+        } catch {
+            setMarkError(t('failedToSaveAttendance'))
+        }
         finally { setSaving(s => ({ ...s, [teacherId]: false })) }
     }
 
@@ -73,6 +77,12 @@ export default function StaffAttendancePage() {
             {error && (
                 <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                     {error}
+                </div>
+            )}
+
+            {markError && (
+                <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                    {markError}
                 </div>
             )}
 
