@@ -13,8 +13,10 @@ const ADMIN_GROUPS = [
   {
     key: 'navRegistration',
     items: [
-      { to: '/admin/registration',         key: 'studentRegistration' },
-      { to: '/admin/teacher-registration', key: 'teacherRegistration' },
+      { to: '/admin/registration',              key: 'studentRegistration' },
+      { to: '/admin/teacher-registration',      key: 'teacherRegistration' },
+      { to: '/admin/vice-director-registration', key: 'viceDirectorRegistration' },
+      { to: '/admin/supervisor-registration',    key: 'supervisorRegistration' },
     ],
   },
   {
@@ -42,6 +44,16 @@ const ADMIN_GROUPS = [
   },
 ]
 
+// Keys excluded from Vice Director nav
+const VD_EXCLUDED_KEYS = new Set(['userlookup', 'auditlog'])
+
+const VICE_DIRECTOR_GROUPS = ADMIN_GROUPS
+  .map(group => {
+    if (group.single) return group
+    return { ...group, items: group.items.filter(item => !VD_EXCLUDED_KEYS.has(item.key)) }
+  })
+  .filter(group => !group.items || group.items.length > 0)
+
 const ROLE_LINKS = {
   TEACHER: [
     { to: '/teacher',              key: 'dashboard' },
@@ -65,6 +77,11 @@ const ROLE_LINKS = {
     { to: '/parent/report-cards', key: 'reportCards' },
     { to: '/parent/attendance',   key: 'myAttendance' },
     { to: '/notices',             key: 'notices' },
+  ],
+  SUPERVISOR: [
+    { to: '/supervisor',            key: 'dashboard' },
+    { to: '/supervisor/classes',    key: 'myClasses' },
+    { to: '/supervisor/attendance', key: 'staffAttendance' },
   ],
 }
 
@@ -211,6 +228,9 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const location = useLocation()
   const isAdmin = user?.role === 'ADMIN'
+  const isViceDirector = user?.role === 'VICE_DIRECTOR'
+  const isAdminLike = isAdmin || isViceDirector
+  const activeGroups = isAdmin ? ADMIN_GROUPS : VICE_DIRECTOR_GROUPS
   const links = ROLE_LINKS[user?.role] || []
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -239,8 +259,8 @@ export default function Layout({ children }) {
 
           {/* Desktop nav — hidden on mobile */}
           <nav className="hidden md:flex items-center gap-1.5 flex-1">
-            {isAdmin ? (
-              ADMIN_GROUPS.map(group =>
+            {isAdminLike ? (
+              activeGroups.map(group =>
                 group.single ? (
                   <NavLink
                     key={group.to}
@@ -322,8 +342,8 @@ export default function Layout({ children }) {
           <div className="md:hidden border-t border-slate-200 bg-white max-h-[calc(100vh-72px)] overflow-y-auto">
             {/* Nav links */}
             <nav className="px-4 py-3 space-y-1.5">
-              {isAdmin ? (
-                ADMIN_GROUPS.map(group =>
+              {isAdminLike ? (
+                activeGroups.map(group =>
                   group.single ? (
                     <NavLink
                       key={group.to}

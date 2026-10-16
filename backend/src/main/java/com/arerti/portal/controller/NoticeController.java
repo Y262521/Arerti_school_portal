@@ -26,8 +26,8 @@ public class NoticeController {
         String role = auth.getAuthorities().stream()
                 .findFirst().map(a -> a.getAuthority().replace("ROLE_", ""))
                 .orElse("GENERAL");
-        // ADMIN sees all; others see GENERAL + their role
-        if ("ADMIN".equals(role)) {
+        // ADMIN and VICE_DIRECTOR see all; others see GENERAL + their role
+        if ("ADMIN".equals(role) || "VICE_DIRECTOR".equals(role)) {
             return ResponseEntity.ok(noticeService.findAll());
         }
         return ResponseEntity.ok(noticeService.findForAudience(role));
@@ -39,7 +39,7 @@ public class NoticeController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<NoticeResponse> create(@Valid @RequestBody NoticeRequest req,
                                                   Authentication auth) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -47,14 +47,14 @@ public class NoticeController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<NoticeResponse> update(@PathVariable String id,
                                                   @Valid @RequestBody NoticeRequest req) {
         return ResponseEntity.ok(noticeService.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         noticeService.delete(id);
         return ResponseEntity.noContent().build();

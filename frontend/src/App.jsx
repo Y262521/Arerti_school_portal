@@ -5,7 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import {
   AdminDashboard, TeacherDashboard,
-  StudentDashboard, ParentDashboard
+  StudentDashboard, ParentDashboard,
+  ViceDirectorDashboard, SupervisorDashboard
 } from './pages/Dashboards'
 import { ForbiddenPage, NotFoundPage } from './pages/InfoPages'
 import StudentsPage from './pages/StudentsPage'
@@ -27,6 +28,10 @@ import RegradeRequestsPage from './pages/RegradeRequestsPage'
 import DirectorRegistrationPage from './pages/DirectorRegistrationPage'
 import TeacherRegistrationPage from './pages/TeacherRegistrationPage'
 import AdminTeacherRegistrationPage from './pages/AdminTeacherRegistrationPage'
+import ViceDirectorRegistrationPage from './pages/ViceDirectorRegistrationPage'
+import SupervisorRegistrationPage from './pages/SupervisorRegistrationPage'
+import SupervisorClassesPage from './pages/SupervisorClassesPage'
+import SupervisorAttendancePage from './pages/SupervisorAttendancePage'
 import UserLookupPage from './pages/UserLookupPage'
 import GradeEntryWindowPage from './pages/GradeEntryWindowPage'
 import PrintReportCardPage from './pages/PrintReportCardPage'
@@ -37,10 +42,18 @@ function RoleHomeRedirect() {
   const { user, isLoggedIn } = useAuth()
   if (!isLoggedIn) return <Navigate to="/login" replace />
   return <Navigate to={
-    user.role === 'ADMIN' ? '/admin' :
-      user.role === 'TEACHER' ? '/teacher' :
-        user.role === 'STUDENT' ? '/student' : '/parent'
+    user.role === 'ADMIN'          ? '/admin' :
+    user.role === 'VICE_DIRECTOR'  ? '/admin' :
+    user.role === 'SUPERVISOR'     ? '/supervisor' :
+    user.role === 'TEACHER'        ? '/teacher' :
+    user.role === 'STUDENT'        ? '/student' : '/parent'
   } replace />
+}
+
+function ViceDirectorDashboardOrAdmin() {
+  const { user } = useAuth()
+  if (user?.role === 'VICE_DIRECTOR') return <ViceDirectorDashboard />
+  return <AdminDashboard />
 }
 
 export default function App() {
@@ -51,24 +64,25 @@ export default function App() {
       <Route
         path="/print/report-card"
         element={
-          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT', 'PARENT']}>
             <PrintReportCardPage />
           </ProtectedRoute>
         }
       />
 
+      {/* ── Admin / Vice Director shared routes ── */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <Layout><AdminDashboard /></Layout>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
+            <Layout><ViceDirectorDashboardOrAdmin /></Layout>
           </ProtectedRoute>
         }
       />
       <Route
         path="/admin/students"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><StudentsPage /></Layout>
           </ProtectedRoute>
         }
@@ -76,7 +90,7 @@ export default function App() {
       <Route
         path="/admin/teachers"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><TeachersPage /></Layout>
           </ProtectedRoute>
         }
@@ -84,7 +98,7 @@ export default function App() {
       <Route
         path="/admin/classes"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><ClassesPage /></Layout>
           </ProtectedRoute>
         }
@@ -92,7 +106,7 @@ export default function App() {
       <Route
         path="/admin/grades"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><GradebookPage /></Layout>
           </ProtectedRoute>
         }
@@ -100,23 +114,15 @@ export default function App() {
       <Route
         path="/admin/attendance"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><AttendancePage /></Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/audit-log"
-        element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <Layout><AuditLogPage /></Layout>
           </ProtectedRoute>
         }
       />
       <Route
         path="/admin/subjects"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><SubjectsPage /></Layout>
           </ProtectedRoute>
         }
@@ -124,8 +130,50 @@ export default function App() {
       <Route
         path="/admin/regrade-requests"
         element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
             <Layout><RegradeRequestsPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/grade-entry"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
+            <Layout><GradeEntryWindowPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/registration"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
+            <Layout><DirectorRegistrationPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/teacher-registration"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
+            <Layout><AdminTeacherRegistrationPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/staff-attendance"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR']}>
+            <Layout><StaffAttendancePage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── ADMIN-only routes (no Vice Director) ── */}
+      <Route
+        path="/admin/audit-log"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <Layout><AuditLogPage /></Layout>
           </ProtectedRoute>
         }
       />
@@ -137,39 +185,52 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ── Vice Director registration (ADMIN only) ── */}
       <Route
-        path="/admin/grade-entry"
+        path="/admin/vice-director-registration"
         element={
           <ProtectedRoute roles={['ADMIN']}>
-            <Layout><GradeEntryWindowPage /></Layout>
+            <Layout><ViceDirectorRegistrationPage /></Layout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/admin/registration"
+        path="/admin/supervisor-registration"
         element={
           <ProtectedRoute roles={['ADMIN']}>
-            <Layout><DirectorRegistrationPage /></Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/teacher-registration"
-        element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <Layout><AdminTeacherRegistrationPage /></Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/staff-attendance"
-        element={
-          <ProtectedRoute roles={['ADMIN']}>
-            <Layout><StaffAttendancePage /></Layout>
+            <Layout><SupervisorRegistrationPage /></Layout>
           </ProtectedRoute>
         }
       />
 
+      {/* ── Supervisor routes ── */}
+      <Route
+        path="/supervisor"
+        element={
+          <ProtectedRoute roles={['SUPERVISOR']}>
+            <Layout><SupervisorDashboard /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supervisor/classes"
+        element={
+          <ProtectedRoute roles={['SUPERVISOR']}>
+            <Layout><SupervisorClassesPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supervisor/attendance"
+        element={
+          <ProtectedRoute roles={['SUPERVISOR']}>
+            <Layout><SupervisorAttendancePage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Teacher routes ── */}
       <Route
         path="/teacher"
         element={
@@ -211,6 +272,7 @@ export default function App() {
         }
       />
 
+      {/* ── Student routes ── */}
       <Route
         path="/student"
         element={
@@ -236,24 +298,25 @@ export default function App() {
         }
       />
 
+      {/* ── Shared routes ── */}
       <Route
         path="/notices"
         element={
-          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT', 'PARENT']}>
             <Layout><NoticeBoardPage /></Layout>
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/resources"
         element={
-          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT']}>
             <Layout><ResourcesPage /></Layout>
           </ProtectedRoute>
         }
       />
 
+      {/* ── Parent routes ── */}
       <Route
         path="/parent"
         element={
@@ -294,7 +357,7 @@ export default function App() {
       <Route
         path="/account"
         element={
-          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+          <ProtectedRoute roles={['ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT', 'PARENT']}>
             <Layout><AccountPage /></Layout>
           </ProtectedRoute>
         }

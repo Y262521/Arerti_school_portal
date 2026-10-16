@@ -22,7 +22,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<StudentResponse>> list() {
         return ResponseEntity.ok(studentService.findAll());
     }
@@ -38,26 +38,26 @@ public class StudentController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<StudentResponse> get(@PathVariable Long id) {
         return ResponseEntity.ok(studentService.findById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<StudentResponse> create(@Valid @RequestBody StudentCreateRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.create(req));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<StudentResponse> update(@PathVariable Long id,
                                                    @Valid @RequestBody StudentUpdateRequest req) {
         return ResponseEntity.ok(studentService.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         studentService.delete(id);
         return ResponseEntity.noContent().build();

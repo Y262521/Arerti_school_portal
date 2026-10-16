@@ -26,7 +26,7 @@ public class RegistrationController {
     // ── File upload (used before submitting forms) ────────────────────────────
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Map<String, String>> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(defaultValue = "documents") String folder) {
@@ -37,19 +37,19 @@ public class RegistrationController {
     // ── Director: window management ──────────────────────────────────────────
 
     @GetMapping("/windows")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<RegistrationWindowResponse>> listWindows() {
         return ResponseEntity.ok(registrationService.findAllWindows());
     }
 
     @GetMapping("/windows/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<RegistrationWindowResponse> getWindow(@PathVariable Long id) {
         return ResponseEntity.ok(registrationService.findWindowById(id));
     }
 
     @PostMapping("/windows")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegistrationWindowResponse> openWindow(
             @Valid @RequestBody RegistrationWindowRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -57,13 +57,13 @@ public class RegistrationController {
     }
 
     @PostMapping("/windows/{id}/close")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegistrationWindowResponse> closeWindow(@PathVariable Long id) {
         return ResponseEntity.ok(registrationService.closeWindow(id));
     }
 
     @PostMapping("/windows/{id}/postpone")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegistrationWindowResponse> postponeWindow(
             @PathVariable Long id,
             @Valid @RequestBody PostponeRequest req) {
@@ -71,7 +71,7 @@ public class RegistrationController {
     }
 
     @PostMapping("/windows/{windowId}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegistrationAssignmentResponse> assignTeacher(
             @PathVariable Long windowId,
             @Valid @RequestBody RegistrationAssignmentRequest req) {
@@ -79,21 +79,21 @@ public class RegistrationController {
     }
 
     @DeleteMapping("/assignments/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> removeAssignment(@PathVariable Long id) {
         registrationService.removeAssignment(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/windows/{id}/enrollments")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<EnrollmentRecordResponse>> getEnrollments(@PathVariable Long id) {
         return ResponseEntity.ok(registrationService.getEnrollmentsForWindow(id));
     }
 
     /** Director triggers auto-assignment of registered students to sections */
     @PostMapping("/auto-assign")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<AutoAssignResponse> autoAssign(
             @Valid @RequestBody AutoAssignRequest req) {
         return ResponseEntity.ok(registrationService.autoAssign(req));
@@ -102,7 +102,7 @@ public class RegistrationController {
     // ── Teacher: check active window ─────────────────────────────────────────
 
     @GetMapping("/my-window")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegistrationWindowResponse> myWindow(Authentication auth) {
         RegistrationWindowResponse w = registrationService.getMyActiveWindow(auth.getName());
         if (w == null) return ResponseEntity.noContent().build();
@@ -112,7 +112,7 @@ public class RegistrationController {
     // ── Pass status for re-enrollment list ───────────────────────────────────
 
     @GetMapping("/pass-status")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<StudentPassStatusResponse>> passStatus(
             @RequestParam Integer grade,
             @RequestParam String previousAcademicYear,
@@ -124,7 +124,7 @@ public class RegistrationController {
     // ── Full enrollment (NEW / TRANSFER) ─────────────────────────────────────
 
     @PostMapping("/windows/{windowId}/enroll")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<StudentResponse> enrollFull(
             @PathVariable Long windowId,
             @Valid @RequestBody FullEnrollRequest req,
@@ -136,7 +136,7 @@ public class RegistrationController {
     // ── Quick re-enrollment (PROMOTED / REPEATER) ────────────────────────────
 
     @PostMapping("/windows/{windowId}/enroll-existing")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<EnrollmentRecordResponse> enrollExisting(
             @PathVariable Long windowId,
             @Valid @RequestBody ExistingStudentEnrollRequest req,

@@ -245,3 +245,63 @@ export function ParentDashboard() {
     </>
   )
 }
+
+// ── Vice Director ─────────────────────────────────────────────────────────────
+export function ViceDirectorDashboard() {
+  const { user } = useAuth()
+  const { t, lang } = useLanguage()
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    api.get('/dashboard/stats').then(r => setStats(r.data)).catch(() => {})
+  }, [])
+
+  const lines = lang === 'am' ? [
+    { title: 'ሁሉም ዋና ሥልጣኖች አሉ', detail: 'ተማሪዎችን፣ አስተማሪዎችን፣ ክፍሎችን ማስተዳደር፣ ውጤቶችን ማስገባት፣ ክትትልን ማስተዳደር — ሁሉም ዋና ሥልጣኖች አሉ። ተጠቃሚ ፍለጋ፣ የኦዲት መዝገብ እና ዓመት ማጠናቀቂያ ሥልጣን ግን አልተካተቱም።' },
+  ] : [
+    { title: 'Vice Director workspace', detail: 'You have full access to students, teachers, classes, grades, attendance, notices, and resources — all director tools except user lookup, audit log, and year-end operations.' },
+  ]
+
+  return (
+    <WelcomeBanner
+      name={`${t('welcomeAdmin')}, ${user?.fullName}`}
+      role={t('VICE_DIRECTOR')}
+      stats={[
+        { label: t('students'), value: stats?.studentCount },
+        { label: t('teachers'), value: stats?.teacherCount },
+        { label: t('classes'),  value: stats?.classCount },
+      ]}
+      lines={lines}
+    />
+  )
+}
+
+// ── Supervisor ────────────────────────────────────────────────────────────────
+export function SupervisorDashboard() {
+  const { user } = useAuth()
+  const { t, lang } = useLanguage()
+  const [classes, setClasses] = useState([])
+
+  useEffect(() => {
+    api.get('/supervisors/my-classes').then(r => setClasses(r.data)).catch(() => {})
+  }, [])
+
+  const lines = lang === 'am' ? [
+    { title: 'የሚቆጣጠሩ ክፍሎች', detail: 'ዳይሬክተሩ የሰጡዎትን ክፍሎች ዝርዝር ያዩ።' },
+    { title: 'የሰራተኛ ክትትል', detail: 'ለሚቆጣጠሩዋቸው ክፍሎች አስተማሪዎችን ዕለታዊ ክትትሉን ምዝግቡ።' },
+  ] : [
+    { title: 'Supervised Classes', detail: 'View the classes assigned to you by the director.' },
+    { title: 'Staff Attendance', detail: 'Mark daily attendance for teachers in your assigned classes.' },
+  ]
+
+  return (
+    <WelcomeBanner
+      name={`${t('welcomeAdmin')}, ${user?.fullName}`}
+      role={t('SUPERVISOR')}
+      stats={[
+        { label: t('supervisedClasses'), value: classes.length > 0 ? classes.length : null },
+      ]}
+      lines={lines}
+    />
+  )
+}

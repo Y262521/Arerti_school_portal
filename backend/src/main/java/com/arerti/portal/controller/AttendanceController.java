@@ -58,7 +58,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/section/{sectionId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<AttendanceResponse>> forSection(
             @PathVariable Long sectionId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -66,19 +66,19 @@ public class AttendanceController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<AttendanceResponse> mark(@Valid @RequestBody AttendanceRequest req,
                                                     Authentication auth) {
         boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_VICE_DIRECTOR"));
         return ResponseEntity.ok(attendanceService.mark(req, auth.getName(), isAdmin));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
         boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_VICE_DIRECTOR"));
         attendanceService.delete(id, auth.getName(), isAdmin);
         return ResponseEntity.noContent().build();
     }

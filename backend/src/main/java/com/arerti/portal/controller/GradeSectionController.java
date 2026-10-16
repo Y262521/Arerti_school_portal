@@ -21,7 +21,7 @@ public class GradeSectionController {
     private final GradeSectionService gradeSectionService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<GradeSectionResponse>> list() {
         return ResponseEntity.ok(gradeSectionService.findAll());
     }
@@ -33,27 +33,34 @@ public class GradeSectionController {
         return ResponseEntity.ok(gradeSectionService.findMyClasses(auth.getName()));
     }
 
+    /** Returns classes assigned to the logged-in supervisor */
+    @GetMapping("/my-supervised")
+    @PreAuthorize("hasRole('SUPERVISOR')")
+    public ResponseEntity<List<GradeSectionResponse>> mySupervisedClasses(Authentication auth) {
+        return ResponseEntity.ok(gradeSectionService.findSupervisedClasses(auth.getName()));
+    }
+
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER') or hasRole('SUPERVISOR')")
     public ResponseEntity<GradeSectionResponse> get(@PathVariable Long id) {
         return ResponseEntity.ok(gradeSectionService.findById(id));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeSectionResponse> create(@Valid @RequestBody GradeSectionRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(gradeSectionService.create(req));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeSectionResponse> update(@PathVariable Long id,
                                                         @Valid @RequestBody GradeSectionRequest req) {
         return ResponseEntity.ok(gradeSectionService.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         gradeSectionService.delete(id);
         return ResponseEntity.noContent().build();

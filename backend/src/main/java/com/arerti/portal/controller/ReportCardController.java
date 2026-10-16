@@ -25,7 +25,7 @@ public class ReportCardController {
     private final StudentRepository studentRepository;
 
     @GetMapping("/{studentId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT') or hasRole('PARENT')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER') or hasRole('STUDENT') or hasRole('PARENT')")
     public ResponseEntity<ReportCardResponse> generate(
             @PathVariable Long studentId,
             @RequestParam(defaultValue = "1") Integer term,

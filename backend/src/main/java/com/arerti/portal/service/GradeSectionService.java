@@ -8,6 +8,7 @@ import com.arerti.portal.repository.ClassSubjectAssignmentRepository;
 import com.arerti.portal.repository.GradeSectionRepository;
 import com.arerti.portal.repository.RegradePermissionRepository;
 import com.arerti.portal.repository.StudentRepository;
+import com.arerti.portal.repository.SupervisorClassAssignmentRepository;
 import com.arerti.portal.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -32,6 +33,7 @@ public class GradeSectionService {
     private final ClassSubjectAssignmentRepository assignmentRepository;
     private final RegradePermissionRepository regradePermissionRepository;
     private final StudentRepository studentRepository;
+    private final SupervisorClassAssignmentRepository supervisorClassAssignmentRepository;
     private final AuditService auditService;
     private final JdbcTemplate jdbc;
     @Lazy
@@ -52,6 +54,14 @@ public class GradeSectionService {
         return gradeSectionRepository.findByHomeroomTeacher(teacher).stream()
                 .map(gs -> GradeSectionResponse.from(gs,
                         gradeSectionRepository.countStudentsBySectionId(gs.getId())))
+                .collect(Collectors.toList());
+    }
+
+    /** Returns only classes assigned to the given supervisor */
+    public List<GradeSectionResponse> findSupervisedClasses(String supervisorUsername) {
+        return supervisorClassAssignmentRepository.findBySupervisor_Username(supervisorUsername).stream()
+                .map(a -> GradeSectionResponse.from(a.getSection(),
+                        gradeSectionRepository.countStudentsBySectionId(a.getSection().getId())))
                 .collect(Collectors.toList());
     }
 

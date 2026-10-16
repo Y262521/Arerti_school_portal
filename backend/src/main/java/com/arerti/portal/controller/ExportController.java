@@ -27,7 +27,7 @@ public class ExportController {
 
     /** GET /api/export/grades?sectionId=X&term=Y&academicYear=Z */
     @GetMapping("/grades")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     @Transactional(readOnly = true)
     public void exportGrades(
             @RequestParam Long sectionId,
@@ -100,7 +100,7 @@ public class ExportController {
 
     /** GET /api/export/attendance?sectionId=X&startDate=Y&endDate=Z */
     @GetMapping("/attendance")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     @Transactional(readOnly = true)
     public void exportAttendance(
             @RequestParam Long sectionId,

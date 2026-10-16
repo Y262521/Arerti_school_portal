@@ -730,6 +730,20 @@ const translations = {
     employeeIdLabel: 'Employee ID',
     myStaffAttendance: 'My Attendance',
     myStaffAttendanceSubtitle: 'View your personal attendance history',
+
+    // ── Vice Director ─────────────────────────────────────────────────────────────
+    VICE_DIRECTOR: 'Vice Director',
+    viceDirectorRegistration: 'Vice Director Registration',
+    viceDirectorRegisteredSuccess: 'Vice Director registered successfully. Share these credentials.',
+    // ── Supervisor ────────────────────────────────────────────────────────────────
+    SUPERVISOR: 'Supervisor',
+    supervisorRegistration: 'Supervisor Registration',
+    supervisorRegisteredSuccess: 'Supervisor registered successfully. Share these credentials.',
+    myClasses: 'My Classes',
+    assignClasses: 'Assign Classes',
+    supervisedClasses: 'Supervised Classes',
+    noClassesAssigned: 'No classes assigned yet.',
+    supervisorAttendance: 'Supervised Attendance',
   },
 
   am: {
@@ -1457,6 +1471,20 @@ const translations = {
     employeeIdLabel: 'የሰራተኛ መለያ ቁጥር',
     myStaffAttendance: 'ክትትሌ',
     myStaffAttendanceSubtitle: 'የግል ክትትል ታሪክዎን ይዩ',
+
+    // ── Vice Director ─────────────────────────────────────────────────────────────
+    VICE_DIRECTOR: 'ምክትል ዳይሬክተር',
+    viceDirectorRegistration: 'ምክትል ዳይሬክተር ምዝገባ',
+    viceDirectorRegisteredSuccess: 'ምክትል ዳይሬክተር ተመዝግቧል። ምስጢሮቹን ያካፍሉ።',
+    // ── Supervisor ────────────────────────────────────────────────────────────────
+    SUPERVISOR: 'ሱፐርቫይዘር',
+    supervisorRegistration: 'ሱፐርቫይዘር ምዝገባ',
+    supervisorRegisteredSuccess: 'ሱፐርቫይዘር ተመዝግቧል። ምስጢሮቹን ያካፍሉ።',
+    myClasses: 'ክፍሎቼ',
+    assignClasses: 'ክፍሎች ምደባ',
+    supervisedClasses: 'የሚቆጣጠሩ ክፍሎች',
+    noClassesAssigned: 'እስካሁን ክፍሎች አልተመደቡም።',
+    supervisorAttendance: 'የሚቆጣጠሩ ክፍሎች ክትትል',
   }
 }
 

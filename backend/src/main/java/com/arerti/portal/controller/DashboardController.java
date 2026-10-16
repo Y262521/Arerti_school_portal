@@ -23,7 +23,7 @@ public class DashboardController {
     private final NoticeService noticeService;
 
     @GetMapping("/stats")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<DashboardStatsResponse> stats() {
         return ResponseEntity.ok(new DashboardStatsResponse(
                 studentService.count(),

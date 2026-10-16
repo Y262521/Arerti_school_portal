@@ -40,21 +40,21 @@ public class RegradeController {
 
     /** Admin views all requests */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<RegradePermissionResponse>> all() {
         return ResponseEntity.ok(regradeService.findAll());
     }
 
     /** Admin views only pending */
     @GetMapping("/pending")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<RegradePermissionResponse>> pending() {
         return ResponseEntity.ok(regradeService.findPending());
     }
 
     /** Admin approves a request */
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegradePermissionResponse> approve(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body,
@@ -65,7 +65,7 @@ public class RegradeController {
 
     /** Admin rejects a request */
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<RegradePermissionResponse> reject(
             @PathVariable Long id,
             @RequestBody(required = false) Map<String, String> body,

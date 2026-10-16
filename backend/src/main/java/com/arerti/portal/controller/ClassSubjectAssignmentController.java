@@ -36,7 +36,7 @@ public class ClassSubjectAssignmentController {
     // ----------------------------------------------------------------
 
     @GetMapping("/api/curriculum/{grade}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<GradeCurriculumResponse>> getCurriculum(
             @PathVariable Integer grade,
             @RequestParam(required = false) String stream) {
@@ -44,7 +44,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @PostMapping("/api/curriculum/{grade}/subjects")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeCurriculumResponse> addToCurriculum(
             @PathVariable Integer grade,
             @RequestParam Long subjectId,
@@ -54,7 +54,7 @@ public class ClassSubjectAssignmentController {
     }
 
     @DeleteMapping("/api/curriculum/{grade}/subjects/{subjectId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> removeFromCurriculum(
             @PathVariable Integer grade,
             @PathVariable Long subjectId,
@@ -72,19 +72,19 @@ public class ClassSubjectAssignmentController {
     // ----------------------------------------------------------------
 
     @GetMapping("/api/classes/{sectionId}/assignments")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER') or hasRole('SUPERVISOR')")
     public ResponseEntity<List<ClassSubjectAssignmentResponse>> list(@PathVariable Long sectionId) {
         return ResponseEntity.ok(assignmentService.getForSection(sectionId));
     }
 
     @GetMapping("/api/classes/{sectionId}/assignments/all")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<ClassSubjectAssignmentResponse>> listAll(@PathVariable Long sectionId) {
         return ResponseEntity.ok(assignmentService.getAllForSection(sectionId));
     }
 
     @PutMapping("/api/classes/{sectionId}/assignments")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<ClassSubjectAssignmentResponse> assign(
             @PathVariable Long sectionId,
             @Valid @RequestBody ClassSubjectAssignmentRequest req) {
@@ -93,7 +93,7 @@ public class ClassSubjectAssignmentController {
 
     /** Assignments are never deleted — return 403 always */
     @DeleteMapping("/api/classes/{sectionId}/assignments/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> delete(@PathVariable Long sectionId, @PathVariable Long id) {
         assignmentService.protectDelete();
         return ResponseEntity.noContent().build(); // never reached

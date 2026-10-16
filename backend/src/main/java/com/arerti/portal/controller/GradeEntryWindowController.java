@@ -22,14 +22,14 @@ public class GradeEntryWindowController {
     private final GradeEntryWindowService service;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<GradeEntryWindowResponse>> list() {
         return ResponseEntity.ok(service.findAll());
     }
 
     /** Check if grade entry is open for a specific semester+year */
     @GetMapping("/status")
-    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('TEACHER') or hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Map<String, Object>> status(
             @RequestParam String academicYear,
             @RequestParam Integer semester) {
@@ -45,14 +45,14 @@ public class GradeEntryWindowController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeEntryWindowResponse> open(
             @Valid @RequestBody GradeEntryWindowRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.open(req));
     }
 
     @PostMapping("/{id}/postpone")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeEntryWindowResponse> postpone(
             @PathVariable Long id,
             @Valid @RequestBody PostponeRequest req) {
@@ -60,7 +60,7 @@ public class GradeEntryWindowController {
     }
 
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<GradeEntryWindowResponse> close(@PathVariable Long id) {
         return ResponseEntity.ok(service.close(id));
     }

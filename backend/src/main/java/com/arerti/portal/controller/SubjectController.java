@@ -26,20 +26,20 @@ public class SubjectController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<SubjectResponse> create(@Valid @RequestBody SubjectRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(subjectService.create(req));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<SubjectResponse> update(@PathVariable Long id,
                                                    @Valid @RequestBody SubjectRequest req) {
         return ResponseEntity.ok(subjectService.update(id, req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         subjectService.delete(id);
         return ResponseEntity.noContent().build();

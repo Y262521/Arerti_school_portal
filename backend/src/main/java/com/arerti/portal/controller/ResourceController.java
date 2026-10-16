@@ -26,7 +26,7 @@ public class ResourceController {
         String role = auth.getAuthorities().stream()
                 .findFirst().map(a -> a.getAuthority().replace("ROLE_", ""))
                 .orElse("GENERAL");
-        if ("ADMIN".equals(role)) {
+        if ("ADMIN".equals(role) || "VICE_DIRECTOR".equals(role)) {
             return ResponseEntity.ok(resourceService.findAll());
         }
         return ResponseEntity.ok(resourceService.findForAudience(role, auth.getName()));

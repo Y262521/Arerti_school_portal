@@ -21,17 +21,17 @@ public class StaffAttendanceController {
 
     private final StaffAttendanceService staffAttendanceService;
 
-    /** GET /api/staff-attendance?date=YYYY-MM-DD — ADMIN only */
+    /** GET /api/staff-attendance?date=YYYY-MM-DD — ADMIN or VICE_DIRECTOR */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<List<StaffAttendanceResponse>> getForDate(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(staffAttendanceService.getForDate(date));
     }
 
-    /** POST /api/staff-attendance — ADMIN only */
+    /** POST /api/staff-attendance — ADMIN or VICE_DIRECTOR */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR')")
     public ResponseEntity<StaffAttendanceResponse> mark(
             @Valid @RequestBody StaffAttendanceRequest req,
             Authentication auth) {
@@ -43,5 +43,23 @@ public class StaffAttendanceController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<List<StaffAttendanceResponse>> myAttendance(Authentication auth) {
         return ResponseEntity.ok(staffAttendanceService.getForTeacher(auth.getName()));
+    }
+
+    /** GET /api/staff-attendance/supervised?date=YYYY-MM-DD — SUPERVISOR only */
+    @GetMapping("/supervised")
+    @PreAuthorize("hasRole('SUPERVISOR')")
+    public ResponseEntity<List<StaffAttendanceResponse>> getForSupervisedClasses(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Authentication auth) {
+        return ResponseEntity.ok(staffAttendanceService.getForSupervisedDate(date, auth.getName()));
+    }
+
+    /** POST /api/staff-attendance/supervised — SUPERVISOR only */
+    @PostMapping("/supervised")
+    @PreAuthorize("hasRole('SUPERVISOR')")
+    public ResponseEntity<StaffAttendanceResponse> markSupervised(
+            @Valid @RequestBody StaffAttendanceRequest req,
+            Authentication auth) {
+        return ResponseEntity.ok(staffAttendanceService.markForSupervisor(req, auth.getName()));
     }
 }

@@ -32,7 +32,7 @@ public class GradeBookController {
     private final RegradeService regradeService;
 
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER') or hasRole('STUDENT')")
     public ResponseEntity<List<GradeEntryResponse>> forStudent(
             @PathVariable Long studentId,
             @RequestParam String academicYear,
@@ -48,7 +48,7 @@ public class GradeBookController {
     }
 
     @GetMapping("/section/{sectionId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<List<GradeEntryResponse>> forSection(
             @PathVariable Long sectionId,
             @RequestParam Integer term,
@@ -57,10 +57,10 @@ public class GradeBookController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<GradeEntryResponse> upsert(@Valid @RequestBody GradeEntryRequest req,
                                                       Authentication auth) {
-        boolean isAdmin = hasRole(auth, "ADMIN");
+        boolean isAdmin = hasRole(auth, "ADMIN") || hasRole(auth, "VICE_DIRECTOR");
         boolean isRegradeAllowed = false;
         Teacher teacher = null;
 
@@ -90,9 +90,9 @@ public class GradeBookController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('VICE_DIRECTOR') or hasRole('TEACHER')")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication auth) {
-        gradeBookService.delete(id, hasRole(auth, "ADMIN"));
+        gradeBookService.delete(id, hasRole(auth, "ADMIN") || hasRole(auth, "VICE_DIRECTOR"));
         return ResponseEntity.noContent().build();
     }
 
