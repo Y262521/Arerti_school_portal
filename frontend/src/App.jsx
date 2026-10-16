@@ -30,6 +30,7 @@ import AdminTeacherRegistrationPage from './pages/AdminTeacherRegistrationPage'
 import UserLookupPage from './pages/UserLookupPage'
 import GradeEntryWindowPage from './pages/GradeEntryWindowPage'
 import PrintReportCardPage from './pages/PrintReportCardPage'
+import MyStaffAttendancePage from './pages/MyStaffAttendancePage'
 import StaffAttendancePage from './pages/StaffAttendancePage'
 
 function RoleHomeRedirect() {
@@ -47,7 +48,14 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forbidden" element={<ForbiddenPage />} />
-      <Route path="/print/report-card" element={<PrintReportCardPage />} />
+      <Route
+        path="/print/report-card"
+        element={
+          <ProtectedRoute roles={['ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+            <PrintReportCardPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/admin"
@@ -191,6 +199,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={['TEACHER']}>
             <Layout><TeacherRegistrationPage /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teacher/my-attendance"
+        element={
+          <ProtectedRoute roles={['TEACHER']}>
+            <Layout><MyStaffAttendancePage /></Layout>
           </ProtectedRoute>
         }
       />

@@ -48,6 +48,7 @@ const ROLE_LINKS = {
     { to: '/teacher/registration', key: 'registration' },
     { to: '/teacher/grades',       key: 'gradebook' },
     { to: '/teacher/attendance',   key: 'attendance' },
+    { to: '/teacher/my-attendance', key: 'myStaffAttendance' },
     { to: '/notices',              key: 'noticeboard' },
     { to: '/resources',            key: 'resources' },
   ],

@@ -728,6 +728,8 @@ const translations = {
     staffAttendance: 'Staff Attendance',
     staffAttendanceSubtitle: 'Mark daily attendance for all teachers',
     employeeIdLabel: 'Employee ID',
+    myStaffAttendance: 'My Attendance',
+    myStaffAttendanceSubtitle: 'View your personal attendance history',
   },
 
   am: {
@@ -1453,6 +1455,8 @@ const translations = {
     staffAttendance: 'የሰራተኛ ክትትል',
     staffAttendanceSubtitle: 'ለሁሉም አስተማሪዎች ዕለታዊ ክትትሉን ምዝግብ',
     employeeIdLabel: 'የሰራተኛ መለያ ቁጥር',
+    myStaffAttendance: 'ክትትሌ',
+    myStaffAttendanceSubtitle: 'የግል ክትትል ታሪክዎን ይዩ',
   }
 }
 
