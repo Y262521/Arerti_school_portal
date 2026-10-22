@@ -46,16 +46,16 @@ public class ViceDirectorService {
                 "This email address is already registered. Please use a different email.");
 
         String employeeId = generateEmployeeId();
-        String baseUsername = employeeId.toLowerCase().replace("-", "");
-        String username = baseUsername;
         String plainPassword = generatePassword();
 
-        // Ensure username is unique — increment a counter suffix until it is
-        int suffix = 1;
-        while (userRepository.existsByUsername(username)) {
-            username = baseUsername + suffix;
-            suffix++;
-        }
+        // Build a guaranteed-unique username: employeeId-slug + random 3-digit suffix
+        // checked against DB in a loop until confirmed free
+        String baseUsername = employeeId.toLowerCase().replace("-", "");
+        String username;
+        do {
+            int rand = 100 + (int)(Math.random() * 900);
+            username = baseUsername + rand;
+        } while (userRepository.existsByUsername(username));
 
         String fullName = req.firstName() + " " + req.fatherName();
 
@@ -129,6 +129,9 @@ public class ViceDirectorService {
 
         jdbc.update("DELETE FROM vice_directors WHERE id = ?", vdId);
         if (userId != null) {
+            // Remove any other FK references to this user first
+            try { jdbc.update("DELETE FROM parent_links WHERE parent_user_id = ?", userId); } catch (Exception ignored) {}
+            try { jdbc.update("DELETE FROM supervisor_class_assignments WHERE supervisor_id = ?", userId); } catch (Exception ignored) {}
             jdbc.update("DELETE FROM users WHERE id = ?", userId);
         }
 

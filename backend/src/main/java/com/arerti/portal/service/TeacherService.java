@@ -64,16 +64,16 @@ public class TeacherService {
                 "This email address is already registered. Please use a different email.");
 
         String employeeId = generateEmployeeId();
-        String baseUsername = employeeId.toLowerCase().replace("-", "");
-        String username = baseUsername;
         String plainPassword = generatePassword();
 
-        // Ensure username is unique — increment a counter suffix until it is
-        int suffix = 1;
-        while (userRepository.existsByUsername(username)) {
-            username = baseUsername + suffix;
-            suffix++;
-        }
+        // Build a guaranteed-unique username: employeeId-slug + random 3-digit suffix
+        // checked against DB in a loop until confirmed free
+        String baseUsername = employeeId.toLowerCase().replace("-", "");
+        String username;
+        do {
+            int rand = 100 + (int)(Math.random() * 900);
+            username = baseUsername + rand;
+        } while (userRepository.existsByUsername(username));
 
         // Full name from parts
         String fullName = req.firstName() + " " + req.fatherName();
