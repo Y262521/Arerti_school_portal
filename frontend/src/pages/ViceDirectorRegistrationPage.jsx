@@ -62,7 +62,7 @@ function ViceDirectorRegistrationForm({ onSuccess }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!form.photoUrl) { setError(t('studentPhotoRequired') || 'Photo is required'); return }
+        if (!form.photoUrl) { setError(t('photoRequired') || 'Photo is required'); return }
         if (!form.qualificationCertUrl) { setError(t('qualificationCert') + ' is required'); return }
         if (!form.idDocUrl) { setError(t('idDocument') + ' is required'); return }
         setError(null)

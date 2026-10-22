@@ -51,11 +51,15 @@ public class SupervisorService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
 
         String employeeId = generateEmployeeId();
-        String username = employeeId.toLowerCase().replace("-", "");
+        String baseUsername = employeeId.toLowerCase().replace("-", "");
+        String username = baseUsername;
         String plainPassword = generatePassword();
 
-        if (userRepository.existsByUsername(username)) {
-            username = username + LocalDate.now().getYear();
+        // Ensure username is unique — increment a counter suffix until it is
+        int suffix = 1;
+        while (userRepository.existsByUsername(username)) {
+            username = baseUsername + suffix;
+            suffix++;
         }
 
         String fullName = req.firstName() + " " + req.fatherName();

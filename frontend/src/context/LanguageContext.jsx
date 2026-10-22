@@ -739,6 +739,8 @@ const translations = {
     SUPERVISOR: 'Supervisor',
     supervisorRegistration: 'Supervisor Registration',
     supervisorRegisteredSuccess: 'Supervisor registered successfully. Share these credentials.',
+    // ── Staff photo validation ────────────────────────────────────────────────
+    photoRequired: 'Photo is required',
     myClasses: 'My Classes',
     assignClasses: 'Assign Classes',
     supervisedClasses: 'Supervised Classes',
@@ -1485,6 +1487,8 @@ const translations = {
     supervisedClasses: 'የሚቆጣጠሩ ክፍሎች',
     noClassesAssigned: 'እስካሁን ክፍሎች አልተመደቡም።',
     supervisorAttendance: 'የሚቆጣጠሩ ክፍሎች ክትትል',
+    // ── Staff photo validation ────────────────────────────────────────────────
+    photoRequired: 'ፎቶ ያስፈልጋል',
   }
 }
 

@@ -112,7 +112,7 @@ function FullEnrollmentWizard({ windowId, sections, grade, enrollmentType, acade
             if (!form.city) e.city = t('required')
             if (!form.kebele) e.kebele = t('required')
             if (!form.email) e.email = t('required')
-            if (!form.photoUrl) e.photoUrl = t('studentPhotoRequired')
+            if (!form.photoUrl) e.photoUrl = t('photoRequired')
             if (!form.idDocUrl) e.idDocUrl = t('idDocRequired')
         }
         if (step === 1) {

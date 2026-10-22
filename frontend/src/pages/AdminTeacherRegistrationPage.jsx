@@ -78,7 +78,7 @@ function TeacherRegistrationForm({ onSuccess }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         // All documents are required
-        if (!form.photoUrl) { alert(t('studentPhotoRequired') || 'Teacher photo is required'); return }
+        if (!form.photoUrl) { alert(t('photoRequired') || 'Teacher photo is required'); return }
         if (!form.qualificationCertUrl) { alert(t('qualificationCert') + ' is required'); return }
         if (!form.idDocUrl) { alert(t('idDocument') + ' is required'); return }
         setSaving(true)
