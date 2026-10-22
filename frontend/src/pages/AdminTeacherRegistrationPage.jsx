@@ -73,25 +73,32 @@ function TeacherRegistrationForm({ onSuccess }) {
     const { t } = useLanguage()
     const [form, setForm] = useState(EMPTY)
     const [saving, setSaving] = useState(false)
-    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+    const [error, setError] = useState(null)
+    // Clear error as soon as the user edits anything
+    const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setError(null) }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         // All documents are required
-        if (!form.photoUrl) { alert(t('photoRequired') || 'Teacher photo is required'); return }
-        if (!form.qualificationCertUrl) { alert(t('qualificationCert') + ' is required'); return }
-        if (!form.idDocUrl) { alert(t('idDocument') + ' is required'); return }
+        if (!form.photoUrl) { setError(t('photoRequired') || 'Teacher photo is required'); return }
+        if (!form.qualificationCertUrl) { setError(t('qualificationCert') + ' is required'); return }
+        if (!form.idDocUrl) { setError(t('idDocument') + ' is required'); return }
+        setError(null)
         setSaving(true)
         try {
             const newTeacher = await teacherService.create({ ...form, hireDate: form.hireDate || null })
             onSuccess(newTeacher)
         } catch (err) {
+            const msg = err?.response?.data?.message || err?.response?.data || 'Registration failed'
+            setError(typeof msg === 'string' ? msg : 'Registration failed')
         } finally { setSaving(false) }
     }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Personal Info */}
+            {error && (
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{error}</div>
+            )}
             <div className="card space-y-4">
                 <h3 className="font-semibold text-slate-700 text-sm border-b border-slate-100 pb-2">{t('personalInfo')}</h3>
                 <div className="grid grid-cols-3 gap-3">

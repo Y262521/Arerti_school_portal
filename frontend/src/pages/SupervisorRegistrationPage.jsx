@@ -156,7 +156,8 @@ function SupervisorRegistrationForm({ onSuccess }) {
     const [form, setForm] = useState(EMPTY)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState(null)
-    const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+    // Clear error as soon as the user edits anything
+    const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setError(null) }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
