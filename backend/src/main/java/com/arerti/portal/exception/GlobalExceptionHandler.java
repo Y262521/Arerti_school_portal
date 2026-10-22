@@ -55,7 +55,11 @@ public class GlobalExceptionHandler {
             } else if (cause.contains("teachers") || cause.contains("employee_id")) {
                 message = "A teacher with this information already exists.";
             } else if (cause.contains("users") || cause.contains("username") || cause.contains("email")) {
-                message = "An account with this username or email already exists.";
+                if (lower.contains("email")) {
+                    message = "This email address is already registered. Please use a different email.";
+                } else {
+                    message = "An account with this username already exists.";
+                }
             }
         }
 

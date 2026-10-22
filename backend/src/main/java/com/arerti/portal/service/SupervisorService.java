@@ -47,8 +47,10 @@ public class SupervisorService {
 
     @Transactional
     public SupervisorResponse create(SupervisorCreateRequest req) {
+        // Check email first — gives user a specific, actionable message
         if (userRepository.existsByEmail(req.email()))
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "This email address is already registered. Please use a different email.");
 
         String employeeId = generateEmployeeId();
         String baseUsername = employeeId.toLowerCase().replace("-", "");

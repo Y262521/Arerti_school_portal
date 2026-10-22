@@ -741,6 +741,7 @@ const translations = {
     supervisorRegisteredSuccess: 'Supervisor registered successfully. Share these credentials.',
     // ── Staff photo validation ────────────────────────────────────────────────
     photoRequired: 'Photo is required',
+    emailAlreadyRegistered: 'This email address is already registered. Please use a different email.',
     myClasses: 'My Classes',
     assignClasses: 'Assign Classes',
     supervisedClasses: 'Supervised Classes',
@@ -1489,6 +1490,7 @@ const translations = {
     supervisorAttendance: 'የሚቆጣጠሩ ክፍሎች ክትትል',
     // ── Staff photo validation ────────────────────────────────────────────────
     photoRequired: 'ፎቶ ያስፈልጋል',
+    emailAlreadyRegistered: 'ይህ ኢሜል አስቀድሞ ተመዝግቧል። ሌላ ኢሜል ይጠቀሙ።',
   }
 }
 
