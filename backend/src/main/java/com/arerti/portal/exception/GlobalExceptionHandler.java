@@ -39,27 +39,27 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
-        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
-
         String cause = ex.getMostSpecificCause().getMessage();
+        log.warn("Data integrity violation: {}", cause);
+
         String message = "This record already exists or conflicts with existing data.";
 
         if (cause != null) {
             String lower = cause.toLowerCase();
             if (lower.contains("foreign key") || lower.contains("violates foreign key") || lower.contains("is still referenced")) {
                 message = "Cannot delete or modify this item because it is referenced by other records.";
-            } else if (cause.contains("grade_sections")) {
+            } else if (lower.contains("grade_sections")) {
                 message = "A class with this grade, section, and stream already exists for this academic year.";
-            } else if (cause.contains("students") || cause.contains("student_uid")) {
+            } else if (lower.contains("student_uid")) {
                 message = "A student with this information already exists.";
-            } else if (cause.contains("teachers") || cause.contains("employee_id")) {
-                message = "A teacher with this information already exists.";
-            } else if (cause.contains("users") || cause.contains("username") || cause.contains("email")) {
-                if (lower.contains("email")) {
-                    message = "This email address is already registered. Please use a different email.";
-                } else {
-                    message = "An account with this username already exists.";
-                }
+            } else if (lower.contains("employee_id")) {
+                message = "A staff member with this Employee ID already exists.";
+            } else if (lower.contains("key (email)") || lower.contains("(email)=")) {
+                message = "This email address is already registered. Please use a different email.";
+            } else if (lower.contains("key (username)") || lower.contains("(username)=")) {
+                message = "An account with this username already exists.";
+            } else if (lower.contains("users")) {
+                message = "An account with this email or username already exists.";
             }
         }
 

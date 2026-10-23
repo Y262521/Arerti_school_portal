@@ -27,6 +27,7 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
         migrateGradeSectionUniqueConstraint();
         dropLegacyObsoleteTables();
         migrateAdminToDirector();
+        cleanOrphanStaffUsers();
     }
 
     private void migrateAdminToDirector() {
@@ -36,6 +37,27 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
             log.info("Successfully updated administrator title and username to School Director.");
         } catch (Exception e) {
             log.warn("Could not migrate admin user to director: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Removes orphan user rows — VICE_DIRECTOR/SUPERVISOR/TEACHER users that have
+     * no corresponding profile row. These are left behind when a delete partially
+     * fails and cause unique-constraint violations on the next registration.
+     */
+    private void cleanOrphanStaffUsers() {
+        try {
+            int vd = jdbc.update(
+                "DELETE FROM users WHERE role = 'VICE_DIRECTOR' AND id NOT IN (SELECT user_id FROM vice_directors)");
+            int sup = jdbc.update(
+                "DELETE FROM users WHERE role = 'SUPERVISOR' AND id NOT IN (SELECT user_id FROM supervisors)");
+            int tea = jdbc.update(
+                "DELETE FROM users WHERE role = 'TEACHER' AND id NOT IN (SELECT user_id FROM teachers)");
+            if (vd + sup + tea > 0) {
+                log.info("Cleaned {} orphan staff user rows (VD={}, SUP={}, TEACHER={}).", vd + sup + tea, vd, sup, tea);
+            }
+        } catch (Exception e) {
+            log.warn("Could not clean orphan staff users: {}", e.getMessage());
         }
     }
 

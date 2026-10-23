@@ -58,8 +58,8 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponse create(TeacherCreateRequest req) {
-        // Check email first — gives user a specific, actionable message
-        if (userRepository.existsByEmail(req.email()))
+        // Check email via raw JDBC to bypass Hibernate cache
+        if (emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
@@ -286,6 +286,14 @@ public class TeacherService {
         Integer count = jdbc.queryForObject(
             "SELECT COUNT(*) FROM users WHERE LOWER(username) = LOWER(?)",
             Integer.class, username);
+        return count != null && count > 0;
+    }
+
+    /** Checks email existence via raw JDBC to bypass Hibernate session cache. */
+    private boolean emailExistsInDb(String email) {
+        Integer count = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)",
+            Integer.class, email);
         return count != null && count > 0;
     }
 
