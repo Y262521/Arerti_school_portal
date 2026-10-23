@@ -56,9 +56,15 @@ public class GlobalExceptionHandler {
                 message = "A student with this information already exists.";
             } else if (lower.contains("employee_id")) {
                 message = "A staff member with this Employee ID already exists.";
-            } else if (lower.contains("key (email)") || lower.contains("(email)=")) {
+            } else if (lower.contains("users_pkey") || lower.contains("_pkey") || lower.contains("key (id)") || lower.contains("(id)=")) {
+                message = "A database sequence conflict occurred. Sequences have been resynchronized; please try again.";
+            } else if (lower.contains("key (email)") || lower.contains("(email)=") || lower.contains("uk6dotkott2kjsp8vw4d0m25fb7")) {
                 message = "This email address is already registered. Please use a different email.";
-            } else if (lower.contains("key (username)") || lower.contains("(username)=")) {
+            } else if (lower.contains("key (username)") || lower.contains("(username)=") || lower.contains("ukr43af9ap4edm43mmtq01oddj6")) {
+                message = "An account with this username already exists.";
+            } else if (lower.contains("email")) {
+                message = "This email address is already registered. Please use a different email.";
+            } else if (lower.contains("username")) {
                 message = "An account with this username already exists.";
             } else if (lower.contains("users")) {
                 message = "An account with this email or username already exists.";

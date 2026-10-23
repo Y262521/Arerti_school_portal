@@ -26,7 +26,7 @@ public class HealthController {
         return Map.of(
                 "status", "UP",
                 "service", "arerti-portal-backend",
-                "version", "UserCreationService-REQUIRES_NEW",
+                "version", "v2.0-sequence-sync-fix",
                 "time", Instant.now().toString(),
                 "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
@@ -87,13 +87,35 @@ public class HealthController {
             "WHERE tc.table_name IN ('vice_directors','supervisors','teachers') " +
             "ORDER BY tc.table_name, tc.constraint_type"
         );
-        return Map.of(
-            "usersColumns", columns,
-            "constraints", constraints,
-            "recentUsers", recentUsers,
-            "orphanViceDirectors", orphanVd,
-            "allViceDirectors", allVd,
-            "staffTableConstraints", staffConstraints
-        );
+
+        Long userCount = 0L;
+        Long maxUserId = 0L;
+        try {
+            userCount = jdbc.queryForObject("SELECT COUNT(*) FROM users", Long.class);
+            maxUserId = jdbc.queryForObject("SELECT COALESCE(MAX(id), 0) FROM users", Long.class);
+        } catch (Exception ignored) {}
+
+        List<Map<String, Object>> seqDiag = List.of();
+        try {
+            seqDiag = jdbc.queryForList("SELECT last_value, is_called FROM users_id_seq");
+        } catch (Exception ignored) {}
+
+        List<Map<String, Object>> searchMekbib = List.of();
+        try {
+            searchMekbib = jdbc.queryForList("SELECT id, username, email, role FROM users WHERE LOWER(email) LIKE '%mekbib%' OR LOWER(username) LIKE '%mekbib%'");
+        } catch (Exception ignored) {}
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("usersColumns", columns);
+        result.put("constraints", constraints);
+        result.put("recentUsers", recentUsers);
+        result.put("orphanViceDirectors", orphanVd);
+        result.put("allViceDirectors", allVd);
+        result.put("staffTableConstraints", staffConstraints);
+        result.put("userCount", userCount);
+        result.put("maxUserId", maxUserId);
+        result.put("usersIdSeq", seqDiag);
+        result.put("searchMekbib", searchMekbib);
+        return result;
     }
 }

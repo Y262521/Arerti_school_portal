@@ -59,11 +59,12 @@ public class TeacherService {
 
     // NOT @Transactional — user and teacher saved in separate sub-transactions
     public TeacherResponse create(TeacherCreateRequest req) {
+        String cleanEmail = req.email() != null ? req.email().trim().toLowerCase() : "";
         // Step 1: Purge orphan users with this email
-        purgeOrphanUserByEmail(req.email());
+        purgeOrphanUserByEmail(cleanEmail);
 
         // Step 2: Check email conflict via raw JDBC
-        if (emailExistsInDb(req.email()))
+        if (emailExistsInDb(cleanEmail))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
@@ -79,15 +80,15 @@ public class TeacherService {
             attempts++;
         } while (usernameExistsInDb(username) && attempts < 50);
 
-        String fullName = (req.firstName() + " " + req.fatherName()).trim();
+        String fullName = (req.firstName().trim() + " " + req.fatherName().trim()).trim();
 
         // Step 4: Save user via separate bean (REQUIRES_NEW commits immediately)
         User user = User.builder()
                 .username(username)
-                .email(req.email())
+                .email(cleanEmail)
                 .password(passwordEncoder.encode(plainPassword))
                 .fullName(fullName)
-                .phone(req.phone() != null ? req.phone() : "")
+                .phone(req.phone() != null ? req.phone().trim() : "")
                 .role(Role.TEACHER)
                 .enabled(true)
                 .mustChangePassword(true)
@@ -99,9 +100,9 @@ public class TeacherService {
             Teacher teacher = Teacher.builder()
                     .user(savedUser)
                     .employeeId(employeeId)
-                    .firstName(req.firstName())
-                    .fatherName(req.fatherName())
-                    .grandfatherName(req.grandfatherName())
+                    .firstName(req.firstName().trim())
+                    .fatherName(req.fatherName().trim())
+                    .grandfatherName(req.grandfatherName() != null ? req.grandfatherName().trim() : "")
                     .gender(req.gender())
                     .dateOfBirth(req.dateOfBirth())
                     .region(req.region())
@@ -321,12 +322,14 @@ public class TeacherService {
         try {
             int deleted = jdbc.update(
                 "DELETE FROM users WHERE LOWER(email) = LOWER(?) " +
-                "AND role = 'TEACHER' " +
+                "AND role IN ('VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER') " +
+                "AND id NOT IN (SELECT user_id FROM vice_directors WHERE user_id IS NOT NULL) " +
+                "AND id NOT IN (SELECT user_id FROM supervisors WHERE user_id IS NOT NULL) " +
                 "AND id NOT IN (SELECT user_id FROM teachers WHERE user_id IS NOT NULL)",
-                email);
-            if (deleted > 0) log.info("Purged {} orphan TEACHER user(s) with email={}", deleted, email);
+                email.trim());
+            if (deleted > 0) log.info("Purged {} orphan staff user(s) with email={}", deleted, email);
         } catch (Exception e) {
-            log.warn("Could not purge orphan teacher for email {}: {}", email, e.getMessage());
+            log.warn("Could not purge orphan staff user for email {}: {}", email, e.getMessage());
         }
     }
 

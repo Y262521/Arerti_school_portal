@@ -69,7 +69,15 @@ function ViceDirectorRegistrationForm({ onSuccess }) {
         setError(null)
         setSaving(true)
         try {
-            const result = await viceDirectorService.create(form)
+            const payload = {
+                ...form,
+                firstName: (form.firstName || '').trim(),
+                fatherName: (form.fatherName || '').trim(),
+                grandfatherName: (form.grandfatherName || '').trim(),
+                email: (form.email || '').trim(),
+                phone: (form.phone || '').trim(),
+            }
+            const result = await viceDirectorService.create(payload)
             onSuccess(result)
         } catch (err) {
             const msg = err?.response?.data?.message || err?.response?.data || 'Registration failed'

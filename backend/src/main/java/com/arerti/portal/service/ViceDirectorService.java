@@ -41,9 +41,10 @@ public class ViceDirectorService {
 
     // NOT @Transactional — we manage two sub-transactions via UserCreationService
     public ViceDirectorResponse create(ViceDirectorCreateRequest req) {
-        purgeOrphanUserByEmail(req.email());
+        String cleanEmail = req.email() != null ? req.email().trim().toLowerCase() : "";
+        purgeOrphanUserByEmail(cleanEmail);
 
-        if (emailExistsInDb(req.email()))
+        if (emailExistsInDb(cleanEmail))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
@@ -58,16 +59,16 @@ public class ViceDirectorService {
             attempts++;
         } while (usernameExistsInDb(username) && attempts < 50);
 
-        String fullName = (req.firstName() + " " + req.fatherName()).trim();
-        log.info("VD create: employeeId={}, username={}, email={}", employeeId, username, req.email());
+        String fullName = (req.firstName().trim() + " " + req.fatherName().trim()).trim();
+        log.info("VD create: employeeId={}, username={}, email={}", employeeId, username, cleanEmail);
 
         // Save User via separate bean — REQUIRES_NEW commits it immediately
         User user = User.builder()
                 .username(username)
-                .email(req.email())
+                .email(cleanEmail)
                 .password(passwordEncoder.encode(plainPassword))
                 .fullName(fullName)
-                .phone(req.phone() != null ? req.phone() : "")
+                .phone(req.phone() != null ? req.phone().trim() : "")
                 .role(Role.VICE_DIRECTOR)
                 .enabled(true)
                 .mustChangePassword(true)
@@ -81,9 +82,9 @@ public class ViceDirectorService {
             ViceDirector vd = ViceDirector.builder()
                     .user(savedUser)
                     .employeeId(employeeId)
-                    .firstName(req.firstName())
-                    .fatherName(req.fatherName())
-                    .grandfatherName(req.grandfatherName())
+                    .firstName(req.firstName().trim())
+                    .fatherName(req.fatherName().trim())
+                    .grandfatherName(req.grandfatherName() != null ? req.grandfatherName().trim() : "")
                     .gender(req.gender())
                     .dateOfBirth(req.dateOfBirth())
                     .photoUrl(req.photoUrl())
@@ -202,12 +203,14 @@ public class ViceDirectorService {
         try {
             int deleted = jdbc.update(
                 "DELETE FROM users WHERE LOWER(email) = LOWER(?) " +
-                "AND role = 'VICE_DIRECTOR' " +
-                "AND id NOT IN (SELECT user_id FROM vice_directors WHERE user_id IS NOT NULL)",
-                email);
-            if (deleted > 0) log.info("Purged {} orphan VICE_DIRECTOR user(s) with email={}", deleted, email);
+                "AND role IN ('VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER') " +
+                "AND id NOT IN (SELECT user_id FROM vice_directors WHERE user_id IS NOT NULL) " +
+                "AND id NOT IN (SELECT user_id FROM supervisors WHERE user_id IS NOT NULL) " +
+                "AND id NOT IN (SELECT user_id FROM teachers WHERE user_id IS NOT NULL)",
+                email.trim());
+            if (deleted > 0) log.info("Purged {} orphan staff user(s) with email={}", deleted, email);
         } catch (Exception e) {
-            log.warn("Could not purge orphan VD user for email {}: {}", email, e.getMessage());
+            log.warn("Could not purge orphan staff user for email {}: {}", email, e.getMessage());
         }
     }
 

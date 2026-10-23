@@ -48,11 +48,12 @@ public class SupervisorService {
 
     // NOT @Transactional — user and supervisor saved in separate sub-transactions
     public SupervisorResponse create(SupervisorCreateRequest req) {
+        String cleanEmail = req.email() != null ? req.email().trim().toLowerCase() : "";
         // Step 1: Purge orphan users with this email
-        purgeOrphanUserByEmail(req.email());
+        purgeOrphanUserByEmail(cleanEmail);
 
         // Step 2: Check email conflict via raw JDBC
-        if (emailExistsInDb(req.email()))
+        if (emailExistsInDb(cleanEmail))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
@@ -68,16 +69,16 @@ public class SupervisorService {
             attempts++;
         } while (usernameExistsInDb(username) && attempts < 50);
 
-        String fullName = (req.firstName() + " " + req.fatherName()).trim();
-        log.info("SUP create: employeeId={}, username={}, email={}", employeeId, username, req.email());
+        String fullName = (req.firstName().trim() + " " + req.fatherName().trim()).trim();
+        log.info("SUP create: employeeId={}, username={}, email={}", employeeId, username, cleanEmail);
 
         // Step 4: Save user via separate bean (REQUIRES_NEW commits immediately)
         User user = User.builder()
                 .username(username)
-                .email(req.email())
+                .email(cleanEmail)
                 .password(passwordEncoder.encode(plainPassword))
                 .fullName(fullName)
-                .phone(req.phone() != null ? req.phone() : "")
+                .phone(req.phone() != null ? req.phone().trim() : "")
                 .role(Role.SUPERVISOR)
                 .enabled(true)
                 .mustChangePassword(true)
@@ -90,9 +91,9 @@ public class SupervisorService {
             Supervisor supervisor = Supervisor.builder()
                     .user(savedUser)
                     .employeeId(employeeId)
-                    .firstName(req.firstName())
-                    .fatherName(req.fatherName())
-                    .grandfatherName(req.grandfatherName())
+                    .firstName(req.firstName().trim())
+                    .fatherName(req.fatherName().trim())
+                    .grandfatherName(req.grandfatherName() != null ? req.grandfatherName().trim() : "")
                     .gender(req.gender())
                     .dateOfBirth(req.dateOfBirth())
                     .photoUrl(req.photoUrl())
@@ -233,12 +234,14 @@ public class SupervisorService {
         try {
             int deleted = jdbc.update(
                 "DELETE FROM users WHERE LOWER(email) = LOWER(?) " +
-                "AND role = 'SUPERVISOR' " +
-                "AND id NOT IN (SELECT user_id FROM supervisors WHERE user_id IS NOT NULL)",
-                email);
-            if (deleted > 0) log.info("Purged {} orphan SUPERVISOR user(s) with email={}", deleted, email);
+                "AND role IN ('VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER') " +
+                "AND id NOT IN (SELECT user_id FROM vice_directors WHERE user_id IS NOT NULL) " +
+                "AND id NOT IN (SELECT user_id FROM supervisors WHERE user_id IS NOT NULL) " +
+                "AND id NOT IN (SELECT user_id FROM teachers WHERE user_id IS NOT NULL)",
+                email.trim());
+            if (deleted > 0) log.info("Purged {} orphan staff user(s) with email={}", deleted, email);
         } catch (Exception e) {
-            log.warn("Could not purge orphan supervisor for email {}: {}", email, e.getMessage());
+            log.warn("Could not purge orphan staff user for email {}: {}", email, e.getMessage());
         }
     }
 

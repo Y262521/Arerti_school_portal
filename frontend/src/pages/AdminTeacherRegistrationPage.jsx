@@ -86,7 +86,16 @@ function TeacherRegistrationForm({ onSuccess }) {
         setError(null)
         setSaving(true)
         try {
-            const newTeacher = await teacherService.create({ ...form, hireDate: form.hireDate || null })
+            const payload = {
+                ...form,
+                firstName: (form.firstName || '').trim(),
+                fatherName: (form.fatherName || '').trim(),
+                grandfatherName: (form.grandfatherName || '').trim(),
+                email: (form.email || '').trim(),
+                phone: (form.phone || '').trim(),
+                hireDate: form.hireDate || null
+            }
+            const newTeacher = await teacherService.create(payload)
             onSuccess(newTeacher)
         } catch (err) {
             const msg = err?.response?.data?.message || err?.response?.data || 'Registration failed'
