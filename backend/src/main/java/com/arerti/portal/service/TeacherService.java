@@ -86,8 +86,8 @@ public class TeacherService {
         org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
         jdbc.update(con -> {
             java.sql.PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password) " +
-                "VALUES (?, ?, ?, ?, ?, 'TEACHER', true, true)",
+                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, 'TEACHER', true, true, NOW(), NOW())",
                 java.sql.Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, finalUsername);
             ps.setString(2, req.email());

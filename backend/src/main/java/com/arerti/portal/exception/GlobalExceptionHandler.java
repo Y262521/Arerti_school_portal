@@ -40,7 +40,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex) {
         String cause = ex.getMostSpecificCause().getMessage();
-        log.warn("Data integrity violation: {}", cause);
+        // Log the FULL cause so Render logs reveal exactly which constraint fired
+        log.warn("DataIntegrityViolation FULL cause: [{}]", cause);
+        log.warn("DataIntegrityViolation root message: [{}]", ex.getMessage());
 
         String message = "This record already exists or conflicts with existing data.";
 

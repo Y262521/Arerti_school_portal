@@ -71,8 +71,8 @@ public class ViceDirectorService {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(con -> {
             PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password) " +
-                "VALUES (?, ?, ?, ?, ?, 'VICE_DIRECTOR', true, true)",
+                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, 'VICE_DIRECTOR', true, true, NOW(), NOW())",
                 Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, finalUsername);
             ps.setString(2, req.email());
@@ -85,6 +85,8 @@ public class ViceDirectorService {
         Number userId = keyHolder.getKey();
         if (userId == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user account.");
+
+        log.info("VD user inserted with id={}", userId);
 
         // Step 5: Save ViceDirector profile using JPA reference
         com.arerti.portal.entity.User userRef = userRepository.getReferenceById(userId.longValue());
