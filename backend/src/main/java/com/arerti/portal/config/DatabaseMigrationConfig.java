@@ -24,11 +24,45 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        migrateUsersRoleCheckConstraint();
         syncDatabaseSequences();
         migrateGradeSectionUniqueConstraint();
         dropLegacyObsoleteTables();
         migrateAdminToDirector();
         cleanOrphanStaffUsers();
+    }
+
+    /**
+     * Drops the outdated users_role_check constraint that only allowed (ADMIN, TEACHER, STUDENT, PARENT)
+     * and recreates it with all valid roles: ADMIN, VICE_DIRECTOR, SUPERVISOR, TEACHER, STUDENT, PARENT.
+     * This fixes the check constraint violation that prevented registering Vice Directors and Supervisors.
+     */
+    public void migrateUsersRoleCheckConstraint() {
+        try {
+            // Drop any existing check constraint on users table (e.g. users_role_check)
+            jdbc.execute(
+                "DO $$ " +
+                "DECLARE r RECORD; " +
+                "BEGIN " +
+                "  FOR r IN " +
+                "    SELECT constraint_name " +
+                "    FROM information_schema.table_constraints " +
+                "    WHERE table_name = 'users' AND constraint_type = 'CHECK' " +
+                "  LOOP " +
+                "    EXECUTE 'ALTER TABLE users DROP CONSTRAINT IF EXISTS ' || quote_ident(r.constraint_name); " +
+                "  END LOOP; " +
+                "END $$;"
+            );
+
+            // Re-add the updated constraint with all current roles
+            jdbc.execute(
+                "ALTER TABLE users ADD CONSTRAINT users_role_check " +
+                "CHECK (role IN ('ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT', 'PARENT'))"
+            );
+            log.info("Successfully updated users_role_check constraint to include VICE_DIRECTOR and SUPERVISOR.");
+        } catch (Exception e) {
+            log.warn("Could not migrate users_role_check constraint: {}", e.getMessage());
+        }
     }
 
     /**

@@ -26,7 +26,7 @@ public class HealthController {
         return Map.of(
                 "status", "UP",
                 "service", "arerti-portal-backend",
-                "version", "v2.0-sequence-sync-fix",
+                "version", "v2.1-role-check-fix",
                 "time", Instant.now().toString(),
                 "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
