@@ -21,40 +21,28 @@ public class HealthController {
     @Value("${cloudinary.cloud-name:NOT_SET}")
     private String cloudName;
 
-    @Value("${cloudinary.api-key:NOT_SET}")
-    private String apiKey;
-
-    @Value("${cloudinary.api-secret:NOT_SET}")
-    private String apiSecret;
-
     @GetMapping
     public Map<String, Object> health() {
         return Map.of(
                 "status", "UP",
                 "service", "arerti-portal-backend",
-                "version", "b4f8859-UserCreationService",
+                "version", "UserCreationService-REQUIRES_NEW",
                 "time", Instant.now().toString(),
                 "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
     }
 
-    /**
-     * Test endpoint: tries to insert a test user and immediately deletes it.
-     * Returns the exact error if it fails.
-     * Access: GET /api/health/test-insert
-     */
+    /** Test: insert a user row and delete it immediately. Shows exact DB error if it fails. */
     @GetMapping("/test-insert")
     public Map<String, Object> testInsert() {
         String testUsername = "test_" + System.currentTimeMillis();
         String testEmail = testUsername + "@test.com";
         try {
-            // Try inserting a user
             jdbc.update(
                 "INSERT INTO users (username, email, password, full_name, role, enabled, must_change_password) " +
                 "VALUES (?, ?, 'hash', 'Test User', 'VICE_DIRECTOR', true, true)",
                 testUsername, testEmail
             );
-            // Clean up immediately
             jdbc.update("DELETE FROM users WHERE username = ?", testUsername);
             return Map.of("result", "SUCCESS", "username", testUsername, "email", testEmail);
         } catch (Exception e) {
@@ -66,27 +54,22 @@ public class HealthController {
             );
         }
     }
-     * and the last 20 user rows. Used to debug registration conflicts.
-     * Access: GET /api/health/db-diag
-     */
+
+    /** Diagnostic: DB schema and recent users. */
     @GetMapping("/db-diag")
     public Map<String, Object> dbDiag() {
         List<Map<String, Object>> columns = jdbc.queryForList(
-            "SELECT column_name, data_type, is_nullable, column_default " +
-            "FROM information_schema.columns " +
+            "SELECT column_name, data_type, is_nullable FROM information_schema.columns " +
             "WHERE table_name = 'users' ORDER BY ordinal_position"
         );
         List<Map<String, Object>> constraints = jdbc.queryForList(
             "SELECT tc.constraint_name, tc.constraint_type, kcu.column_name " +
             "FROM information_schema.table_constraints tc " +
-            "JOIN information_schema.key_column_usage kcu " +
-            "  ON tc.constraint_name = kcu.constraint_name " +
-            "WHERE tc.table_name = 'users' " +
-            "ORDER BY tc.constraint_type, kcu.column_name"
+            "JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name " +
+            "WHERE tc.table_name = 'users' ORDER BY tc.constraint_type, kcu.column_name"
         );
         List<Map<String, Object>> recentUsers = jdbc.queryForList(
-            "SELECT id, username, email, role, enabled, created_at " +
-            "FROM users ORDER BY id DESC LIMIT 20"
+            "SELECT id, username, email, role, enabled, created_at FROM users ORDER BY id DESC LIMIT 20"
         );
         List<Map<String, Object>> orphanVd = jdbc.queryForList(
             "SELECT u.id, u.username, u.email, u.role FROM users u " +
@@ -97,11 +80,10 @@ public class HealthController {
             "SELECT v.id, v.employee_id, v.user_id, u.username, u.email " +
             "FROM vice_directors v LEFT JOIN users u ON v.user_id = u.id"
         );
-        List<Map<String, Object>> vdConstraints = jdbc.queryForList(
+        List<Map<String, Object>> staffConstraints = jdbc.queryForList(
             "SELECT tc.constraint_name, tc.constraint_type, kcu.column_name " +
             "FROM information_schema.table_constraints tc " +
-            "JOIN information_schema.key_column_usage kcu " +
-            "  ON tc.constraint_name = kcu.constraint_name " +
+            "JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name " +
             "WHERE tc.table_name IN ('vice_directors','supervisors','teachers') " +
             "ORDER BY tc.table_name, tc.constraint_type"
         );
@@ -111,7 +93,7 @@ public class HealthController {
             "recentUsers", recentUsers,
             "orphanViceDirectors", orphanVd,
             "allViceDirectors", allVd,
-            "staffTableConstraints", vdConstraints
+            "staffTableConstraints", staffConstraints
         );
     }
 }
