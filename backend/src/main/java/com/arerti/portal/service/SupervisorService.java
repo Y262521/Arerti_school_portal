@@ -1,4 +1,5 @@
 package com.arerti.portal.service;
+package com.arerti.portal.service;
 
 import com.arerti.portal.dto.GradeSectionResponse;
 import com.arerti.portal.dto.SupervisorCreateRequest;
@@ -33,6 +34,7 @@ public class SupervisorService {
 
     private final SupervisorRepository supervisorRepository;
     private final UserRepository userRepository;
+    private final UserCreationService userCreationService;   // ← separate bean
     private final GradeSectionRepository gradeSectionRepository;
     private final SupervisorClassAssignmentRepository assignmentRepository;
     private final AuditService auditService;
@@ -45,6 +47,7 @@ public class SupervisorService {
                 .collect(Collectors.toList());
     }
 
+    // NOT @Transactional — user and supervisor saved in separate sub-transactions
     public SupervisorResponse create(SupervisorCreateRequest req) {
         // Step 1: Purge orphan users with this email
         purgeOrphanUserByEmail(req.email());
@@ -69,7 +72,7 @@ public class SupervisorService {
         String fullName = (req.firstName() + " " + req.fatherName()).trim();
         log.info("SUP create: employeeId={}, username={}, email={}", employeeId, username, req.email());
 
-        // Step 4: Save user in its own transaction so it's committed before supervisor save
+        // Step 4: Save user via separate bean (REQUIRES_NEW commits immediately)
         User user = User.builder()
                 .username(username)
                 .email(req.email())
@@ -80,28 +83,36 @@ public class SupervisorService {
                 .enabled(true)
                 .mustChangePassword(true)
                 .build();
-        User savedUser = saveUserInNewTransaction(user);
-        log.info("SUP user saved with id={}", savedUser.getId());
+        User savedUser = userCreationService.saveUser(user);
+        log.info("SUP user committed: id={}", savedUser.getId());
 
-        Supervisor supervisor = Supervisor.builder()
-                .user(savedUser)
-                .employeeId(employeeId)
-                .firstName(req.firstName())
-                .fatherName(req.fatherName())
-                .grandfatherName(req.grandfatherName())
-                .gender(req.gender())
-                .dateOfBirth(req.dateOfBirth())
-                .photoUrl(req.photoUrl())
-                .qualificationCertUrl(req.qualificationCertUrl())
-                .idDocUrl(req.idDocUrl())
-                .build();
-        Supervisor savedSupervisor = saveSupervisorInNewTransaction(supervisor);
+        // Step 5: Save Supervisor profile
+        try {
+            Supervisor supervisor = Supervisor.builder()
+                    .user(savedUser)
+                    .employeeId(employeeId)
+                    .firstName(req.firstName())
+                    .fatherName(req.fatherName())
+                    .grandfatherName(req.grandfatherName())
+                    .gender(req.gender())
+                    .dateOfBirth(req.dateOfBirth())
+                    .photoUrl(req.photoUrl())
+                    .qualificationCertUrl(req.qualificationCertUrl())
+                    .idDocUrl(req.idDocUrl())
+                    .build();
+            supervisorRepository.saveAndFlush(supervisor);
 
-        auditService.log(actorUsername(), actorRole(), "CREATE", "SUPERVISOR", employeeId,
-                "Created supervisor " + employeeId);
+            auditService.log(actorUsername(), actorRole(), "CREATE", "SUPERVISOR", employeeId,
+                    "Created supervisor " + employeeId);
 
-        log.info("SUP created successfully: employeeId={}, username={}", employeeId, username);
-        return SupervisorResponse.fromWithCredentials(savedSupervisor, username, plainPassword);
+            log.info("SUP created: employeeId={}, username={}", employeeId, username);
+            return SupervisorResponse.fromWithCredentials(supervisor, username, plainPassword);
+
+        } catch (Exception e) {
+            log.error("SUP profile save failed, rolling back user id={}: {}", savedUser.getId(), e.getMessage());
+            try { jdbc.update("DELETE FROM users WHERE id = ?", savedUser.getId()); } catch (Exception ignored) {}
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed. Please try again.");
+        }
     }
 
     @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)

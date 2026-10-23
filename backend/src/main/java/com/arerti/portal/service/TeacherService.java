@@ -31,6 +31,7 @@ public class TeacherService {
 
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
+    private final UserCreationService userCreationService;   // ← separate bean
     private final GradeSectionRepository gradeSectionRepository;
     private final ClassSubjectAssignmentRepository assignmentRepository;
     private final RegistrationAssignmentRepository registrationAssignmentRepository;
@@ -56,6 +57,7 @@ public class TeacherService {
         return TeacherResponse.from(t);
     }
 
+    // NOT @Transactional — user and teacher saved in separate sub-transactions
     public TeacherResponse create(TeacherCreateRequest req) {
         // Step 1: Purge orphan users with this email
         purgeOrphanUserByEmail(req.email());
@@ -79,7 +81,7 @@ public class TeacherService {
 
         String fullName = (req.firstName() + " " + req.fatherName()).trim();
 
-        // Step 4: Save user in its own transaction
+        // Step 4: Save user via separate bean (REQUIRES_NEW commits immediately)
         User user = User.builder()
                 .username(username)
                 .email(req.email())
@@ -90,31 +92,38 @@ public class TeacherService {
                 .enabled(true)
                 .mustChangePassword(true)
                 .build();
-        User savedUser = saveUserInNewTransaction(user);
+        User savedUser = userCreationService.saveUser(user);
 
-        // Step 5: Save Teacher profile in its own transaction
-        Teacher teacher = Teacher.builder()
-                .user(savedUser)
-                .employeeId(employeeId)
-                .firstName(req.firstName())
-                .fatherName(req.fatherName())
-                .grandfatherName(req.grandfatherName())
-                .gender(req.gender())
-                .dateOfBirth(req.dateOfBirth())
-                .region(req.region())
-                .city(req.city())
-                .kebele(req.kebele())
-                .houseNo(req.houseNo())
-                .qualification(req.qualification())
-                .specialization(req.specialization())
-                .hireDate(req.hireDate() != null ? req.hireDate() : LocalDate.now())
-                .photoUrl(req.photoUrl())
-                .qualificationCertUrl(req.qualificationCertUrl())
-                .idDocUrl(req.idDocUrl())
-                .build();
-        Teacher savedTeacher = saveTeacherInNewTransaction(teacher);
+        // Step 5: Save Teacher profile
+        try {
+            Teacher teacher = Teacher.builder()
+                    .user(savedUser)
+                    .employeeId(employeeId)
+                    .firstName(req.firstName())
+                    .fatherName(req.fatherName())
+                    .grandfatherName(req.grandfatherName())
+                    .gender(req.gender())
+                    .dateOfBirth(req.dateOfBirth())
+                    .region(req.region())
+                    .city(req.city())
+                    .kebele(req.kebele())
+                    .houseNo(req.houseNo())
+                    .qualification(req.qualification())
+                    .specialization(req.specialization())
+                    .hireDate(req.hireDate() != null ? req.hireDate() : LocalDate.now())
+                    .photoUrl(req.photoUrl())
+                    .qualificationCertUrl(req.qualificationCertUrl())
+                    .idDocUrl(req.idDocUrl())
+                    .build();
+            teacherRepository.saveAndFlush(teacher);
 
-        return TeacherResponse.fromWithCredentials(savedTeacher, username, plainPassword);
+            return TeacherResponse.fromWithCredentials(teacher, username, plainPassword);
+
+        } catch (Exception e) {
+            log.error("Teacher profile save failed, rolling back user id={}: {}", savedUser.getId(), e.getMessage());
+            try { jdbc.update("DELETE FROM users WHERE id = ?", savedUser.getId()); } catch (Exception ignored) {}
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Registration failed. Please try again.");
+        }
     }
 
     @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)

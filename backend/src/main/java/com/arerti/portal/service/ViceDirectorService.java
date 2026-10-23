@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -29,6 +28,7 @@ public class ViceDirectorService {
 
     private final ViceDirectorRepository viceDirectorRepository;
     private final UserRepository userRepository;
+    private final UserCreationService userCreationService;   // ← separate bean
     private final AuditService auditService;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbc;
@@ -39,11 +39,10 @@ public class ViceDirectorService {
                 .collect(Collectors.toList());
     }
 
+    // NOT @Transactional — we manage two sub-transactions via UserCreationService
     public ViceDirectorResponse create(ViceDirectorCreateRequest req) {
-        // Purge orphan users with this email first
         purgeOrphanUserByEmail(req.email());
 
-        // Check email conflict
         if (emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
@@ -62,7 +61,7 @@ public class ViceDirectorService {
         String fullName = (req.firstName() + " " + req.fatherName()).trim();
         log.info("VD create: employeeId={}, username={}, email={}", employeeId, username, req.email());
 
-        // Save user using standard JPA - simple and reliable
+        // Save User via separate bean — REQUIRES_NEW commits it immediately
         User user = User.builder()
                 .username(username)
                 .email(req.email())
@@ -74,40 +73,38 @@ public class ViceDirectorService {
                 .mustChangePassword(true)
                 .build();
 
-        // Save user in its own transaction so it's committed before VD profile
-        User savedUser = saveUserInNewTransaction(user);
-        log.info("VD user saved with id={}", savedUser.getId());
+        User savedUser = userCreationService.saveUser(user);
+        log.info("VD user committed: id={}", savedUser.getId());
 
-        // Now save ViceDirector in its own transaction
-        ViceDirector vd = saveViceDirectorInNewTransaction(savedUser, employeeId, req);
+        // Save ViceDirector profile in its own transaction
+        try {
+            ViceDirector vd = ViceDirector.builder()
+                    .user(savedUser)
+                    .employeeId(employeeId)
+                    .firstName(req.firstName())
+                    .fatherName(req.fatherName())
+                    .grandfatherName(req.grandfatherName())
+                    .gender(req.gender())
+                    .dateOfBirth(req.dateOfBirth())
+                    .photoUrl(req.photoUrl())
+                    .qualificationCertUrl(req.qualificationCertUrl())
+                    .idDocUrl(req.idDocUrl())
+                    .build();
+            viceDirectorRepository.saveAndFlush(vd);
 
-        auditService.log(actorUsername(), actorRole(), "CREATE", "VICE_DIRECTOR", employeeId,
-                "Created vice director " + employeeId);
+            auditService.log(actorUsername(), actorRole(), "CREATE", "VICE_DIRECTOR", employeeId,
+                    "Created vice director " + employeeId);
 
-        log.info("VD created successfully: employeeId={}, username={}", employeeId, username);
-        return ViceDirectorResponse.fromWithCredentials(vd, username, plainPassword);
-    }
+            log.info("VD created: employeeId={}, username={}", employeeId, username);
+            return ViceDirectorResponse.fromWithCredentials(vd, username, plainPassword);
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public User saveUserInNewTransaction(User user) {
-        return userRepository.save(user);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public ViceDirector saveViceDirectorInNewTransaction(User user, String employeeId, ViceDirectorCreateRequest req) {
-        ViceDirector vd = ViceDirector.builder()
-                .user(user)
-                .employeeId(employeeId)
-                .firstName(req.firstName())
-                .fatherName(req.fatherName())
-                .grandfatherName(req.grandfatherName())
-                .gender(req.gender())
-                .dateOfBirth(req.dateOfBirth())
-                .photoUrl(req.photoUrl())
-                .qualificationCertUrl(req.qualificationCertUrl())
-                .idDocUrl(req.idDocUrl())
-                .build();
-        return viceDirectorRepository.save(vd);
+        } catch (Exception e) {
+            // If profile save fails, clean up the user we just committed
+            log.error("VD profile save failed, rolling back user id={}: {}", savedUser.getId(), e.getMessage());
+            try { jdbc.update("DELETE FROM users WHERE id = ?", savedUser.getId()); } catch (Exception ignored) {}
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Registration failed. Please try again.");
+        }
     }
 
     @Transactional
