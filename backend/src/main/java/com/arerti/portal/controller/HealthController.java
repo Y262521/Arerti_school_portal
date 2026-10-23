@@ -32,13 +32,40 @@ public class HealthController {
         return Map.of(
                 "status", "UP",
                 "service", "arerti-portal-backend",
+                "version", "b4f8859-UserCreationService",
                 "time", Instant.now().toString(),
                 "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
     }
 
     /**
-     * Diagnostic: shows all unique constraints on the users table
+     * Test endpoint: tries to insert a test user and immediately deletes it.
+     * Returns the exact error if it fails.
+     * Access: GET /api/health/test-insert
+     */
+    @GetMapping("/test-insert")
+    public Map<String, Object> testInsert() {
+        String testUsername = "test_" + System.currentTimeMillis();
+        String testEmail = testUsername + "@test.com";
+        try {
+            // Try inserting a user
+            jdbc.update(
+                "INSERT INTO users (username, email, password, full_name, role, enabled, must_change_password) " +
+                "VALUES (?, ?, 'hash', 'Test User', 'VICE_DIRECTOR', true, true)",
+                testUsername, testEmail
+            );
+            // Clean up immediately
+            jdbc.update("DELETE FROM users WHERE username = ?", testUsername);
+            return Map.of("result", "SUCCESS", "username", testUsername, "email", testEmail);
+        } catch (Exception e) {
+            return Map.of(
+                "result", "FAILED",
+                "error", e.getClass().getSimpleName(),
+                "message", e.getMessage() != null ? e.getMessage() : "null",
+                "cause", e.getCause() != null ? e.getCause().getMessage() : "null"
+            );
+        }
+    }
      * and the last 20 user rows. Used to debug registration conflicts.
      * Access: GET /api/health/db-diag
      */
