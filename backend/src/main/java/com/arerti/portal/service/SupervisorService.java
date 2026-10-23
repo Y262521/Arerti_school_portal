@@ -55,14 +55,16 @@ public class SupervisorService {
         String employeeId = generateEmployeeId();
         String plainPassword = generatePassword();
 
-        // Build a guaranteed-unique username: employeeId-slug + random 3-digit suffix
-        // checked against DB in a loop until confirmed free
+        // Build a guaranteed-unique username using raw JDBC check (bypasses
+        // Hibernate cache) — always generates slug + random 3-digit number
         String baseUsername = employeeId.toLowerCase().replace("-", "");
         String username;
+        int attempts = 0;
         do {
             int rand = 100 + (int)(Math.random() * 900);
             username = baseUsername + rand;
-        } while (userRepository.existsByUsername(username));
+            attempts++;
+        } while (usernameExistsInDb(username) && attempts < 50);
 
         String fullName = req.firstName() + " " + req.fatherName();
 
@@ -185,6 +187,14 @@ public class SupervisorService {
     private String generatePassword() {
         int rand = 100 + (int)(Math.random() * 900);
         return "Arerti@" + LocalDate.now().getYear() + rand;
+    }
+
+    /** Checks username existence via raw JDBC to bypass Hibernate session cache. */
+    private boolean usernameExistsInDb(String username) {
+        Integer count = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM users WHERE LOWER(username) = LOWER(?)",
+            Integer.class, username);
+        return count != null && count > 0;
     }
 
     private String actorUsername() {
