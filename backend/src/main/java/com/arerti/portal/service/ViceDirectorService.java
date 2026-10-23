@@ -88,8 +88,10 @@ public class ViceDirectorService {
 
         log.info("VD user inserted with id={}", userId);
 
-        // Step 5: Save ViceDirector profile using JPA reference
-        com.arerti.portal.entity.User userRef = userRepository.getReferenceById(userId.longValue());
+        // Step 5: Load user through JPA so Hibernate tracks it — do NOT use getReferenceById
+        // (a proxy would cause Hibernate to try re-inserting the user on vd save)
+        com.arerti.portal.entity.User userRef = userRepository.findById(userId.longValue())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found after insert."));
         ViceDirector vd = ViceDirector.builder()
                 .user(userRef)
                 .employeeId(employeeId)

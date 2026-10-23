@@ -91,8 +91,9 @@ public class SupervisorService {
         if (userId == null)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user account.");
 
-        // Step 5: Save Supervisor profile
-        User userRef = userRepository.getReferenceById(userId.longValue());
+        // Load user through JPA so Hibernate tracks it properly
+        User userRef = userRepository.findById(userId.longValue())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found after insert."));
         Supervisor supervisor = Supervisor.builder()
                 .user(userRef)
                 .employeeId(employeeId)
