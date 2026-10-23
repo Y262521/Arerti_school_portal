@@ -2,6 +2,8 @@ package com.arerti.portal.service;
 
 import com.arerti.portal.dto.ViceDirectorCreateRequest;
 import com.arerti.portal.dto.ViceDirectorResponse;
+import com.arerti.portal.entity.Role;
+import com.arerti.portal.entity.User;
 import com.arerti.portal.entity.ViceDirector;
 import com.arerti.portal.repository.UserRepository;
 import com.arerti.portal.repository.ViceDirectorRepository;
@@ -9,16 +11,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,17 +39,15 @@ public class ViceDirectorService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     public ViceDirectorResponse create(ViceDirectorCreateRequest req) {
-        // Step 1: Purge any orphan user left by a previous failed attempt
+        // Purge orphan users with this email first
         purgeOrphanUserByEmail(req.email());
 
-        // Step 2: Check email conflict via raw JDBC (bypasses Hibernate cache)
+        // Check email conflict
         if (emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
-        // Step 3: Generate IDs
         String employeeId = generateEmployeeId();
         String plainPassword = generatePassword();
         String baseUsername = employeeId.toLowerCase().replace("-", "");
@@ -65,35 +62,41 @@ public class ViceDirectorService {
         String fullName = (req.firstName() + " " + req.fatherName()).trim();
         log.info("VD create: employeeId={}, username={}, email={}", employeeId, username, req.email());
 
-        // Step 4: Insert user via raw JDBC — bypasses Hibernate cache & session entirely
-        final String finalUsername = username;
-        final String hashedPassword = passwordEncoder.encode(plainPassword);
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbc.update(con -> {
-            PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, 'VICE_DIRECTOR', true, true, NOW(), NOW())",
-                Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, finalUsername);
-            ps.setString(2, req.email());
-            ps.setString(3, hashedPassword);
-            ps.setString(4, fullName);
-            ps.setString(5, req.phone() != null ? req.phone() : "");
-            return ps;
-        }, keyHolder);
+        // Save user using standard JPA - simple and reliable
+        User user = User.builder()
+                .username(username)
+                .email(req.email())
+                .password(passwordEncoder.encode(plainPassword))
+                .fullName(fullName)
+                .phone(req.phone() != null ? req.phone() : "")
+                .role(Role.VICE_DIRECTOR)
+                .enabled(true)
+                .mustChangePassword(true)
+                .build();
 
-        Number userId = keyHolder.getKey();
-        if (userId == null)
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user account.");
+        // Save user in its own transaction so it's committed before VD profile
+        User savedUser = saveUserInNewTransaction(user);
+        log.info("VD user saved with id={}", savedUser.getId());
 
-        log.info("VD user inserted with id={}", userId);
+        // Now save ViceDirector in its own transaction
+        ViceDirector vd = saveViceDirectorInNewTransaction(savedUser, employeeId, req);
 
-        // Step 5: Load user through JPA so Hibernate tracks it — do NOT use getReferenceById
-        // (a proxy would cause Hibernate to try re-inserting the user on vd save)
-        com.arerti.portal.entity.User userRef = userRepository.findById(userId.longValue())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found after insert."));
+        auditService.log(actorUsername(), actorRole(), "CREATE", "VICE_DIRECTOR", employeeId,
+                "Created vice director " + employeeId);
+
+        log.info("VD created successfully: employeeId={}, username={}", employeeId, username);
+        return ViceDirectorResponse.fromWithCredentials(vd, username, plainPassword);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public User saveUserInNewTransaction(User user) {
+        return userRepository.save(user);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public ViceDirector saveViceDirectorInNewTransaction(User user, String employeeId, ViceDirectorCreateRequest req) {
         ViceDirector vd = ViceDirector.builder()
-                .user(userRef)
+                .user(user)
                 .employeeId(employeeId)
                 .firstName(req.firstName())
                 .fatherName(req.fatherName())
@@ -104,20 +107,14 @@ public class ViceDirectorService {
                 .qualificationCertUrl(req.qualificationCertUrl())
                 .idDocUrl(req.idDocUrl())
                 .build();
-        viceDirectorRepository.save(vd);
-
-        auditService.log(actorUsername(), actorRole(), "CREATE", "VICE_DIRECTOR", employeeId,
-                "Created vice director " + employeeId);
-
-        log.info("VD created successfully: employeeId={}, username={}", employeeId, username);
-        return ViceDirectorResponse.fromWithCredentials(vd, username, plainPassword);
+        return viceDirectorRepository.save(vd);
     }
 
     @Transactional
     public ViceDirectorResponse update(Long id, ViceDirectorCreateRequest req) {
         ViceDirector vd = viceDirectorRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vice Director not found"));
-        com.arerti.portal.entity.User user = vd.getUser();
+        User user = vd.getUser();
 
         if (!user.getEmail().equalsIgnoreCase(req.email()) && emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,

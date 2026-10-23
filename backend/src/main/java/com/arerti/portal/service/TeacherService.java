@@ -56,7 +56,6 @@ public class TeacherService {
         return TeacherResponse.from(t);
     }
 
-    @Transactional
     public TeacherResponse create(TeacherCreateRequest req) {
         // Step 1: Purge orphan users with this email
         purgeOrphanUserByEmail(req.email());
@@ -80,32 +79,22 @@ public class TeacherService {
 
         String fullName = (req.firstName() + " " + req.fatherName()).trim();
 
-        // Step 4: Insert user via raw JDBC — bypasses Hibernate cache
-        final String finalUsername = username;
-        final String hashedPassword = passwordEncoder.encode(plainPassword);
-        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
-        jdbc.update(con -> {
-            java.sql.PreparedStatement ps = con.prepareStatement(
-                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, 'TEACHER', true, true, NOW(), NOW())",
-                java.sql.Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, finalUsername);
-            ps.setString(2, req.email());
-            ps.setString(3, hashedPassword);
-            ps.setString(4, fullName);
-            ps.setString(5, req.phone() != null ? req.phone() : "");
-            return ps;
-        }, keyHolder);
+        // Step 4: Save user in its own transaction
+        User user = User.builder()
+                .username(username)
+                .email(req.email())
+                .password(passwordEncoder.encode(plainPassword))
+                .fullName(fullName)
+                .phone(req.phone() != null ? req.phone() : "")
+                .role(Role.TEACHER)
+                .enabled(true)
+                .mustChangePassword(true)
+                .build();
+        User savedUser = saveUserInNewTransaction(user);
 
-        Number userId = keyHolder.getKey();
-        if (userId == null)
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user account.");
-
-        // Load user through JPA so Hibernate tracks it properly
-        User userRef = userRepository.findById(userId.longValue())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User not found after insert."));
+        // Step 5: Save Teacher profile in its own transaction
         Teacher teacher = Teacher.builder()
-                .user(userRef)
+                .user(savedUser)
                 .employeeId(employeeId)
                 .firstName(req.firstName())
                 .fatherName(req.fatherName())
@@ -123,9 +112,19 @@ public class TeacherService {
                 .qualificationCertUrl(req.qualificationCertUrl())
                 .idDocUrl(req.idDocUrl())
                 .build();
-        teacherRepository.save(teacher);
+        Teacher savedTeacher = saveTeacherInNewTransaction(teacher);
 
-        return TeacherResponse.fromWithCredentials(teacher, username, plainPassword);
+        return TeacherResponse.fromWithCredentials(savedTeacher, username, plainPassword);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public User saveUserInNewTransaction(User user) {
+        return userRepository.save(user);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public Teacher saveTeacherInNewTransaction(Teacher teacher) {
+        return teacherRepository.save(teacher);
     }
 
     @Transactional
