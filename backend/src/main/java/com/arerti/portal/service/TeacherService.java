@@ -58,16 +58,17 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponse create(TeacherCreateRequest req) {
-        // Purge any orphan user row with this email, then check
+        // Step 1: Purge orphan users with this email
         purgeOrphanUserByEmail(req.email());
 
+        // Step 2: Check email conflict via raw JDBC
         if (emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
 
+        // Step 3: Generate IDs
         String employeeId = generateEmployeeId();
         String plainPassword = generatePassword();
-
         String baseUsername = employeeId.toLowerCase().replace("-", "");
         String username;
         int attempts = 0;
@@ -77,23 +78,33 @@ public class TeacherService {
             attempts++;
         } while (usernameExistsInDb(username) && attempts < 50);
 
-        // Full name from parts
-        String fullName = req.firstName() + " " + req.fatherName();
+        String fullName = (req.firstName() + " " + req.fatherName()).trim();
 
-        User user = User.builder()
-                .username(username)
-                .email(req.email())
-                .password(passwordEncoder.encode(plainPassword))
-                .fullName(fullName)
-                .phone(req.phone())
-                .role(Role.TEACHER)
-                .enabled(true)
-                .mustChangePassword(true)
-                .build();
-        userRepository.save(user);
+        // Step 4: Insert user via raw JDBC — bypasses Hibernate cache
+        final String finalUsername = username;
+        final String hashedPassword = passwordEncoder.encode(plainPassword);
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbc.update(con -> {
+            java.sql.PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO users (username, email, password, full_name, phone, role, enabled, must_change_password) " +
+                "VALUES (?, ?, ?, ?, ?, 'TEACHER', true, true)",
+                java.sql.Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, finalUsername);
+            ps.setString(2, req.email());
+            ps.setString(3, hashedPassword);
+            ps.setString(4, fullName);
+            ps.setString(5, req.phone() != null ? req.phone() : "");
+            return ps;
+        }, keyHolder);
 
+        Number userId = keyHolder.getKey();
+        if (userId == null)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create user account.");
+
+        // Step 5: Save Teacher profile
+        User userRef = userRepository.getReferenceById(userId.longValue());
         Teacher teacher = Teacher.builder()
-                .user(user)
+                .user(userRef)
                 .employeeId(employeeId)
                 .firstName(req.firstName())
                 .fatherName(req.fatherName())
