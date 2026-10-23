@@ -44,6 +44,11 @@ public class HealthController {
      */
     @GetMapping("/db-diag")
     public Map<String, Object> dbDiag() {
+        List<Map<String, Object>> columns = jdbc.queryForList(
+            "SELECT column_name, data_type, is_nullable, column_default " +
+            "FROM information_schema.columns " +
+            "WHERE table_name = 'users' ORDER BY ordinal_position"
+        );
         List<Map<String, Object>> constraints = jdbc.queryForList(
             "SELECT tc.constraint_name, tc.constraint_type, kcu.column_name " +
             "FROM information_schema.table_constraints tc " +
@@ -74,6 +79,7 @@ public class HealthController {
             "ORDER BY tc.table_name, tc.constraint_type"
         );
         return Map.of(
+            "usersColumns", columns,
             "constraints", constraints,
             "recentUsers", recentUsers,
             "orphanViceDirectors", orphanVd,
