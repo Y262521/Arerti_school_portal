@@ -1,5 +1,4 @@
 package com.arerti.portal.service;
-package com.arerti.portal.service;
 
 import com.arerti.portal.dto.GradeSectionResponse;
 import com.arerti.portal.dto.SupervisorCreateRequest;
