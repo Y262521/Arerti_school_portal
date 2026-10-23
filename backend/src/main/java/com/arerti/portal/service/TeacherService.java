@@ -58,7 +58,9 @@ public class TeacherService {
 
     @Transactional
     public TeacherResponse create(TeacherCreateRequest req) {
-        // Check email via raw JDBC to bypass Hibernate cache
+        // Purge any orphan user row with this email, then check
+        purgeOrphanUserByEmail(req.email());
+
         if (emailExistsInDb(req.email()))
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                 "This email address is already registered. Please use a different email.");
@@ -66,8 +68,6 @@ public class TeacherService {
         String employeeId = generateEmployeeId();
         String plainPassword = generatePassword();
 
-        // Build a guaranteed-unique username using raw JDBC check (bypasses
-        // Hibernate cache) — always generates slug + random 3-digit number
         String baseUsername = employeeId.toLowerCase().replace("-", "");
         String username;
         int attempts = 0;
@@ -295,6 +295,19 @@ public class TeacherService {
             "SELECT COUNT(*) FROM users WHERE LOWER(email) = LOWER(?)",
             Integer.class, email);
         return count != null && count > 0;
+    }
+
+    private void purgeOrphanUserByEmail(String email) {
+        try {
+            int deleted = jdbc.update(
+                "DELETE FROM users WHERE LOWER(email) = LOWER(?) " +
+                "AND role = 'TEACHER' " +
+                "AND id NOT IN (SELECT user_id FROM teachers WHERE user_id IS NOT NULL)",
+                email);
+            if (deleted > 0) log.info("Purged {} orphan TEACHER user(s) with email={}", deleted, email);
+        } catch (Exception e) {
+            log.warn("Could not purge orphan teacher for email {}: {}", email, e.getMessage());
+        }
     }
 
     private String actorUsername() {
