@@ -61,10 +61,24 @@ public class HealthController {
             "WHERE u.role = 'VICE_DIRECTOR' " +
             "AND u.id NOT IN (SELECT user_id FROM vice_directors WHERE user_id IS NOT NULL)"
         );
+        List<Map<String, Object>> allVd = jdbc.queryForList(
+            "SELECT v.id, v.employee_id, v.user_id, u.username, u.email " +
+            "FROM vice_directors v LEFT JOIN users u ON v.user_id = u.id"
+        );
+        List<Map<String, Object>> vdConstraints = jdbc.queryForList(
+            "SELECT tc.constraint_name, tc.constraint_type, kcu.column_name " +
+            "FROM information_schema.table_constraints tc " +
+            "JOIN information_schema.key_column_usage kcu " +
+            "  ON tc.constraint_name = kcu.constraint_name " +
+            "WHERE tc.table_name IN ('vice_directors','supervisors','teachers') " +
+            "ORDER BY tc.table_name, tc.constraint_type"
+        );
         return Map.of(
             "constraints", constraints,
             "recentUsers", recentUsers,
-            "orphanViceDirectors", orphanVd
+            "orphanViceDirectors", orphanVd,
+            "allViceDirectors", allVd,
+            "staffTableConstraints", vdConstraints
         );
     }
 }
