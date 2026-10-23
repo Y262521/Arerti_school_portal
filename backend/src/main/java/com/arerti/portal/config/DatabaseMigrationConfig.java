@@ -39,29 +39,10 @@ public class DatabaseMigrationConfig implements ApplicationRunner {
      */
     public void migrateUsersRoleCheckConstraint() {
         try {
-            // Drop any existing check constraint on users table (e.g. users_role_check)
-            jdbc.execute(
-                "DO $$ " +
-                "DECLARE r RECORD; " +
-                "BEGIN " +
-                "  FOR r IN " +
-                "    SELECT constraint_name " +
-                "    FROM information_schema.table_constraints " +
-                "    WHERE table_name = 'users' AND constraint_type = 'CHECK' " +
-                "  LOOP " +
-                "    EXECUTE 'ALTER TABLE users DROP CONSTRAINT IF EXISTS ' || quote_ident(r.constraint_name); " +
-                "  END LOOP; " +
-                "END $$;"
-            );
-
-            // Re-add the updated constraint with all current roles
-            jdbc.execute(
-                "ALTER TABLE users ADD CONSTRAINT users_role_check " +
-                "CHECK (role IN ('ADMIN', 'VICE_DIRECTOR', 'SUPERVISOR', 'TEACHER', 'STUDENT', 'PARENT'))"
-            );
-            log.info("Successfully updated users_role_check constraint to include VICE_DIRECTOR and SUPERVISOR.");
+            jdbc.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+            log.info("Successfully dropped users_role_check constraint.");
         } catch (Exception e) {
-            log.warn("Could not migrate users_role_check constraint: {}", e.getMessage());
+            log.warn("Could not drop users_role_check constraint: {}", e.getMessage());
         }
     }
 

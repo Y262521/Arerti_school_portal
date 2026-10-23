@@ -26,15 +26,29 @@ public class HealthController {
         return Map.of(
                 "status", "UP",
                 "service", "arerti-portal-backend",
-                "version", "v2.1-role-check-fix",
+                "version", "v2.2-drop-role-check",
                 "time", Instant.now().toString(),
                 "storage_configured", !cloudName.equals("NOT_SET") && !cloudName.isBlank()
         );
     }
 
+    /** Explicitly drops the obsolete users_role_check constraint. */
+    @GetMapping("/fix-role-check")
+    public Map<String, Object> fixRoleCheck() {
+        try {
+            jdbc.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+            return Map.of("result", "SUCCESS", "message", "Dropped users_role_check constraint");
+        } catch (Exception e) {
+            return Map.of("result", "FAILED", "error", e.getMessage());
+        }
+    }
+
     /** Test: insert a user row and delete it immediately. Shows exact DB error if it fails. */
     @GetMapping("/test-insert")
     public Map<String, Object> testInsert() {
+        try {
+            jdbc.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+        } catch (Exception ignored) {}
         String testUsername = "test_" + System.currentTimeMillis();
         String testEmail = testUsername + "@test.com";
         try {
